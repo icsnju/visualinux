@@ -1,0 +1,57 @@
+{
+  "name": "visualizer",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "cross-env NODE_ENV=production node server.js"
+  },
+  "scripts_x": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@fontsource/inconsolata": "^5.0.18",
+    "@monaco-editor/react": "^4.6.0",
+    "@stitches/react": "^1.2.8",
+    "@types/lokijs": "^1.5.14",
+    "@types/nearley": "^2.11.5",
+    "@types/react-resizable": "^3.0.7",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "eventsource": "^2.0.2",
+    "express": "^4.19.2",
+    "fs": "^0.0.1-security",
+    "gojs": "^2.3.8",
+    "gojs-react": "^1.1.2",
+    "https-proxy-agent": "^7.0.4",
+    "lokijs": "^1.5.12",
+    "monaco-editor": "^0.47.0",
+    "nearley": "^2.20.1",
+    "next": "14.1.3",
+    "openai": "^4.29.2",
+    "radash": "^12.1.0",
+    "react": "^18",
+    "react-collapsed": "^4.1.2",
+    "react-dom": "^18",
+    "react-rnd": "^10.4.1",
+    "reactjs-popup": "^2.0.6",
+    "spectre.css": "^0.5.9",
+    "split-pane-react": "^0.1.3"
+  },
+  "devDependencies": {
+    "@types/eventsource": "^1.1.15",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.3",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  }
+}

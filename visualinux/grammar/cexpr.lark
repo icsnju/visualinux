@@ -1,0 +1,337 @@
+// C expression grammar support.
+
+%import common.WS
+%ignore WS
+
+// cexpr.lark usage: %import .<relpath>.cexpr.cexpr
+// rule <cexpr> is used in general
+// rule <start> is only used for self testing
+
+cexpr: exp
+start: exp_stat+
+
+// extracted from C syntax BNF
+// http://www.cs.man.ac.uk/~pjj/bnf/c_syntax.bnf
+
+translation_unit		: external_decl
+						| translation_unit external_decl
+
+external_decl			: function_definition
+						| decl
+
+function_definition		: decl_specs declarator decl_list compound_stat
+						|            declarator decl_list compound_stat
+						| decl_specs declarator           compound_stat
+						|            declarator           compound_stat
+
+decl					: decl_specs init_declarator_list ";"
+						| decl_specs                      ";"
+
+decl_list				: decl
+						| decl_list decl
+
+decl_specs				: storage_class_spec decl_specs
+						| storage_class_spec
+						| type_spec decl_specs
+						| type_spec
+						| type_qualifier decl_specs
+						| type_qualifier
+
+storage_class_spec		: "auto" | "register" | "static" | "extern" | "typedef"
+
+type_spec				: TYPE_SPEC
+						| struct_or_union_spec
+						| enum_spec
+						| typedef_name
+
+TYPE_SPEC				: TYPE_VOID | TYPE_CHAR | TYPE_SHORT | TYPE_INT | TYPE_LONG
+						| TYPE_FLOAT | TYPE_DOUBLE | TYPE_SIGNED | TYPE_UNSIGNED
+
+type_qualifier			: "const" | "volatile"
+
+struct_or_union_spec	: STRUCT_OR_UNION id "{" struct_decl_list "}"
+						| STRUCT_OR_UNION    "{" struct_decl_list "}"
+						| STRUCT_OR_UNION id
+
+STRUCT_OR_UNION			: "struct" | "union"
+
+struct_decl_list		: struct_decl
+						| struct_decl_list struct_decl
+
+init_declarator_list	: init_declarator
+						| init_declarator_list COMMA init_declarator
+
+init_declarator			: declarator
+						| declarator "=" initializer
+
+struct_decl				: spec_qualifier_list struct_declarator_list ";"
+
+spec_qualifier_list		: type_spec spec_qualifier_list
+						| type_spec
+						| type_qualifier spec_qualifier_list
+						| type_qualifier
+
+struct_declarator_list	: struct_declarator
+						| struct_declarator_list COMMA struct_declarator
+
+struct_declarator		: declarator
+						| declarator ":" const_exp
+						|		":" const_exp
+
+enum_spec				: "enum" id "{" enumerator_list "}"
+						| "enum"    "{" enumerator_list "}"
+						| "enum" id
+
+enumerator_list			: enumerator
+						| enumerator_list COMMA enumerator
+
+enumerator				: id
+						| id "=" const_exp
+
+declarator				: pointer direct_declarator
+						|         direct_declarator
+
+direct_declarator		: id
+						| LBRACK_RND declarator RBRACK_RND
+						| direct_declarator LBRACK_SQR const_exp RBRACK_SQR
+						| direct_declarator LBRACK_SQR           RBRACK_SQR
+						| direct_declarator LBRACK_RND param_type_list RBRACK_RND
+						| direct_declarator LBRACK_RND id_list RBRACK_RND
+						| direct_declarator LBRACK_RND         RBRACK_RND
+
+pointer					: TYPE_POINTER type_qualifier_list
+						| TYPE_POINTER
+						| TYPE_POINTER type_qualifier_list pointer
+						| TYPE_POINTER                     pointer
+
+type_qualifier_list		: type_qualifier
+						| type_qualifier_list type_qualifier
+
+param_type_list			: param_list
+						| param_list COMMA "..."
+
+param_list				: param_decl
+						| param_list COMMA param_decl
+
+param_decl				: decl_specs declarator
+						| decl_specs abst_declarator
+						| decl_specs
+
+id_list					: id
+						| id_list COMMA id
+
+initializer				: assignment_exp
+						| "{" initializer_list "}"
+						| "{" initializer_list COMMA "}"
+
+initializer_list		: initializer
+						| initializer_list COMMA initializer
+
+type_name				: spec_qualifier_list abst_declarator
+						| spec_qualifier_list
+
+abst_declarator			: pointer
+						| pointer direct_abst_declarator
+						|         direct_abst_declarator
+
+direct_abst_declarator	: LBRACK_RND abst_declarator RBRACK_RND
+						| direct_abst_declarator LBRACK_SQR const_exp RBRACK_SQR
+						|                        LBRACK_SQR const_exp RBRACK_SQR
+						| direct_abst_declarator LBRACK_SQR           RBRACK_SQR
+						|                        LBRACK_SQR           RBRACK_SQR
+						| direct_abst_declarator LBRACK_RND param_type_list RBRACK_RND
+						|                        LBRACK_RND param_type_list RBRACK_RND
+						| direct_abst_declarator LBRACK_RND                 RBRACK_RND
+						|                        LBRACK_RND                 RBRACK_RND
+
+typedef_name			: id
+
+stat					: labeled_stat
+						| exp_stat
+						| compound_stat
+						| selection_stat
+						| iteration_stat
+						| jump_stat
+
+labeled_stat			: id ":" stat
+						| "case" const_exp ":" stat
+						| "default" ":" stat
+
+exp_stat				: exp ";"
+						|     ";"
+
+compound_stat			: "{" decl_list stat_list "}"
+						| "{"           stat_list "}"
+						| "{" decl_list           "}"
+						| "{"                     "}"
+
+stat_list				: stat
+						| stat_list stat
+
+selection_stat			: "if" LBRACK_RND exp RBRACK_RND stat
+						| "if" LBRACK_RND exp RBRACK_RND stat "else" stat
+						| "switch" LBRACK_RND exp RBRACK_RND stat
+
+iteration_stat			: "while" LBRACK_RND exp RBRACK_RND stat
+						| "do" stat "while" LBRACK_RND exp RBRACK_RND ";"
+						| "for" LBRACK_RND exp ";" exp ";" exp RBRACK_RND stat
+						| "for" LBRACK_RND exp ";" exp ";"	RBRACK_RND stat
+						| "for" LBRACK_RND exp ";"	";" exp RBRACK_RND stat
+						| "for" LBRACK_RND exp ";"	";"	RBRACK_RND stat
+						| "for" LBRACK_RND	";" exp ";" exp RBRACK_RND stat
+						| "for" LBRACK_RND	";" exp ";"	RBRACK_RND stat
+						| "for" LBRACK_RND	";"	";" exp RBRACK_RND stat
+						| "for" LBRACK_RND	";"	";"	RBRACK_RND stat
+
+jump_stat				: "goto" id ";"
+						| "continue" ";"
+						| "break" ";"
+						| "return" exp ";"
+						| "return"     ";"
+
+exp						: assignment_exp
+						| exp COMMA assignment_exp
+
+assignment_exp			: conditional_exp
+						| unary_exp ASSIGNMENT_OPERATOR assignment_exp
+
+ASSIGNMENT_OPERATOR		: "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<="
+						| ">>=" | "&=" | "^=" | "|="
+
+conditional_exp			: logical_or_exp
+						| logical_or_exp TRIPLE_0 exp TRIPLE_1 conditional_exp
+
+TRIPLE_0: "?"
+TRIPLE_1: ":"
+
+const_exp				: conditional_exp
+
+logical_or_exp			: logical_and_exp
+						| logical_or_exp LOGICAL_OR logical_and_exp
+
+logical_and_exp			: inclusive_or_exp
+						| logical_and_exp LOGICAL_AND inclusive_or_exp
+
+inclusive_or_exp		: exclusive_or_exp
+						| inclusive_or_exp OR exclusive_or_exp
+
+exclusive_or_exp		: and_exp
+						| exclusive_or_exp XOR and_exp
+
+and_exp					: equality_exp
+						| and_exp AND equality_exp
+
+equality_exp			: relational_exp
+						| equality_exp EQUALITY relational_exp
+
+relational_exp			: shift_expression
+						| relational_exp RELATIONAL shift_expression
+
+shift_expression		: additive_exp
+						| shift_expression SHIFT additive_exp
+
+additive_exp			: mult_exp
+						| additive_exp ADDITIVE mult_exp
+
+mult_exp				: cast_exp
+						| mult_exp MULTIVE cast_exp
+
+cast_exp				: unary_exp
+						| LBRACK_RND type_name RBRACK_RND cast_exp
+
+unary_exp				: postfix_exp
+						| UNARY unary_exp
+						| unary_operator cast_exp
+						| SIZEOF unary_exp
+						| SIZEOF LBRACK_RND type_name RBRACK_RND
+
+unary_operator			: ADDRESS_OF | DEREFERENCE | UNARY_ADD | UNARY_MINUS | UNARY_NEG | UNARY_NOT
+
+postfix_exp				: primary_exp
+						| postfix_exp LBRACK_SQR exp RBRACK_SQR
+						| postfix_exp LBRACK_RND argument_exp_list RBRACK_RND
+						| postfix_exp LBRACK_RND                   RBRACK_RND
+						| postfix_exp POSTFIX_DOT id
+						| postfix_exp POSTFIX_ARROW id
+						| postfix_exp UNARY
+
+primary_exp				: id
+						| const
+						| string
+						| LBRACK_RND exp RBRACK_RND
+						| mixed_exp
+
+argument_exp_list		: assignment_exp
+						| argument_exp_list COMMA assignment_exp
+
+const					: int_const
+						| float_const
+						| char_const
+//						| enumeration_const
+
+// mixed access with DSL grammar
+
+mixed_exp: MIXED_ACCESS id
+MIXED_ACCESS: "@"
+
+// primitives
+
+%import common.CNAME
+%import common.INT
+%import common.FLOAT
+
+id: CNAME
+  | STRUCT_OR_UNION SPACE CNAME
+
+int_const: INT
+float_const: FLOAT
+char_const: "'" /./ "'"
+
+string: DQUOTA /[^"]+/ DQUOTA
+      | DQUOTA DQUOTA
+
+DQUOTA: "\""
+
+COMMA: ","
+SPACE: /\s+/
+
+LBRACK_RND: "("
+RBRACK_RND: ")"
+
+LBRACK_SQR: "["
+RBRACK_SQR: "]"
+
+TYPE_VOID:     "void"
+TYPE_CHAR:     "char"
+TYPE_SHORT:    "short"
+TYPE_INT:      "int"
+TYPE_LONG:     "long"
+TYPE_FLOAT:    "float"
+TYPE_DOUBLE:   "double"
+TYPE_SIGNED:   "signed"
+TYPE_UNSIGNED: "unsigned"
+
+TYPE_POINTER:  "*"
+
+LOGICAL_AND: "&&"
+LOGICAL_OR:  "||"
+AND: "&"
+OR:  "|"
+XOR: "^"
+EQUALITY: "==" | "!="
+RELATIONAL: "<" | ">" | "<=" | ">="
+SHIFT: "<<" | ">>"
+ADDITIVE: "+" | "-"
+MULTIVE: "*" | "/" | "%"
+UNARY: "++" | "--"
+SIZEOF: "sizeof"
+
+ADDRESS_OF:  "&"
+DEREFERENCE: "*"
+UNARY_ADD:   "+"
+UNARY_MINUS: "-"
+UNARY_NEG:   "~"
+UNARY_NOT:   "!"
+
+POSTFIX_DOT: "."
+POSTFIX_ARROW: "->"

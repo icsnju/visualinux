@@ -1,0 +1,22 @@
+{
+    "explorer.excludeGitIgnore": false,
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.o": true,
+        "**/*.o.cmd": true,
+        "**/*.dwo": true,
+        "**/*.a.cmd": true,
+        "**/*.s": true,
+        "**/*.s.cmd": true,
+        "**/*.gcno": true,
+        "**/*.gcda": true
+    },
+    "files.watcherExclude": {
+        "kernel/drivers/**": true
+    },
+    "python.analysis.extraPaths": [
+        "/usr/share/gdb/python/",
+        "${workspaceFolder}/scripts/gdb/"
+    ],
+    "gcovViewer.highlightMissedLines": true
+}

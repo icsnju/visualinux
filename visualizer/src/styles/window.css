@@ -1,0 +1,65 @@
+.main-window {
+    grid-area: gg;
+    width: 100%;
+    background-color: bisque;
+}
+
+.primary-window {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 2px solid #5755d9;
+}
+.primary-window .react-diagram {
+    flex-grow: 1;
+}
+.primary-window-header {
+    background-color: white;
+    border-bottom: 1px solid #5755d9;
+}
+.primary-window-body {
+    display: flex;
+    height: 100%;
+    background-color: white;
+}
+
+.secondary-window {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 3px solid #5755d9;
+    background-color: seashell;
+}
+.secondary-window .react-diagram {
+    flex-grow: 1;
+}
+.secondary-window-header {
+    background-color: seashell;
+    border-bottom: 1px solid #5755d9;
+}
+
+.react-draggable {
+    position: absolute;
+    z-index: 999;
+}
+.react-draggable .show-object-key {
+    background: #ddd;
+    border: 1px solid #999;
+    border-radius: 3px;
+    display: block;
+    /* padding: 3px 5px; */
+    text-align: center;
+    height: 100%;
+    cursor: move;
+}
+.react-draggable-cursor {
+    cursor: move;
+}
+
+.react-diagram {
+    width: 100%;
+    height: auto;
+    background-color: white;
+}
+
+/* @import "@styles/btn-4d.css"; */

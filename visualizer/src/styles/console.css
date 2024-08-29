@@ -1,0 +1,33 @@
+.console-wrapper {
+    position: absolute;
+    z-index: 200;
+}
+.console-header {
+    padding: 4px 8px;
+    border: 1px solid #000;
+    background-color: bisque;
+}
+.console {
+    display: flex;
+    flex-direction: column;
+    width: 576px;
+    height: 480px;
+    padding: 4px 0;
+    border: 1px solid #000;
+    background-color: aliceblue;
+}
+
+.vql-editor {
+    border: 1px solid #000;
+}
+
+.vql-file-creator {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.vql-file-creator input {
+    flex-grow: 1;
+    margin-right: 6px;
+    padding: 0 4px;
+}

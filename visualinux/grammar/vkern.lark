@@ -1,0 +1,260 @@
+// VKern DSL grammar.
+
+// import general modules
+// see https://github.com/lark-parser/lark/blob/master/lark/grammars/common.lark
+
+%import common.DIGIT
+%import common.HEXDIGIT
+%import common.LETTER
+%import common.INT
+%import common.CNAME
+%import common.NEWLINE
+
+%import common.WS
+%ignore WS
+
+%import .visualinux.grammar.cexpr.cexpr
+
+// entry
+
+start: (import | instruction)*
+
+import: "import" IMPORT_PATH
+IMPORT_PATH: /[\.\w\d_-]+/
+
+// primitives
+
+shapename: CNAME
+viewname:  CNAME
+diagname:  CNAME
+
+variable:  CNAME
+typename:  CNAME
+
+label: CNAME
+     | "\"" /[^"]+/ "\""
+
+// accessment
+
+access_variable: "@" variable
+access_cexpr:    "$" "{" cexpr "}"
+
+field_prefix: "." field_def
+field_def:    field_name [LBRACK_SQR field_index RBRACK_SQR]
+field_name:   CNAME
+field_index:  INT | ATAT variable
+LBRACK_SQR: "["
+RBRACK_SQR: "]"
+ATAT: "@"
+
+expr: access_variable field_prefix*
+    | access_cexpr    field_prefix*
+
+type_term:   typename  field_prefix*
+field_term:  field_def field_prefix*
+
+field_terms: field_term ("," field_term)*
+
+access_variable_as_shape: access_variable
+
+// instruction
+
+instruction: assignment
+           | typedef
+           | diagdef
+           | comment
+
+//// assignment
+
+assignment: variable "=" expr
+          | variable "=" assignment_rhs
+          | variable "=" assignment_swc
+
+assignment_rhs: shape_definition
+              | box_definition
+              | container_definition
+              | container_conversion
+
+assignment_swc: "switch" expr "{" (case_stmt | comment)* otherwise_stmt? comment* "}"
+case_stmt: "case" expr ("," expr)* ":" (assignment_rhs | assignment_swc)
+otherwise_stmt: "otherwise" ":" (assignment_rhs | assignment_swc)
+
+//// typedef
+typedef: "define" shapename "as" (box_declaration | container_declaration)
+
+//// diagdef
+
+diagdef: diag_body [diag_init_vql]
+
+diag_body: "diag" diagname "{" (plot | comment)* "}"
+
+plot: "plot" plot_target
+plot_target: access_variable_as_shape
+           | assignment_rhs
+           | assignment_swc
+
+diag_init_vql: "with" "{" VQL_SRC "}"
+VQL_SRC: /[^{}]+/
+
+//// comment
+comment: "//" /.+/
+
+// primitive shape
+
+prim_definition: text_definition
+               | link_definition
+
+//// text
+
+text_definition: "Text" ["<" text_format ">"] field_terms
+               | "Text" ["<" text_format ">"] [label ":"] (field_term | expr)
+
+// if TEXT_FORMAT is set, do cast; otherwise, display value_string as the origin type do by default
+text_format: int_format  | enum_format
+           | bool_format | char_format | str_format
+           | ptr_format  | fptr_format | flag_format
+           | emoji_format
+
+int_format: INT_SIGN INT_SIZE [TEXT_FORMAT_SEP INT_BASE] | INT_RAW_PTR
+INT_SIGN: "u" | "s"
+INT_SIZE: "8" | "16" | "32" | "64"
+INT_BASE: "b" | "t" | "d" | "o" | "x"
+INT_RAW_PTR: "raw_ptr"
+
+enum_format: "enum" ":" type_term
+
+bool_format: "bool"
+char_format: "char"
+str_format:  "string" | "str"
+ptr_format:  "address" | "pointer" | "ptr"
+fptr_format: "fpointer" | "fptr"
+
+flag_format: "flag" [TEXT_FORMAT_SEP flag_config_file]
+flag_config_file: IMPORT_PATH
+
+emoji_format: "emoji" [TEXT_FORMAT_SEP CNAME]
+
+TEXT_FORMAT_SEP: ":"
+
+//// link
+
+link_definition: "Link" label link_type link_target
+
+link_type: DIRECT_LINK | REMOTE_LINK
+DIRECT_LINK: "->"
+REMOTE_LINK: "~>"
+
+link_target: access_variable_as_shape
+           | shape_definition
+           | box_definition
+           | container_definition
+           | placeholder
+
+placeholder: "?"
+
+// shape
+
+// ShapeY = ShapeX:view_2 :view_y [...]
+// shape  = ShapeY:view_y(@expr)
+// ShapeY:view_y field1.field2
+
+shape_identifier: shapename
+shape_instantiation: "(" [label ":"] expr ")"
+
+// shape_declaration:      shape_identifier              shape_def_body
+shape_definition:       shape_identifier ["<" type_term ">"] shape_instantiation
+shape_definition_field: shape_identifier field_term
+
+shape_definition_inner: "Shape" label ":" expr
+
+// box
+
+// ShapeX = Box<type> { :view_1 [...] :view_2 [...] ... } where { ... }
+// box    = Box<type>(@expr) [...]
+// Box<type> field_1.field_2 [...]
+
+box_identifier: "Box" ["<" type_term ">"]
+
+box_declaration     : box_identifier                           view_decl_body [where_block]
+box_definition      : box_identifier [box_instantiation]       view_def_body  [where_block]
+                    | box_null
+box_definition_field: box_identifier [box_instantiation_field] view_def_body  [where_block]
+
+box_instantiation      : "(" [label ":"] expr ")"
+                       | "("  label ":"       ")"
+box_instantiation_field: "(" [label ":"] (field_term | expr) ")"
+                       |     [label ":"] (field_term | expr)
+                      //  | "("  label ":"             ")"
+
+box_null: "NULL" // a.k.a. Box(${NULL}) []
+
+//// view of box
+
+view_decl_body: view_def_body
+              | "{" (view_definition | comment)* "}"
+
+view_definition: [view_annotation] (view_identifier | view_identifier_inherit) view_def_body
+
+view_annotation: "#" /[^#]+/ "#"
+
+view_identifier: ":" viewname
+view_identifier_inherit: view_identifier "=>" view_identifier
+
+view_def_body: view_def_insts [view_def_distillers]
+
+view_def_insts: "[" view_def_inst* "]"
+view_def_inst: prim_definition
+             | shape_definition_field
+             | shape_definition_inner
+             | box_definition_field
+             | view_inherit_op
+             | comment
+
+////// TODO: unsupported yet
+view_inherit_op: "!" "remove" field_term
+               | "!" "unbox"  field_term "keep" field_terms
+
+view_def_distillers: "with" "[" distiller* "]"
+distiller: shapename ":" cexpr
+
+//// where block under box
+
+where_block: "where" "{" where_inst* "}"
+
+where_inst: assignment
+          | comment
+
+// container
+
+// define SchedTree() as RBTree<task_struct.se.run_node>().forEach |item| { ... }
+
+container_identifier: shapename ["<" type_term ">"]
+container_instantiation: "(" [label ":"] expr ")"
+
+container_declaration: container_identifier "(" ")"                 container_def_loop
+container_definition:  container_identifier container_instantiation container_def_loop
+
+container_def_loop: ".forEach" "|" variable "|" "{" container_def_body "}"
+
+container_def_body: container_def_inst*
+
+container_def_inst: assignment
+                  | comment
+                  | "yield" yield_target
+
+yield_target: access_variable_as_shape
+            | shape_definition
+            | box_definition
+            | container_definition
+
+yield_node_on: access_this field_prefix*
+access_this: "@" THIS ["(" viewname ")"]
+THIS: "this"
+
+//// container: convert from
+
+container_conversion: shapename container_distill // container_sort
+
+container_distill: ".convFrom" "(" access_variable_as_shape ["," shapename] ")"
+container_sort: ".sort" "(" sorter ")"
+sorter: "undefined"

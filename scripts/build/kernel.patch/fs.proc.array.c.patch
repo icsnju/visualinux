@@ -1,0 +1,21 @@
+// visualinux: hacking for task state name display.
+
+int vl_fls(unsigned int x) {
+	int i;
+	for (i = 31; i >= 0; i --) {
+		if ((x >> i) & 1) return i + 1;
+	}
+	return 0;
+}
+
+unsigned int vl_task_state_index(unsigned int tsk_state, unsigned int tsk_exit_state) {
+// unsigned int vl_task_state_index(struct task_struct * tsk) {
+	// unsigned int tsk_state = tsk->__state;
+	// unsigned int tsk_exit_state = tsk->exit_state;
+	unsigned int state = (tsk_state | tsk_exit_state) & TASK_REPORT;
+	if (tsk_state == TASK_IDLE)
+		state = TASK_REPORT_IDLE;
+	if (tsk_state == TASK_RTLOCK_WAIT)
+		state = TASK_UNINTERRUPTIBLE;
+	return vl_fls(state);
+}

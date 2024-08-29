@@ -1,0 +1,22 @@
+@import "split-pane-react/esm/themes/default.css";
+@import "reactjs-popup/dist/index.css";
+
+/* .react-split__pane {
+    overflow: visible;
+} */
+    /* border: 1px solid #5755d9; */
+
+.popup-content {
+    padding: 0;
+    background: none;
+    border: none;
+}
+.card-body {
+    margin: 0;
+    background: none;
+    border: none;
+}
+
+@import "spectre.css/dist/spectre.min.css";
+@import "spectre.css/dist/spectre-exp.min.css";
+@import "spectre.css/dist/spectre-icons.min.css";

@@ -1,0 +1,21 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+}
+
+body {
+    display: grid;
+    grid-template-areas: "gg";
+    margin: 0;
+    padding: 0;
+    height: 99.9vh;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+#root {
+    grid-area: gg;
+    margin: 0;
+    width: 100%;
+}

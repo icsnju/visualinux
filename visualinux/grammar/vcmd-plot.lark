@@ -1,0 +1,38 @@
+// v-command vplot grammar
+
+%import common.DIGIT
+%import common.HEXDIGIT
+%import common.LETTER
+%import common.INT
+%import common.CNAME
+%import common.NEWLINE
+
+%import common.WS
+%ignore WS
+
+%import .visualinux.grammar.cexpr.unary_exp
+
+start: entries
+
+entries: entry ("," entry)*
+
+entry: symbol
+     | symbol LBRACE fields RBRACE
+     | shape  LBRACK_RND symbol RBRACK_RND
+
+symbol: unary_exp
+fields: field ("," field)*
+field: field_def (DOT field_def)*
+field_def: CNAME [LBRACK_SQR INT RBRACK_SQR]
+shape: CNAME
+
+LBRACK_RND: "("
+RBRACK_RND: ")"
+
+LBRACK_SQR: "["
+RBRACK_SQR: "]"
+
+LBRACE: "{"
+RBRACE: "}"
+
+DOT: "."

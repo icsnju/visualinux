@@ -1,0 +1,5 @@
+a;
+a = b + c;
+d = f(x);
+d = f(x, y);
+d = (struct task_struct *)t;

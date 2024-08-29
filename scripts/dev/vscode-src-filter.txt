@@ -1,0 +1,1 @@
+dsl/**/*.vl,visualizer/src/**/*.ts,visualinux/**/*.py,kernel/arch/x86/,kernel/kernel/,kernel/lib/,kernel/include/,kernel/init/,kernel/mm/,kernel/fs/,kernel/ipc/,

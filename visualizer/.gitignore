@@ -1,0 +1,64 @@
+*
+!*/
+!*.html
+!*.js
+!*.mjs
+!*.ts
+!*.tsx
+!*.css
+!*.sh
+!*.json
+!*.ne
+!*.md
+!*.txt
+!*.ico
+!*.svg
+!*.vql
+
+!.gitignore
+!gojs-remove-watermark
+
+*~
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+!.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# public
+!public/
+public/*
+!public/vql/
+public/vql/*
+!public/vql/default.vql

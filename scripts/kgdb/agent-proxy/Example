@@ -1,0 +1,7 @@
+# Use as a terminal server with sysrq inputs
+./agent-proxy 5550^5551 0 /dev/ttyS0,115200
+
+# Connect to a remote terminal server
+./agent-proxy 5550^5551 REMOTE_IP_OR_NAME REMOTE_PORT#
+
+

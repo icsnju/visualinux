@@ -1,0 +1,24 @@
+{
+    "env": {
+        "DIR_PROJECT": "${workspaceFolder}",
+        "DIR_SCRIPTS": "${DIR_PROJECT}/scripts"
+    },
+    "configurations": [{
+        "name": "Linux",
+        "includePath": [
+            "${workspaceFolder}/kernel/include/",
+            "${workspaceFolder}/kernel/include/uapi/",
+            "${workspaceFolder}/kernel/arch/x86/include/",
+            "${workspaceFolder}/kernel/arch/x86/include/generated"
+        ],
+        "forcedInclude": [
+            "${workspaceFolder}/kernel/include/generated/autoconf.h"
+        ],
+        "defines": [],
+        "compilerPath": "/usr/bin/gcc",
+        "cStandard": "gnu11",
+        // "intelliSenseMode": "linux-gcc-x64",
+        "compileCommands": "${workspaceFolder}/kernel/compile_commands.json"
+    }],
+    "version": 4
+}

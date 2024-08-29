@@ -1,0 +1,9 @@
+*
+!*/
+!*.c
+!*.h
+!Makefile
+!.gitignore
+!README*
+!COPYING
+!Example

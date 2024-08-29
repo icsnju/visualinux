@@ -1,0 +1,169 @@
+// visualinux: hacking for maple tree expansion.
+
+struct vl_mt_node {
+	void * entry;
+	unsigned long min;
+	unsigned long max;
+	union {
+		struct vl_mt_node * r64_children[MAPLE_RANGE64_SLOTS];
+		struct vl_mt_node * a64_children[MAPLE_ARANGE64_SLOTS];
+	};
+};
+
+struct vl_maple_tree {
+	void * root;
+	bool is_single_node;
+} vl_maple_tree;
+
+static struct kmem_cache * vl_mt_node_cache;
+static void __init vl_mt_init(void) {
+	vl_mt_node_cache = kmem_cache_create("vl_mt_node",
+			sizeof(struct vl_mt_node), sizeof(struct vl_mt_node),
+			SLAB_PANIC, NULL);
+	pr_info("vl_mt_init OK");
+}
+static struct vl_mt_node * vl_mt_alloc(void * enode, unsigned long min, unsigned long max) {
+	struct vl_mt_node * vl_node = kmem_cache_alloc(vl_mt_node_cache, GFP_KERNEL);
+	if (!vl_node) return NULL;
+	memset(vl_node, 0, sizeof(struct vl_mt_node));
+	vl_node->entry = enode;
+	vl_node->min = min;
+	vl_node->max = max;
+	// pr_info("vl_mt_alloc %#lx (%#lx, %lx, %lx)\n", (uintptr_t)vl_node, (uintptr_t)enode, min, max);
+	return vl_node;
+}
+static void vl_mt_free(struct vl_mt_node * vl_node) {
+	// pr_info("vl_mt_free %#lx\n", (uintptr_t)vl_node);
+	kmem_cache_free(vl_mt_node_cache, vl_node);
+}
+
+static struct vl_mt_node * vl_mt_dfs(void * enode, unsigned long min, unsigned long max);
+static struct vl_mt_node * vl_mt_dfs_entry(void * enode, unsigned long min, unsigned long max) {
+	// pr_info("vl_mt_dfs_entry %#lx, %lx, %lx\n", (uintptr_t)enode, min, max);
+	return vl_mt_alloc(enode, min, max);
+}
+static struct vl_mt_node * vl_mt_dfs_range64(void * enode, unsigned long min, unsigned long max) {
+	struct vl_mt_node * vl_node;
+	struct maple_range_64 * node = &mte_to_node(enode)->mr64;
+	bool leaf = mte_is_leaf(enode);
+	unsigned long first = min;
+	// pr_info("vl_mt_dfs_range64 %#lx, %lx, %lx\n", (uintptr_t)enode, min, max);
+	vl_node = vl_mt_alloc(enode, min, max);
+	for (int i = 0; i < MAPLE_RANGE64_SLOTS; i ++) {
+		unsigned long last = max;
+		if (i < (MAPLE_RANGE64_SLOTS - 1))
+			last = node->pivot[i];
+		else if (!node->slot[i] && max != mt_max[mte_node_type(enode)])
+			break;
+		if (last == 0 && i > 0)
+			break;
+		if (leaf)
+			vl_node->r64_children[i] = vl_mt_dfs_entry(node->slot[i], first, last);
+		else if (node->slot[i])
+			vl_node->r64_children[i] = vl_mt_dfs(node->slot[i], first, last);
+		if (last == max)
+			break;
+		if (last > max) {
+			pr_err("node %p last (%lu) > max (%lu) at pivot %d!\n",
+					node, last, max, i);
+			break;
+		}
+		first = last + 1;
+	}
+	return vl_node;
+}
+static void * vl_mt_dfs_arange64(void * enode, unsigned long min, unsigned long max) {
+	struct vl_mt_node * vl_node;
+	struct maple_arange_64 * node = &mte_to_node(enode)->ma64;
+	bool leaf = mte_is_leaf(enode);
+	unsigned long first = min;
+	// pr_info("vl_mt_dfs_arange64 %#lx, %lx, %lx\n", (uintptr_t)enode, min, max);
+	vl_node = vl_mt_alloc(enode, min, max);
+	for (int i = 0; i < MAPLE_ARANGE64_SLOTS; i ++) {
+		unsigned long last = max;
+		if (i < (MAPLE_ARANGE64_SLOTS - 1))
+			last = node->pivot[i];
+		else if (!node->slot[i])
+			break;
+		if (last == 0 && i > 0)
+			break;
+		if (leaf)
+			vl_node->r64_children[i] = vl_mt_dfs_entry(node->slot[i], first, last);
+		else if (node->slot[i])
+			vl_node->r64_children[i] = vl_mt_dfs(node->slot[i], first, last);
+		if (last == max)
+			break;
+		if (last > max) {
+			pr_err("node %p last (%lu) > max (%lu) at pivot %d!\n",
+					node, last, max, i);
+			break;
+		}
+		first = last + 1;
+	}
+	return vl_node;
+}
+static struct vl_mt_node * vl_mt_dfs(void * enode, unsigned long min, unsigned long max) {
+	unsigned int type = mte_node_type(enode);
+	// pr_info("vl_mt_dfs %#lx, %lx, %lx type=%d\n", (uintptr_t)enode, min, max, type);
+	switch (type) {
+	case maple_dense:
+		return vl_mt_dfs_entry(enode, min, max);
+	case maple_leaf_64:
+	case maple_range_64:
+		return vl_mt_dfs_range64(enode, min, max);
+	case maple_arange_64:
+		return vl_mt_dfs_arange64(enode, min, max);
+	default:
+		panic("vl_mt_dfs: illegal type=%d", type);
+	}
+}
+
+static void vl_mt_free_dfs(struct vl_mt_node * vl_node) {
+	unsigned int type;
+	bool leaf;
+	if (!vl_node) {
+		return;
+	}
+	type = mte_node_type(vl_node->entry);
+	leaf = mte_is_leaf(vl_node->entry);
+	// pr_info("vl_mt_free_dfs %#lx entry=%#lx leaf?%d type=%d\n", (uintptr_t)vl_node, (uintptr_t)vl_node->entry, leaf, type);
+	if (leaf) switch (type) {
+	case maple_dense:
+		break;
+	case maple_leaf_64:
+	case maple_range_64:
+		for (int i = 0; i < MAPLE_RANGE64_SLOTS; i ++) {
+			vl_mt_free_dfs(vl_node->r64_children[i]);
+		}
+		break;
+	case maple_arange_64:
+		for (int i = 0; i < MAPLE_ARANGE64_SLOTS; i ++) {
+			vl_mt_free_dfs(vl_node->a64_children[i]);
+		}
+		break;
+	default:
+		panic("vl_mt_dfs: illegal type=%d", type);
+	}
+	vl_mt_free(vl_node);
+}
+static void vl_mt_freeall(void) {
+	if (!vl_maple_tree.root || vl_maple_tree.is_single_node) {
+		return;
+	}
+	vl_mt_free_dfs(vl_maple_tree.root);
+}
+
+void * vl_mt_preconstruct(const struct maple_tree * mt) {
+	void * enode = rcu_dereference_check(mt->ma_root, mt_locked(mt));
+	if (enode == NULL) {
+		return NULL;
+	}
+	vl_mt_freeall();
+	vl_maple_tree.is_single_node = !xa_is_node(enode);
+	if (vl_maple_tree.is_single_node) {
+ 		vl_maple_tree.root = enode;
+	} else {
+		vl_maple_tree.root = vl_mt_dfs(enode, 0, mt_max[mte_node_type(enode)]);
+	}
+	return vl_maple_tree.root;
+}

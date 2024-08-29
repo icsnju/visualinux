@@ -1,0 +1,16 @@
+shell echo "+ source macros/flags/swap_info.gdb"
+
+macro define SWP_USED           (1 << 0)
+macro define SWP_WRITEOK        (1 << 1)
+macro define SWP_DISCARDABLE    (1 << 2)
+macro define SWP_DISCARDING     (1 << 3)
+macro define SWP_SOLIDSTATE     (1 << 4)
+macro define SWP_CONTINUED      (1 << 5)
+macro define SWP_BLKDEV         (1 << 6)
+macro define SWP_ACTIVATED      (1 << 7)
+macro define SWP_FS_OPS         (1 << 8)
+macro define SWP_AREA_DISCARD   (1 << 9)
+macro define SWP_PAGE_DISCARD   (1 << 10)
+macro define SWP_STABLE_WRITES  (1 << 11)
+macro define SWP_SYNCHRONOUS_IO (1 << 12)
+macro define SWP_SCANNING       (1 << 14)

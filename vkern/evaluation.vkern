@@ -1,0 +1,20 @@
+import evaluation.textbook.01_process_parenthood
+import evaluation.textbook.02_pidhash
+import evaluation.textbook.03_irq_desc
+import evaluation.textbook.04_workqueue
+import evaluation.textbook.05_timing
+import evaluation.textbook.06_scheduling
+import evaluation.textbook.07_buddy_system
+import evaluation.textbook.08-09_slab
+import evaluation.textbook.10_addrspace
+import evaluation.textbook.11_signals
+import evaluation.textbook.12_proc_and_vfs
+import evaluation.textbook.13_fd_array
+// import evaluation.textbook.14_kernfs
+import evaluation.textbook.15_bio
+import evaluation.textbook.16_pagecache
+import evaluation.textbook.17_file_mapping
+import evaluation.textbook.18_anon_rev
+import evaluation.textbook.19_swap_area
+import evaluation.textbook.20_ipc_ns
+import evaluation.textbook.21_socket

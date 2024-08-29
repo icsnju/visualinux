@@ -1,0 +1,8 @@
+!*
+node_modules/
+out/
+.vscode-test
+client/server
+syntaxes/*.tmLanguage.json
+*.tmLanguage
+*.vsix

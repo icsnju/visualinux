@@ -1,0 +1,355 @@
+$schema: https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json
+name: Visualinux
+scopeName: source.vkern
+fileTypes: [vkern]
+
+patterns:
+
+- include: "#diagdef"
+- include: "#plot"
+- include: "#import"
+- include: "#comment"
+
+- include: "#shapedecl"
+- include: "#shapedecl_identifier"
+
+- include: "#assignment"
+- include: "#switch_stmt"
+- include: "#case_stmt"
+- include: "#otherwise_stmt"
+- include: "#shapedef"
+- include: "#shape_instantiation"
+- include: "#where_block"
+- include: "#for_each_block"
+
+- include: "#expr"
+- include: "#cexpr"
+
+repository:
+
+  # core instruction
+
+  assignment:
+    name: meta.inst.assignment.visualinux
+    match: ^\s*(\w+)\s*(=)\s*(?=\S)
+    captures:
+      "1":
+        patterns:
+        - include: "#variable_entity_name"
+      "2": { name: keyword.operator.assignment.visualinux }
+
+  # shape declaration
+
+  shapedecl:
+    name: meta.shape.decl.visualinux
+    begin: ^\s*(define)\s+(?=\w+)
+    beginCaptures:
+      "1": { name: keyword.other.typedef.define.visualinux }
+    end: (?!\w)
+    patterns:
+    - include: "#shapedef_identifier"
+    - include: "#shapedef_entity_name"
+
+  shapedecl_identifier:
+    name: meta.shape.decl.identifier.visualinux
+    end: (?= \{|\[|$)
+    match: \s+(as)\s+(\w+)(\<[^\s\<\>]+\>)?\s*
+    captures:
+      "1": { name: keyword.other.typedef.as.visualinux }
+      "2":
+        patterns:
+        - include: "#shapedef_entity_name"
+      "3":
+        patterns:
+        - include: "#typeterm_entity"
+
+  # shape definition
+
+  shapedef: # actually it is abstdef...
+    name: meta.shape.def.visualinux
+    begin: (\:\w+)?\s*(?:(\=\>)\s*(\:\w+)\s*)?\[
+    beginCaptures:
+      "1":
+        patterns:
+        - include: "#abstdef_entity_name"
+      "2":
+        patterns:
+        - name: keyword.other.abst_inherit.visualinux
+          match: (\=\>)
+      "3":
+        patterns:
+        - include: "#abstdef_entity_name"
+    end: \]
+    patterns:
+    - include: "#shapedef_field_t1"
+    - include: "#shapedef_field_t2"
+    - include: "$self"
+
+  shapedef_field_t1:
+    name: meta.shape.def.field.t1.visualinux
+    match: (\w+(?:\<[\w:]+\>)?)\s*(\w+)\s*(\:|(?:\-\>)|(?:\~\>))\s*((?:\@[\w.]+)|(?:\$\{[^\$\{\}]+\}))
+    captures:
+      "1":
+        patterns:
+        - include: "#shapedef_identifier"
+      "2":
+        patterns:
+        - include: "#label_entity_name"
+      "3":
+        name: keyword.operator.points_to.visualinux
+      "4":
+        patterns:
+        - include: "#expr"
+
+  shapedef_field_t2:
+    name: meta.shape.def.field.t2.visualinux
+    match: (\w+(?:\<[\w:]+\>)?)(?:\s+([\w.,\s]+))?
+    captures:
+      "1":
+        patterns:
+        - include: "#shapedef_identifier"
+      "2":
+        patterns:
+        - include: "#term_entity_field"
+
+  shapedef_identifier:
+    name: meta.shape.decl.identifier.visualinux
+    match: (\w+)(\<[^\s\<\>]+\>)?
+    captures:
+      "1":
+        patterns:
+        - include: "#shapedef_entity_name"
+      "2":
+        patterns:
+        - include: "#typeterm_entity"
+
+  shape_instantiation:
+    name: meta.shape.instantiation.visualinux
+    match: (?<=(?:\=\s*)|(?:yield\s+)|(?:plot\s+)|(?:\:\n*\s*))(\w+)(\:\w+)?(\<[^\s\<\>]+\>)?(\((?:\@[\w.]+)|(?:\$\{[^\$\{\}]+\})\))?
+    captures:
+      "1":
+        patterns:
+        - include: "#shapedef_entity_name"
+      "2":
+        patterns:
+        - include: "#abstdef_entity_name"
+      "3":
+        patterns:
+        - include: "#typeterm_entity"
+      "4":
+        patterns:
+        - include: "#expr"
+
+  # for_each block
+
+  for_each_block:
+    name: meta.shape.def.for_each.visualinux
+    begin: (?<=\))\.(forEach)\s*\|(\w+)\|\s*\{
+    beginCaptures:
+      # "1": { name: keyword.operator.for_each.visualinux }
+      "1": { name: entity.name.function.for_each.visualinux }
+      "2":
+        patterns:
+        - include: "#variable_entity_name"
+    end: \}
+    patterns:
+    - include: "#comment"
+    - include: "#yield"
+    - include: "#assignment"
+    - include: "#switch_stmt"
+    - include: "#case_stmt"
+    - include: "#otherwise_stmt"
+    - include: "#shapedef"
+    - include: "#shape_instantiation"
+    - include: "#where_block"
+    - include: "#for_each_block"
+    - include: "#expr"
+    - include: "#cexpr"
+
+  yield:
+    name: meta.inst.yield.visualinux
+    match: ^\s*(yield)\s+(?=\S)
+    captures:
+      "1": { name: keyword.control.yield.visualinux }
+
+  # where block
+
+  where_block:
+    name: meta.shape.def.where.visualinux
+    begin: (?<=^|\}|\])\s*(where)\s*\{
+    beginCaptures:
+      "1": { name: keyword.control.where.visualinux }
+    end: \}
+    patterns:
+    - include: "#comment"
+    - include: "#assignment"
+    - include: "#switch_stmt"
+    - include: "#case_stmt"
+    - include: "#otherwise_stmt"
+    - include: "#shapedef"
+    - include: "#shape_instantiation"
+    - include: "#for_each_block"
+    - include: "#where_block"
+    - include: "#expr"
+    - include: "#cexpr"
+
+  # switch-case stmt
+  # TODO: there's a bug in case shape_instantiation.
+
+  switch_stmt:
+    match: \b(switch)\b
+    captures:
+      "1": { name: keyword.control.switch.visualinux }
+  case_stmt:
+    match: \b(case)\b
+    captures:
+      "1": { name: keyword.control.case.visualinux }
+  otherwise_stmt:
+    match: \b(otherwise)\b
+    captures:
+      "1": { name: keyword.control.otherwise.visualinux }
+
+  # low-level syntax rules
+
+  import_entity_name:
+    begin: (?=\w)
+    end: (?!\w)
+    contentName: entity.name.section.filename.visualinux
+    patterns:
+    - match: (\w+)
+
+  variable_entity_name:
+    begin: (?=\w)
+    end: (?!\w)
+    contentName: entity.name.variable.visualinux
+    patterns:
+    - include: "#general_name"
+
+  shapedef_entity_name:
+    begin: (?=\w)
+    end: (?!\w)
+    contentName: entity.name.function.shape.visualinux
+    patterns:
+    - include: "#general_name"
+
+  abstdef_entity_name:
+    name: entity.name.section.abst_name.visualinux
+    patterns:
+    - include: "#illegal_name"
+    - name: entity.name.section.abst_name.visualinux
+      match: (\:[a-zA-z_]\w*)
+    - name: invalid.illegal.name.visualinux
+      match: \S+
+
+  field_entity_name:
+    begin: (?=\w)
+    end: (?!\w)
+    contentName: entity.name.variable.field.visualinux
+    patterns:
+    - include: "#free_name"
+
+  label_entity_name:
+    begin: (?=\w)
+    end: (?!\w)
+    contentName: entity.name.variable.label.visualinux
+    patterns:
+    - include: "#free_name"
+
+  typeterm_entity:
+    name: meta.term.type.visualinux
+    begin: \<
+    end: \>
+    patterns:
+    - begin: (?<=\<|\.)
+      end: (?:\.|(?=\>))
+      endCaptures:
+        "1": { name: punctuation.separator.term.visualinux }
+      contentName: entity.name.type.shape.visualinux
+      patterns:
+      - include: $self
+
+  term_entity_field:
+    name: meta.term.field.visualinux
+    patterns:
+    - include: "#field_entity_name"
+
+  # primitive syntax rules
+
+  general_name:
+    patterns:
+    - include: "#illegal_name"
+    - include: "#cname"
+    - name: invalid.illegal.name.visualinux
+      match: \S+
+
+  free_name:
+    patterns:
+    - include: "#cname"
+    - name: invalid.illegal.name.visualinux
+      match: \S+
+
+  illegal_name:
+    name: invalid.illegal.name.visualinux
+    match: \b(import|define|as|forEach|yield|where|switch|case|otherwise|diag|plot)\b
+
+  null_aka:
+    name: keyword.null.visualinux
+    match: \b(NULL)\b
+
+  cname:
+    match: ([a-zA-z_]\w*)
+
+  expr:
+    name: meta.expr.visualinux
+    patterns:
+    - include: "#var_access"
+    - include: "#cexpr"
+
+  var_access:
+    name: entity.name.variable.access.visualinux
+    match: \@(\w+(?:\.\w+)*)
+    capture:
+      "1":
+        pattern:
+        - include: "#free_name"
+
+  cexpr:
+    name: meta.embedded.block.c
+    begin: \$\{
+    end: \}
+    patterns:
+    - include: source.c
+
+  # diag deifnition
+
+  diagdef: #\s*(?=\{)
+    name: meta.diagdef.visualinux
+    match: \b(diag)\s+([\w.]+)
+    captures:
+      "1": { name: keyword.control.diag.visualinux }
+      "2":
+        patterns:
+        - include: "#label_entity_name"
+
+  plot:
+    name: meta.inst.plot.visualinux
+    match: \b(plot)\b
+    captures:
+      "1": { name: keyword.control.plot.visualinux }
+
+  # other special instruction
+
+  import:
+    name: meta.inst.import.visualinux
+    match: ^\s*(import)\s+([\w.]+)
+    captures:
+      "1": { name: keyword.control.import.visualinux }
+      "2":
+        patterns:
+        - include: "#import_entity_name"
+
+  comment:
+    name: comment.line.number-sign.visualinux
+    match: (//).*$
+    captures:
+      '1': { name: punctuation.definition.comment.visualinux }

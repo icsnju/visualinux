@@ -1,0 +1,22 @@
+// visualinux: hacking for kernfs node searching.
+
+const char * vl_kn_name_dev = "dev";
+
+struct kernfs_node * vl_find_kn(struct kernfs_node *parent, const char *name, const void *ns) {
+	struct rb_node *node = parent->dir.children.rb_node;
+	unsigned int hash;
+	hash = kernfs_name_hash(name, ns);
+	while (node) {
+		struct kernfs_node *kn;
+		int result;
+		kn = rb_to_kn(node);
+		result = kernfs_name_compare(hash, name, ns, kn);
+		if (result < 0)
+			node = node->rb_left;
+		else if (result > 0)
+			node = node->rb_right;
+		else
+			return kn;
+	}
+	return NULL;
+}
