@@ -103,7 +103,10 @@ docker build -t visualinux:1.0 .
 docker build --build-arg USE_MIRROR=true -t visualinux:1.0 . # Use mirrors
 # Launch the environment
 cd ../.. # Go back to the project root
+# fish style
 docker run --network host --rm -it -v (pwd):/app -w /app visualinux:1.0 /bin/bash
+# bash style
+docker run --network host --rm -it -v $(pwd):/app -w /app visualinux:1.0 /bin/bash
 ```
 
 ### Standalone Deployment
@@ -150,7 +153,7 @@ This repo already provides VSCode configuration files. Therefore, after running 
 
 After launching the task, two panels will appear in VSCode: one for the gdb-qemu instance, and another for the visualizer app. Terminating the debugging session will stop all of them.
 
-You can access the visualizer app through `http://localhost:9802` (the port can be configured in `.env`). 
+You can access the visualizer app through `http://localhost:9802` (the port can be configured in `.env`).
 
 ### Unified Public Web Page
 
@@ -200,7 +203,7 @@ Whenever the execution is paused, you can execute the v-commands as the normal c
 - `vplot --chat plot p with fields pid, comm`
 
 **vctrl** controls the panes and the views displayed on panes of the visualizer. For instance, split an existed pane to create a new one, or apply a VQL request on a view. VQL programs can be synthesized via LLM API.
- 
+
 - `vctrl split 1 -d h`
 
 - `vctrl chat split the first pane horizontally`
@@ -233,7 +236,7 @@ To reproduce the CVE examples shown in our paper (section 3.3 and 5.3), you may 
 
 - After that, you can set breakpoints at specified program points, debug the CVEs as usual, and use the VKern code in `vkern/evaluation/cases/*` to perform the visualization.
 
-Please refer to [StackRot](https://github.com/lrh2000/StackRot) and [DirtyPipe](https://dirtypipe.cm4all.com/) for more details. 
+Please refer to [StackRot](https://github.com/lrh2000/StackRot) and [DirtyPipe](https://dirtypipe.cm4all.com/) for more details.
 
 Note that StackRot is a concurrency bug and Visualinux only focuses on understanding the program state at a single moment, additional gdb operations are still required.
 
