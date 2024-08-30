@@ -22,9 +22,7 @@ This README only describes how to deploy and use Visualinux. Please refer to `do
 
 ## Online Artifact Evaluation
 
-We have prepared an online site for quick experience of Visualinux. You can painlessly enter a Visualinux-enabled debugging environment through an html page:
-
-- <a href="http://47.100.130.248" target="_blank">http://47.100.130.248</a>
+We have prepared an online site for quick experience of Visualinux. You can painlessly enter a Visualinux-enabled debugging environment through an html page (the link is placed in Artifact Appendix of our AE submission to avoid numerous access conflicts from the outside).
 
 After startup, the online instance will print introductory messages and then automatically evaluate a simple example (a process parent tree) at a predefined breakpoint. You can follow the section [Reproduce the Evaluation](#reproduce-the-evaluation) to reproduce the evaluation results, or feel free to debug the Linux kernel with the help of Visualinux.
 
