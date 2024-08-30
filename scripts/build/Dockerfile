@@ -88,3 +88,37 @@ RUN USE_MIRROR=${USE_MIRROR:-false} && \
     python3 -m pip install --upgrade pip
 
 WORKDIR /app
+
+# For build this image use 
+# docker build -t visualinux:1.0 .
+# or 
+# docker build --build-arg USE_MIRROR=true --build-arg proxy=<your proxy address with port> -t visualinux:1.0 .
+
+# Recommand docker version:
+# Client: Docker Engine - Community
+#  Version:           27.1.1
+#  API version:       1.46
+#  Go version:        go1.21.12
+#  Git commit:        6312585
+#  Built:             Tue Jul 23 19:57:01 2024
+#  OS/Arch:           linux/amd64
+#  Context:           default
+
+# Server: Docker Engine - Community
+#  Engine:
+#   Version:          27.1.1
+#   API version:      1.46 (minimum version 1.24)
+#   Go version:       go1.21.12
+#   Git commit:       cc13f95
+#   Built:            Tue Jul 23 19:57:01 2024
+#   OS/Arch:          linux/amd64
+#   Experimental:     false
+#  containerd:
+#   Version:          1.7.19
+#   GitCommit:        2bf793ef6dc9a18e00cb12efb64355c2c9d5eb41
+#  runc:
+#   Version:          1.7.19
+#   GitCommit:        v1.1.13-0-g58aa920
+#  docker-init:
+#   Version:          0.19.0
+#   GitCommit:        de40ad0
