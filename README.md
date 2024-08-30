@@ -44,41 +44,27 @@ Visualinux is fully compatible to gdb and it is available as long as one can deb
 
 The tool has been well-tested on a Ubuntu 22.04 host with Python 3.10.12 and Node.js v18.20, with both gdb (QEMU) and kgdb (rpi-400) targeting on Linux kernel 5.15 and 6.1.25.
 
-### Docker
-
-Quickly Start Visualinux Using Docker
-Compile an image containing Node 20.17.0 and Python 3.11.0
-```
-cd docker
-docker build -t visualinux:1.0 .
-docker build --build-arg USE_MIRROR=true -t visualinux:1.0 . # Use mirrors
-```
-
-Launch the environment
-```
-cd .. # Go back to the project root
-docker run --network host --rm -it -v (pwd):/app -w /app visualinux:1.0 /bin/bash
-```
-
 ## Build
 
-### Initialization
+### Native
+
+#### Initialization
 
 This repo provides a one-click initialization script. It generates the same environment as the evaluation in our paper. Specifically, it (1) installs python and node.js requirements, (2) fetchs busybox and linux kernel source, and (3) prepares a vscode development environment. You can use the second script if you do not use VSCode when debugging the Linux kernel.
 
-```
+```sh
 ./scripts/initenv.sh default
 ./scripts/initenv-no-vscode.sh default
 ```
 
 After that, you can build the kernel, the workload and the visualizer:
 
-```
+```sh
 make build
 (cd visualizer/ && npm install)
 ```
 
-### Manual Configuration
+#### Manual Configuration
 
 First, please make sure your gdb is able to auto-load gdb scripts and extensions (`kernel/vmlinux-gdb.py`, `scripts/config.gdb` and `visualinux-gdb.py`), e.g. check if they are in your gdb auto-load safe-path. Otherwise you have to manually load these scripts in each new debugging session.
 
@@ -106,7 +92,21 @@ OPENAI_API_MODEL = gpt-4
 VISUALINUX_LOCALHOST_IP = xxx.xxx.xxx.xxx
 ```
 
-### Standalone Deployment (Optional)
+### Docker
+
+You can also quickly start Visualinux using Docker (thanks to [Debin](https://github.com/luodeb) for the contribution):
+
+```sh
+# Compile an image containing Node 20.17.0 and Python 3.11.0
+cd scripts/build
+docker build -t visualinux:1.0 .
+docker build --build-arg USE_MIRROR=true -t visualinux:1.0 . # Use mirrors
+# Launch the environment
+cd ../.. # Go back to the project root
+docker run --network host --rm -it -v (pwd):/app -w /app visualinux:1.0 /bin/bash
+```
+
+### Standalone Deployment
 
 Although this repo provides an out-of-the-box environment, it is easy to integrate Visualinux into your own debugging workflow. Actually, the only essential components of this repo are the gdb extension (`visualinux-gdb.py`, `visualinux/` and `scripts/gdb/`) and the visualizer app (`visualizer/`). Most of the aforementioned scripts and commands is not mandatory to use; you only need to meet the following requirements (most of them are trivial):
 
@@ -130,14 +130,14 @@ This repo provides three different ways to startup Visualinux. You can choose yo
 
 Visualinux is designed to be an auxiliary tool and does not interfere with the typical gdb workflow. Thus, you can start the gdb host and stub in separate terminals as usual:
 
-```
+```sh
 make start    # in terminal 1
 make attach   # in terminal 2
 ```
 
 And start the visualizer app in another terminal:
 
-```
+```sh
 cd visualizer/
 npm run dev
 ```
@@ -156,7 +156,7 @@ You can access the visualizer app through `http://localhost:9802` (the port can 
 
 We also provide another solution that utilizes ttyd to merge gdb-qemu and visualizer together on a simple web page. You can initialize and launch it through the following commands:
 
-```
+```sh
 apt install tmux ttyd
 (cd page/ && npm install)
 ./page/start.py
