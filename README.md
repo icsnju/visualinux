@@ -44,6 +44,22 @@ Visualinux is fully compatible to gdb and it is available as long as one can deb
 
 The tool has been well-tested on a Ubuntu 22.04 host with Python 3.10.12 and Node.js v18.20, with both gdb (QEMU) and kgdb (rpi-400) targeting on Linux kernel 5.15 and 6.1.25.
 
+### Docker
+
+Quickly Start Visualinux Using Docker
+Compile an image containing Node 20.17.0 and Python 3.11.0
+```
+cd docker
+docker build -t visualinux:1.0 .
+docker build --build-arg USE_MIRROR=true -t visualinux:1.0 . # Use mirrors
+```
+
+Launch the environment
+```
+cd .. # Go back to the project root
+docker run --network host --rm -it -v (pwd):/app -w /app visualinux:1.0 /bin/bash
+```
+
 ## Build
 
 ### Initialization
@@ -51,8 +67,8 @@ The tool has been well-tested on a Ubuntu 22.04 host with Python 3.10.12 and Nod
 This repo provides a one-click initialization script. It generates the same environment as the evaluation in our paper. Specifically, it (1) installs python and node.js requirements, (2) fetchs busybox and linux kernel source, and (3) prepares a vscode development environment. You can use the second script if you do not use VSCode when debugging the Linux kernel.
 
 ```
-./scripts/inienv.sh default
-./scripts/inienv-no-vscode.sh default
+./scripts/initenv.sh default
+./scripts/initenv-no-vscode.sh default
 ```
 
 After that, you can build the kernel, the workload and the visualizer:
