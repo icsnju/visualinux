@@ -1,5 +1,7 @@
 # Visualinux
 
+[![](https://img.shields.io/badge/2025-EuroSys-deepgreen.svg)]() [![](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://doi.org/10.5281/zenodo.13710732) [![](https://img.shields.io/badge/DOI-10.5281/zenodo.13710732-blue.svg)](https://doi.org/10.5281/zenodo.13710732)
+
 Visualinux is the first debugging framework that can simplify the program state of Linux kernel to the extent that one can visually understand with low programming complexity and efforts. Our work has been accepted by EuroSys 2025 (doi forthcoming).
 
 <div>
