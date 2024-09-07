@@ -48,8 +48,10 @@ QEMUFLAGS_BULLSEYE  := $(QEMUFLAGS_GENERAL) \
 
 build: build-kernel build-workload
 
+KERNEL_BUILD_J := 4
+
 build-kernel:
-	make -C kernel/ -j4
+	make -C kernel/ -j$(KERNEL_BUILD_J)
 	cd kernel/ && ./scripts/clang-tools/gen_compile_commands.py
 #	./scripts/build/postbuild.py
 #	cp vmlinux.map kernel.map
