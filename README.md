@@ -24,6 +24,8 @@ This README only describes how to deploy and use Visualinux. Please refer to `do
 
 ## Online Artifact Evaluation
 
+**Note: The online artifact evaluation is finished and the online site is now disabled.**
+
 We have prepared an online site for quick experience of Visualinux. You can painlessly enter a Visualinux-enabled debugging environment through an html page (the link is placed in Artifact Appendix of our AE submission to avoid numerous access conflicts from the outside).
 
 After startup, the online instance will print introductory messages and then automatically evaluate a simple example (a process parent tree) at a predefined breakpoint. You can follow the section [Reproduce the Evaluation](#reproduce-the-evaluation) to reproduce the evaluation results, or feel free to debug the Linux kernel with the help of Visualinux.
@@ -40,11 +42,11 @@ Visualinux is fully compatible to gdb and it is available as long as one can deb
 
 - Python 3.10+
 
-- Node.js 18+
+- Node.js 18+ (more recommanded 20+)
 
 - Linux kernel 6.1.X (otherwise Visualinux is still available, but some of our default VKern code might need to be rewritten due to the kernel version difference)
 
-The tool has been well-tested on a Ubuntu 22.04 host with Python 3.10.12 and Node.js v18.20, with both gdb (QEMU) and kgdb (rpi-400) targeting on Linux kernel 5.15 and 6.1.25.
+The tool has been well-tested on a Ubuntu 22.04 host with Python 3.10.12 and Node.js v18.20/v20.17, with both gdb (QEMU) and kgdb (rpi-400) targeting on Linux kernel 5.15 and 6.1.25.
 
 ## Build
 
@@ -96,7 +98,7 @@ VISUALINUX_LOCALHOST_IP = xxx.xxx.xxx.xxx
 
 ### Docker
 
-You can also quickly start Visualinux using Docker (thanks to [Debin](https://github.com/luodeb) for the contribution):
+You can also quickly start Visualinux using Docker (thanks to [Debin](https://github.com/luodeb) and [nan mu](https://github.com/nan-mu) for their contribution):
 
 ```sh
 # Compile an image containing Node 20.17.0 and Python 3.11.0

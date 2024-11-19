@@ -11,7 +11,6 @@ version_req="20.17.0"
 
 if [ "$(printf '%s\n' "$version_req" "$version_cur" | sort -V | head -n1)" = "$version_req" ]; then
     echo "node version check passed: $version_cur > $version_req"
-    npm install
     exit 0
 fi
 
@@ -24,4 +23,3 @@ export NVM_DIR="$HOME/.nvm"
 
 export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node
 nvm install 20
-npm install
