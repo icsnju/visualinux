@@ -14,7 +14,16 @@ define init
     if $__inited == 0
         source scripts/gdb/macros.gdb
         source visualinux-gdb.py
-        echo + Visualinux gdb extension loaded\n
+        # echo + Visualinux gdb extension loaded\n
+        # echo ++++++ Visualinux Online Artifact Evaluation\n
+        # echo ++++++ Please wait for the kernel boot, which will take a few seconds...\n
+        # echo ++++++ Use vplot -f evaluation.vkern to reproduce textbook results\n
+        # echo ++++++ You can freely use our gdb commands: vplot and vctrl\n
+        # echo ++++++ However, vchat is not supported, since it requires LLM API key\n
+        # b security_task_getsid
+        # c
+        # # vplot -f evaluation/textbook/01_process_parenthood.vkern
+        # vplot -f evaluation/textbook/06_scheduling.vkern --debug
         set $__inited = 1
     end
 end
@@ -23,43 +32,4 @@ define hook-stop
     init
 end
 
-### timing
-
-macro define BASE_STD 0
-macro define BASE_DEF 1
-
-### kernel data structure exploration
-
-#### get per-cpu cfs_rq from p->se
-macro define cfs_rq_of(se) &task_rq(task_of(se))->cfs
-macro define task_of(_se)  container_of(_se, struct task_struct, se)
-macro define task_rq(p)    cpu_rq(p->cpu)
-macro define cpu_rq(cpu)   (&per_cpu(runqueues, (cpu)))
-
-macro define rb_entry_task(node) task_of(rb_entry_se(node))
-macro define rb_entry_se(node) rb_entry(node, struct sched_entity, run_node)
-
-### memory transformation
-
-macro define page_address(page) page_to_virt(page)
-macro define page_to_virt(page) __va(PFN_PHYS(page_to_pfn(page)))
-
-macro define page_to_pfn(page) (unsigned long)((page) - (struct page *)vmemmap_base)
-
-macro define PFN_PHYS(x) ((phys_addr_t)(x) << PAGE_SHIFT)
-macro define PAGE_SHIFT 12
-
-macro define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET))
-macro define PAGE_OFFSET (unsigned long)page_offset_base
-
-### process
-
-define xpid
-    xtask($lx_task_by_pid($arg0))
-end
-
-define xcurrent
-    xtask(current)
-end
-
-macro define current $lx_current()
+init

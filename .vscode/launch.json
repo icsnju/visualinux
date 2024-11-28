@@ -17,7 +17,7 @@
                 "engineLogging": false
             },
             "MIMode": "gdb",
-            "miDebuggerArgs": "-x ${workspaceFolder}/scripts/gdb/config.gdb",
+            "miDebuggerArgs": "-x ${workspaceFolder}/scripts/gdb/config-vscode.gdb",
             // "preLaunchTask": "gdb-qemu-startup"
             "preLaunchTask": "startup",
             "postDebugTask": "stopall"

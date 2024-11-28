@@ -123,11 +123,12 @@ function getGroupTemplate(level: number) {
 }
 
 function getNodeTemplate(level: number, val_length: number, controllable: boolean, oe: number) {
-    const width_value = 20 * Math.abs(val_length);
     const width = styleset.layout.width + 6 - 8 * level;
+    const width_value = 20 * Math.abs(val_length);
     const countHeight = (value: string) => {
         let lineno = Array.from(value).reduce((count: number, currentChar: string) => (currentChar === '\n' ? count + 1 : count), 0);
         return 16 + 10 * lineno;
+        // return 20 + 10 * lineno;
     };
     oe = Math.min(oe, styleset.primitive.length - 1);
     const ss = styleset.primitive[oe];

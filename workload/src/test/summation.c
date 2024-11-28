@@ -146,13 +146,14 @@ static void end_evaluation(void) {
 #define NPROC_THREADS 1
 #define NPROC_SOCKET  2
 #define NPROC_IPC     2
-#define NPROC (NPROC_THREADS + NPROC_SOCKET + 1 + NPROC_IPC)
+#define NPROC_SCHED   6
+#define NPROC (NPROC_THREADS + NPROC_SOCKET + 1 + NPROC_IPC + NPROC_SCHED)
 
 int * pfuck;
 
 // subprocess for threads
 
-#define N_THREAD  2
+#define N_THREAD 4
 
 pthread_mutex_t mutex;
 pthread_cond_t cond;
@@ -491,6 +492,14 @@ void do_subprocess_ipc(int type) {
     // if (type == 2) return do_subprocess_ipc_shm();
 }
 
+void do_subprocess_sched(void) {
+    int pid = getpid();
+    printf("Subprocess %d for sched\n", pid);
+    while (!*pfuck);
+    printf("Subprocess %d for sched finished\n", pid);
+    exit(EXIT_SUCCESS);
+}
+
 // main process
 
 int do_main(void) {
@@ -635,6 +644,18 @@ int do_main(void) {
         memset(buffer, 'b', sizeof(buffer));
         write(client_sockets[i], buffer, sizeof(buffer) * 3 / 4);
         printf("send message to client #%d OK\n", i);
+    }
+
+    // create subprocesses for rq show
+    for (int i = 0; i < NPROC_SCHED; i ++) {
+        pid_t pid = fork();
+        if (pid == -1) {
+            perror("fork");
+            exit(EXIT_FAILURE);
+        } else if (pid == 0) {
+            do_subprocess_sched();
+            printf("ERROR: should not execute to here\n");
+        }
     }
 
     // prepare program state in mainprocess for visualinux evaluation

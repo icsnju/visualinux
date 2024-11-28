@@ -52,7 +52,7 @@ export let styleset: StyleSet = {
             "frame":    "#000000",
             "font":     "#000000"
         },
-        "font": "17px Inconsolata, Times New Roman"
+        "font": "17px Inconsolata, Times New Roman" // 21
     }, {
         "color": {
             "bg_title": "#CCCCCC",
@@ -60,7 +60,7 @@ export let styleset: StyleSet = {
             "frame":    "#000000",
             "font":     "#000000"
         },
-        "font": "13px Inconsolata, Times New Roman"
+        "font": "13px Inconsolata, Times New Roman" // 17
     }, {
         "color": {
             "bg_title": "#EDEDED",

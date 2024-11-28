@@ -21,3 +21,15 @@ macro define LAST_CPUPID_MASK ((1UL << LAST_CPUPID_SHIFT) - 1)
 macro define KASAN_TAG_MASK   ((1UL << KASAN_TAG_WIDTH) - 1)
 macro define ZONEID_MASK      ((1UL << ZONEID_SHIFT) - 1)
 
+### memory transformation
+
+macro define page_address(page) page_to_virt(page)
+macro define page_to_virt(page) __va(PFN_PHYS(page_to_pfn(page)))
+
+macro define page_to_pfn(page) (unsigned long)((page) - (struct page *)vmemmap_base)
+
+macro define PFN_PHYS(x) ((phys_addr_t)(x) << PAGE_SHIFT)
+macro define PAGE_SHIFT 12
+
+macro define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET))
+macro define PAGE_OFFSET (unsigned long)page_offset_base

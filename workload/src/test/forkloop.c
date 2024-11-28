@@ -11,7 +11,7 @@
 int sched_getcpu(void);
 pid_t gettid(void);
 
-# define MAXTHREAD 20
+#define MAXTHREAD 20
 int nfork = 10;
 
 void * foo(void * arg) {
@@ -25,6 +25,7 @@ int main(void) {
     for (uintptr_t i = 1; i < nfork; i ++) {
         pthread_create(&tid[i], NULL, foo, (void *)i);
     }
+    int sid = getsid(getpid());
     for (uintptr_t i = 1; i < nfork; i ++) {
         pthread_join(tid[i], NULL);
     }
