@@ -1,6 +1,6 @@
 from visualinux.term import *
-from visualinux.vkern.parser import *
-from visualinux.vkern.parser.utils import *
+from visualinux.viewcl.parser import *
+from visualinux.viewcl.parser.utils import *
 from visualinux.model.decorators import *
 
 # ======================================================================

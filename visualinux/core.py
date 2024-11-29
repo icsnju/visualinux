@@ -1,5 +1,5 @@
 from visualinux import *
-from visualinux.vkern import Parser
+from visualinux.viewcl import Parser
 from visualinux.model import View
 from visualinux.runtime import State
 from visualinux.model.symtable import *
@@ -12,14 +12,14 @@ import requests
 import cProfile, pstats, io
 from pstats import SortKey
 
-VKERN_GRAMMAR_PATH = VL_DIR / 'visualinux' / 'grammar' / 'vkern.lark'
+VIEWCL_GRAMMAR_PATH = VL_DIR / 'visualinux' / 'grammar' / 'viewcl.lark'
 
 class Core:
     '''Note that there should be only one Engine instance existing.
     '''
     def __init__(self) -> None:
 
-        self.parser = Parser(VKERN_GRAMMAR_PATH)
+        self.parser = Parser(VIEWCL_GRAMMAR_PATH)
         self.history: list[State] = []
 
     def parse_file(self, src_file: Path):
@@ -33,7 +33,7 @@ class Core:
         return self.sync(src_file.read_text())
 
     def sync(self, code: str):
-        ''' The start point of VKern parsing and object graph extraction.
+        ''' The start point of ViewCL parsing and object graph extraction.
         '''
         if vl_debug_on(): printd(f'vl_sync()')
         gdb_adaptor.reset()

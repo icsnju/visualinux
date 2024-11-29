@@ -1,6 +1,6 @@
 from visualinux import *
-from visualinux.vkern.parser.units import *
-from visualinux.vkern.parser.utils import *
+from visualinux.viewcl.parser.units import *
+from visualinux.viewcl.parser.utils import *
 from visualinux.runtime.kvalue import KValue
 from visualinux.core import core
 from visualinux.cmd.askllm import askllm
@@ -84,7 +84,7 @@ class VPlotHandler:
         # find the most appropriate predefined shape of a symbol
         elif type == 'B':
             print(f'    + llm judged: find a predefined shape, {args = }')
-            model = core.parse_file(VKERN_SOURCE_DIR / 'stdlib.vkern')
+            model = core.parse_file(VIEWCL_SOURCE_DIR / 'stdlib.vcl')
             symbol = args
             gval = KValue.gdb_eval(symbol)
             if vl_debug_on(): printd(f'B {model.typemap_for_llm = !s}')
@@ -107,10 +107,10 @@ class VPlotHandler:
         for entry in cls.scan_arguments(child_as_tree(parsetree, 0)):
             entries.append(entry)
         try:
-            code = cls.synthesize_vkern(viewname, entries, init_vql)
+            code = cls.synthesize_viewcl(viewname, entries, init_vql)
         except:
             return False
-        print(f'  > VKern code:\n{code}')
+        print(f'  > ViewCL code:\n{code}')
         core.sync(code)
         return True
 
@@ -124,13 +124,13 @@ class VPlotHandler:
 
     @classmethod
     def handle_file(cls, filename: str):
-        src_path = VKERN_SOURCE_DIR / filename
+        src_path = VIEWCL_SOURCE_DIR / filename
         print(f'+ vplot --file {src_path = }')
         core.sync_file(src_path)
 
     @classmethod
-    def synthesize_vkern(cls, diagname: str, entries: list[Entry], init_vql: str = '') -> str:
-        print(f'  + synthesize_vkern {diagname = } {entries = }')
+    def synthesize_viewcl(cls, diagname: str, entries: list[Entry], init_vql: str = '') -> str:
+        print(f'  + synthesize_viewcl {diagname = } {entries = }')
         shape_decl_list: list[str] = []
         plot_list: list[str] = []
         index = 0

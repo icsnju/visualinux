@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # this script must be used in DIR_VL because of Lark's import error
 
-from visualinux.vkern import Parser
+from visualinux.viewcl import Parser
 from pathlib import Path
 from lark import Lark
 from pprint import pprint
@@ -43,5 +43,5 @@ if __name__ == '__main__':
 
     smoke_test(
         grammar = DIR_GRAMMAR / 'grammar.lark',
-        program = DIR_PROGRAM / 'motivating-example.vkern'
+        program = DIR_PROGRAM / 'motivating-example.vcl'
     )

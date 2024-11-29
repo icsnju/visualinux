@@ -17,13 +17,13 @@ define init
         # echo + Visualinux gdb extension loaded\n
         # echo ++++++ Visualinux Online Artifact Evaluation\n
         # echo ++++++ Please wait for the kernel boot, which will take a few seconds...\n
-        # echo ++++++ Use vplot -f evaluation.vkern to reproduce textbook results\n
+        # echo ++++++ Use vplot -f evaluation.vcl to reproduce textbook results\n
         # echo ++++++ You can freely use our gdb commands: vplot and vctrl\n
         # echo ++++++ However, vchat is not supported, since it requires LLM API key\n
         # b security_task_getsid
         # c
-        # # vplot -f evaluation/textbook/01_process_parenthood.vkern
-        # vplot -f evaluation/textbook/06_scheduling.vkern --debug
+        # # vplot -f evaluation/textbook/01_process_parenthood.vcl
+        # vplot -f evaluation/textbook/06_scheduling.vcl --debug
         set $__inited = 1
     end
 end

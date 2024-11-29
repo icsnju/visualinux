@@ -44,7 +44,7 @@ Visualinux is fully compatible to gdb and it is available as long as one can deb
 
 - Node.js 18+ (more recommanded 20+)
 
-- Linux kernel 6.1.X (otherwise Visualinux is still available, but some of our default VKern code might need to be rewritten due to the kernel version difference)
+- Linux kernel 6.1.X (otherwise Visualinux is still available, but some of our default ViewCL code might need to be rewritten due to the kernel version difference)
 
 The tool has been well-tested on a Ubuntu 22.04 host with Python 3.10.12 and Node.js v18.20/v20.17, with both gdb (QEMU) and kgdb (rpi-400) targeting on Linux kernel 5.15 and 6.1.25.
 
@@ -181,10 +181,10 @@ Since ttyd doesn't work for localhost in several circumstances, please fill in `
 Set a breakpoint anywhere; when the execution is paused, invoke the following command in gdb to plot the process parent tree on the visualizer:
 
 ```
-vplot -f evaluation/textbook/01_process_parenthood.vkern
+vplot -f evaluation/textbook/01_process_parenthood.vcl
 ```
 
-*Note that invoking gdb commands in VSCode terminal requires a `-exec` prefix. For example, `vplot -f foo.vkern` should be `-exec vplot -f foo.vkern`.*
+*Note that invoking gdb commands in VSCode terminal requires a `-exec` prefix. For example, `vplot -f foo.vcl` should be `-exec vplot -f foo.vcl`.*
 
 ### How Visualinux Works
 
@@ -198,9 +198,9 @@ Note that the gdb extension will be loaded on the first halt (e.g. reaching a br
 
 Whenever the execution is paused, you can execute the v-commands as the normal commands of gdb, including `vplot`, `vctrl` and `vchat`.
 
-**vplot** extracts object graphs given a VKern source file (from `vkern/` of the project), or it can synthesize naive VKern code for simple usages.
+**vplot** extracts object graphs given a ViewCL source file (from `viewcl/` of the project), or it can synthesize naive ViewCL code for simple usages.
 
-- `vplot -f evaluation/cases/dirty-pipe.vkern`
+- `vplot -f evaluation/cases/dirty-pipe.vcl`
 
 - `vplot p { pid, comm }`
 
@@ -226,9 +226,9 @@ Assume that you have used our initialization scripts, you can easily reproduce t
 
 - Set a breakpoint on the function `security_task_getsid`, then let it continue.
 
-- When the execution is first paused there, invoke the v-command `vplot -f evaluation.vkern` in gdb, and wait for seconds until the plots are generated in the visualizer.
+- When the execution is first paused there, invoke the v-command `vplot -f evaluation.vcl` in gdb, and wait for seconds until the plots are generated in the visualizer.
 
-Note that the textbook evaluation #14 (i.e. `vkern/evaluation/textbook/14_kernfs.vkern`) requires a short hacking into Linux kernel source code. Unless you are on our AE online site, you should manually patch the code in `scripts/kernel.patch/fs.kernfs.dir.c.patch` to the end of `kernel/fs/kernfs/dir.c`, and remove the comment of the corresponding line in `vkern/evaluation.vkern`.
+Note that the textbook evaluation #14 (i.e. `viewcl/evaluation/textbook/14_kernfs.vcl`) requires a short hacking into Linux kernel source code. Unless you are on our AE online site, you should manually patch the code in `scripts/kernel.patch/fs.kernfs.dir.c.patch` to the end of `kernel/fs/kernfs/dir.c`, and remove the comment of the corresponding line in `viewcl/evaluation.vcl`.
 
 #### Case Studies
 
@@ -238,7 +238,7 @@ To reproduce the CVE examples shown in our paper (section 3.3 and 5.3), you may 
 
 - You should use the specified workloads to efficiently reproduce the CVE, which this repository already provides (i.e. `workload/src/exp/` and `workload/src/dirty-pipe/`).
 
-- After that, you can set breakpoints at specified program points, debug the CVEs as usual, and use the VKern code in `vkern/evaluation/cases/*` to perform the visualization.
+- After that, you can set breakpoints at specified program points, debug the CVEs as usual, and use the ViewCL code in `viewcl/evaluation/cases/*` to perform the visualization.
 
 Please refer to [StackRot](https://github.com/lrh2000/StackRot) and [DirtyPipe](https://dirtypipe.cm4all.com/) for more details.
 
@@ -246,10 +246,10 @@ Note that StackRot is a concurrency bug and Visualinux only focuses on understan
 
 #### Performance
 
-You can use the `--perf` option of `vplot` for performance evaluation (For example, `vplot -f evaluation.vkern --perf`). Note that the first time of object graph extraction might be slow, since gdb needs to cache several statical information in a cold start.
+You can use the `--perf` option of `vplot` for performance evaluation (For example, `vplot -f evaluation.vcl --perf`). Note that the first time of object graph extraction might be slow, since gdb needs to cache several statical information in a cold start.
 
 ## Development
 
-### VKern Programming
+### ViewCL Programming
 
 TBD

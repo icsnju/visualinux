@@ -16,7 +16,7 @@ class VChat(gdb.Command):
         if arg == '-h' or arg == '--help':
             print('usage: vchat <message>')
             print('    the message will be classified as one of two basic commands: vplot or vctrl, and passed to the chat API of that command.')
-            print('    vplot utilizes VKern to extract object graphs from the runtime data.')
+            print('    vplot utilizes ViewCL to extract object graphs from the runtime data.')
             print('    vctrl utilizes VQL and pane commands to manipulates the views displayed in visualizer.')
             print('examples:')
             print('    vchat plot p with fields pid, comm, se.vruntime')

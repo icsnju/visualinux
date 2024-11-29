@@ -1,7 +1,7 @@
-from visualinux.vkern.parser import *
-from visualinux.vkern.parser.utils import *
-from visualinux.vkern.parser.converter     import Converter
-from visualinux.vkern.parser.translator    import Translator
+from visualinux.viewcl.parser import *
+from visualinux.viewcl.parser.utils import *
+from visualinux.viewcl.parser.converter  import Converter
+from visualinux.viewcl.parser.translator import Translator
 
 from visualinux.model import *
 
@@ -26,7 +26,7 @@ class Parser:
 
     def parse(self, code: str) -> DiagramSet:
         try:
-            parsetree = ParseTree('start', self.__parse(code, VKERN_SOURCE_DIR))
+            parsetree = ParseTree('start', self.__parse(code, VIEWCL_SOURCE_DIR))
         finally:
             self.__imported.clear()
         insts, typemap_for_llm = Converter().convert(parsetree)
@@ -47,9 +47,9 @@ class Parser:
         for inst in scan_children_as_tree(parsetree):
             if inst.data == 'import':
                 import_relpath = serialize(inst.children[0]).replace('.', '/')
-                import_path = rootdir / f'{import_relpath}.vkern'
+                import_path = rootdir / f'{import_relpath}.vcl'
                 if not import_path.is_file():
-                    raise fuck_exc(FileNotFoundError, f'vkern import error: failed to find {import_path}')
+                    raise fuck_exc(FileNotFoundError, f'ViewCL import error: failed to find {import_path}.vcl')
                 if import_path in self.__imported:
                     continue
                 self.__imported.add(import_path)
@@ -57,7 +57,7 @@ class Parser:
             elif inst.data == 'instruction':
                 insts.append(inst)
             else:
-                raise fuck_exc(AssertionError, f'dsl program must be the form of (import | inst)*, but {inst.data = } found.')
+                raise fuck_exc(AssertionError, f'ViewCL program must be the form of (import | inst)*, but {inst.data = } found.')
 
         return insts
 

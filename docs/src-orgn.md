@@ -6,7 +6,7 @@ We start from the root directory and explain each part of the repository step by
 
 `visualizer/` stores the visualizer, which is a full-stack node.js application.
 
-`vkern/` stores the VKern source code. By default, it is defined as the root directory of v-command invokation, e.g. `vplot -f evaluation.vkern` actually picks the file `vkern/evaluation.vkern`.
+`viewcl/` stores the ViewCL source code. By default, it is defined as the root directory of v-command invokation, e.g. `vplot -f evaluation.vcl` actually picks the file `viewcl/evaluation.vcl`.
 
 `scripts/` includes scripts for various usages:
 

@@ -36,8 +36,8 @@ for extension in $(cat $dir_scripts/dev/vscode-recommendations.txt); do
     code --install-extension $extension
 done
 
-echo "+ build and install the vscode extension of VKern language..."
-(cd $dir_scripts/dev/vkern-lang-extension && npm install && npx vsce package --allow-missing-repository && code --install-extension vkern-lang-extension-1.0.0.vsix)
+echo "+ build and install the vscode extension of ViewCL language..."
+(cd $dir_scripts/dev/viewcl-lang-extension && npm install && npx vsce package --allow-missing-repository && code --install-extension viewcl-lang-extension-1.0.0.vsix)
 
 echo "+ build kgdb auxi tool..."
 make -C $dir_scripts/kgdb/agent-proxy/

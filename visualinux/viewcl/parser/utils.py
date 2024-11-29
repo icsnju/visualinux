@@ -1,5 +1,5 @@
 from visualinux import *
-from visualinux.vkern.parser import *
+from visualinux.viewcl.parser import *
 
 class UnexpectedTokenError(Exception):
     def __init__(self, token: Tree[Token], *args) -> None:

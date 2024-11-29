@@ -1,5 +1,6 @@
-from visualinux.vkern.parser import *
-from visualinux.vkern.parser.units import *
+from visualinux.viewcl.parser import *
+from visualinux.viewcl.parser.units import *
+from visualinux.viewcl.parser.utils import *
 from visualinux.model import *
 
 class Translator:

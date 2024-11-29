@@ -1,4 +1,4 @@
-// VKern DSL grammar.
+// ViewCL DSL grammar.
 
 // import general modules
 // see https://github.com/lark-parser/lark/blob/master/lark/grammars/common.lark

@@ -1,5 +1,5 @@
 {
-	"name": "vkern-lang-extension",
+	"name": "viewcl-lang-extension",
 	"description": "A language server example",
 	"author": "Microsoft Corporation",
 	"license": "MIT",
@@ -22,7 +22,7 @@
 					"visualinux"
 				],
 				"extensions": [
-					".vkern"
+					".vcl"
 				],
 				"configuration": "./language-configuration.json"
 			}
@@ -30,7 +30,7 @@
 		"grammars": [
 			{
 				"language": "visualinux",
-				"scopeName": "source.vkern",
+				"scopeName": "source.vcl",
 				"path": "./syntaxes/visualinux.tmLanguage.json"
 			}
 		],

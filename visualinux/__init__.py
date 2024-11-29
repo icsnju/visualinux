@@ -34,9 +34,9 @@ def set_vl_perf(flag: bool):
     __vl_perf_flag = flag
 
 VL_DIR = Path(__file__).absolute().parents[1]
-VKERN_SOURCE_DIR = VL_DIR / 'vkern'
-PROMPT_DIR       = VL_DIR / 'scripts' / 'prompts'
-FLAG_CONFIG_DIR  = VL_DIR / 'scripts' / 'gdb' / 'macros' / 'flags'
+VIEWCL_SOURCE_DIR = VL_DIR / 'viewcl'
+PROMPT_DIR        = VL_DIR / 'scripts' / 'prompts'
+FLAG_CONFIG_DIR   = VL_DIR / 'scripts' / 'gdb' / 'macros' / 'flags'
 
 TMP_DIR = VL_DIR / 'tmp'
 EXPORT_DEBUG_DIR = TMP_DIR / 'export'

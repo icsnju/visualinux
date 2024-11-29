@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from visualinux import *
 
 # loadin the customized gdb commands.
-# see core.py for the start point of VKern parsing and object graph extraction.
+# see core.py for the start point of ViewCL parsing and object graph extraction.
 
 from visualinux.cmd import *
 

@@ -6,6 +6,7 @@
 !*.gdb
 !*.lark
 !*.vkern
+!*.vcl
 !*.md
 !*.txt
 
