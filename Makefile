@@ -20,9 +20,6 @@ INITBIN := /init
 
 QEMU := qemu-system-x86_64
 
-# -device e1000,netdev=net0 -netdev user,id=net0,hostfwd=tcp::5555-:22
-# -netdev user,id=vmnic -device virtio-net,netdev=vmnic
-
 QEMUFLAGS_GENERAL   := -kernel $(KERNEL_IMAGE) -serial mon:stdio -nographic -no-reboot \
                        -m 1G -smp cpus=$(NCPU),cores=1,threads=1,sockets=$(NCPU) \
                        -virtfs local,path=./tmp,mount_tag=exp,security_model=none \
@@ -34,8 +31,6 @@ QEMUFLAGS_INITRAMFS := $(QEMUFLAGS_GENERAL) \
                        -initrd $(INITRAMFS_IMAGE) \
                        -append "console=ttyS0 root=/dev/ram init=$(INITBIN) nokaslr net.ifnames=0"
 
-# QEMUFLAGS_ROOTDISK  := -hda $(ROOTDISK_IMAGE) -hdb ./disk.img \
-                       -append "console=ttyS0 root=/dev/sda init=$(INITBIN) rw"
 QEMUFLAGS_ROOTDISK  := $(QEMUFLAGS_GENERAL) \
                        -hda $(ROOTDISK_IMAGE) \
                        -append "console=ttyS0 root=/dev/sda init=$(INITBIN) nokaslr rw"
@@ -53,8 +48,6 @@ KERNEL_BUILD_J := 4
 build-kernel:
 	make -C kernel/ -j$(KERNEL_BUILD_J)
 	cd kernel/ && ./scripts/clang-tools/gen_compile_commands.py
-#	./scripts/build/postbuild.py
-#	cp vmlinux.map kernel.map
 
 build-workload:
 	make -C workload/
