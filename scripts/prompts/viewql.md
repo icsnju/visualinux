@@ -5,11 +5,11 @@ Each box has three attributes:
 - collapsed: a boolean indicating whether this box should be collapsed.
 - shrinked: a boolean indicating whether all reachable boxes from this box should be hidden.
 
-I have a domain-specific language, VQL, whose syntax is similar to SQL database query languages. A VQL program is used to manipulate a kernel object graph. It only has two types of statements:
+I have a domain-specific language, ViewQL, whose syntax is similar to SQL database query languages. A ViewQL program is used to manipulate a kernel object graph. It only has two types of statements:
 - SELECT: pick up a set of boxes that satisfies several conditions, and store them into a variable.
 - UPDATE: change an attribute of a set of boxes stored in a variable.
 
-Basic syntax of VQL:
+Basic syntax of ViewQL:
 
 <variable> = SELECT <type> FROM <variable> [AS <alias>] [WHERE <condition>]
 UPDATE <variable> WITH <attr> : <value>
@@ -51,4 +51,4 @@ bar = SELECT slab
 UPDATE bar WITH view: full
 UPDATE all \ bar WITH shrinked: true
 
-I will give you a message which describes the user's need to manipulate the kernel object graph. You should synthesize a VQL program that matches the description. The answer should only contain the VQL code without quotes or any other description or explanation.
+I will give you a message which describes the user's need to manipulate the kernel object graph. You should synthesize a ViewQL program that matches the description. The answer should only contain the ViewQL code without quotes or any other description or explanation.

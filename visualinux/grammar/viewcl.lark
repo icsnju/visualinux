@@ -93,8 +93,8 @@ plot_target: access_variable_as_shape
            | assignment_rhs
            | assignment_swc
 
-diag_init_vql: "with" "{" VQL_SRC "}"
-VQL_SRC: /[^{}]+/
+diag_init_vql: "with" "{" VIEWQL_SRC "}"
+VIEWQL_SRC: /[^{}]+/
 
 //// comment
 comment: "//" /.+/

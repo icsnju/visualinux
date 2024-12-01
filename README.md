@@ -206,7 +206,7 @@ Whenever the execution is paused, you can execute the v-commands as the normal c
 
 - `vplot --chat plot p with fields pid, comm`
 
-**vctrl** controls the panes and the views displayed on panes of the visualizer. For instance, split an existed pane to create a new one, or apply a VQL request on a view. VQL programs can be synthesized via LLM API.
+**vctrl** controls the panes and the views displayed on panes of the visualizer. For instance, split an existed pane to create a new one, or apply a ViewQL request on a view. ViewQL programs can be synthesized via LLM API.
 
 - `vctrl split 1 -d h`
 
@@ -250,6 +250,4 @@ You can use the `--perf` option of `vplot` for performance evaluation (For examp
 
 ## Development
 
-### ViewCL Programming
-
-TBD
+Please check `docs/` for more details about ViewCL programming and ViewQL prompting.

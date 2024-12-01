@@ -6,7 +6,7 @@ import argparse
 import re
 
 VCTRL_PROMPT = (PROMPT_DIR / 'vctrl.md').read_text()
-VQL_PROMPT = (PROMPT_DIR / 'vql.md').read_text()
+VIEWQL_PROMPT = (PROMPT_DIR / 'viewql.md').read_text()
 
 class VCtrl(gdb.Command):
 
@@ -46,7 +46,7 @@ class VCtrlHandler:
 
         apply_parser = subparsers.add_parser('apply', help='Apply command')
         apply_parser.add_argument('id', type=int, help='ID must be a number')
-        apply_parser.add_argument('vql', type=str, nargs='+', help='VQL is a string')
+        apply_parser.add_argument('viewql', type=str, nargs='+', help='ViewQL is a string')
         apply_parser.set_defaults(handle=cls.__invoke_apply)
 
         chat_parser = subparsers.add_parser('chat', help='Chat interface')
@@ -67,9 +67,9 @@ class VCtrlHandler:
         print(f'  + llm generated cmd: {cmd}')
         if cmd.startswith('apply'):
             _, id, apply_message = cmd.split(' ', maxsplit=2)
-            code = askllm(VQL_PROMPT, apply_message)
+            code = askllm(VIEWQL_PROMPT, apply_message)
             code = code.strip('`\n').rstrip('`\n')
-            print(f'  > vql code:\n{code}')
+            print(f'  > ViewQL code:\n{code}')
             data = {
                 'type': 'APPLY',
                 'wKey': id,

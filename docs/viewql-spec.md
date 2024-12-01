@@ -1,4 +1,4 @@
-# Specification of VQL
+# Specification of ViewQL
 
 ## Supported Attributes
 

@@ -17,7 +17,7 @@ class VChat(gdb.Command):
             print('usage: vchat <message>')
             print('    the message will be classified as one of two basic commands: vplot or vctrl, and passed to the chat API of that command.')
             print('    vplot utilizes ViewCL to extract object graphs from the runtime data.')
-            print('    vctrl utilizes VQL and pane commands to manipulates the views displayed in visualizer.')
+            print('    vctrl utilizes ViewQL and pane commands to manipulates the views displayed in visualizer.')
             print('examples:')
             print('    vchat plot p with fields pid, comm, se.vruntime')
             print('    vchat plot p with scheduling-related fields')
