@@ -1,0 +1,22 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.react-flow__pane {
+  cursor: default;
+}
+.react-flow__node.draggable {
+  cursor: move;
+}
+.react-flow__node.draggable.dragging {
+  cursor: move;
+}
