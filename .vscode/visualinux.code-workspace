@@ -8,6 +8,9 @@
         },
         {
             "path": "../visualizer"
+        },
+        {
+            "path": "../visualizer-react-flow"
         }
     ],
     "extensions": {
