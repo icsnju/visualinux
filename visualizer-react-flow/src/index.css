@@ -9,11 +9,18 @@
     font-weight: 400;
 }
 
-html,
+/* html,
 body,
 #root {
     height: 100%;
     margin: 0;
+} */
+
+#root {
+    /* display: grid;
+    grid-template-areas: "gg"; */
+    height: 99.9vh;
+    overflow: hidden;
 }
 
 .react-flow__pane, .react-flow__node {

@@ -11,12 +11,12 @@ import {
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-import './index.css';
+import '../index.css';
 
-import { initialNodes, nodeTypes } from './nodes';
-import { initialEdges, edgeTypes } from './edges';
+import { initialNodes, nodeTypes } from '@app/nodes';
+import { initialEdges, edgeTypes } from '@app/edges';
 
-export default function App() {
+export default function Diagram({ wKey, updateSelected }: { wKey: number, updateSelected: (s: string | undefined) => void }) {
     const [nodes, , onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     // const onConnect: OnConnect = useCallback(

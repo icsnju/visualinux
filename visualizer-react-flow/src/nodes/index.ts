@@ -28,12 +28,24 @@ export const initialNodes: AppNode[] = [
     }, {
         id: 'e',
         type: 'mynode',
-        position: { x: 100, y: 0 },
+        position: { x: 30, y: 30 },
         data: {
             label: 'test',
-            members: ['13123', 'ddaggad', 'aaga', 'foggddoo', 'bar', '13123', 'ddaggad', 'aaga', 'foggddoo', 'bar']
+            members: ['refcount.count', 'ttk', 'q2eqeq', 'tzmttk', 'fofofo', '13123', 'ddaggad', 'aaga', 'foggddoo', 'bar']
         },
         parentId: '4',
+        extent: 'parent',
+        draggable: false,
+        selectable: true,
+    }, {
+        id: 'f',
+        type: 'mynode',
+        position: { x: 120, y: 10 },
+        data: {
+            label: 'test',
+            members: ['foggddoo', 'bar']
+        },
+        parentId: 'e',
         extent: 'parent',
         draggable: false,
         selectable: true,
