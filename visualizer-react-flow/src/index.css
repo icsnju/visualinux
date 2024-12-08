@@ -9,32 +9,35 @@
     font-weight: 400;
 }
 
-/* html,
-body,
 #root {
-    height: 100%;
-    margin: 0;
-} */
-
-#root {
-    /* display: grid;
-    grid-template-areas: "gg"; */
     height: 99.9vh;
     overflow: hidden;
 }
 
-.react-flow__pane, .react-flow__node {
+.react-flow__pane {
     cursor: default !important;
 }
+
+.react-flow__node {
+    cursor: move !important;
+    border: 2px solid rgb(26, 25, 43) !important;
+    border-radius: 6px !important;
+}
+.react-flow__node:hover {
+    box-shadow: 0 1px 4px 1px rgba(0, 0, 0, 0.15) !important;
+}
+.react-flow__node:focus {
+    box-shadow: 0 0 0 0.5px rgb(26, 25, 43) !important;
+}
+.react-flow__node.selected {
+    border: 2px solid rgb(245, 125, 189) !important;
+    box-shadow: 0 0 0 0.5px rgb(26, 25, 43) !important;
+    outline: none;
+}
+
 .react-flow__node.draggable {
     cursor: move !important;
 }
 .react-flow__node.draggable.dragging {
     cursor: move !important;
-}
-
-.react-flow__node.selected {
-    border-color: rgb(245, 125, 189);
-    outline: none;
-    box-shadow: 0;
 }

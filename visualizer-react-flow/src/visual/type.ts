@@ -24,8 +24,6 @@ export type Box = {
     addr:  string,
     label: string,
     absts: {[name: AbstName]: Abst},
-    parent: ShapeKey | null,
-    depth?: number
 }
 export type Abst = {
     parent: string | null,
@@ -36,19 +34,19 @@ export type Abst = {
 export type Member = TextMember | LinkMember | BoxMember
 
 export type TextMember = {
-    class: string,
+    class: 'text',
     type:  string,
     size:  number,
     value: string
 }
 export type LinkMember = {
-    class:  string,
+    class:  'link',
     type:   string,
     target: ShapeKey | null,
     abst:   AbstName | null
 }
 export type BoxMember = {
-    class:  string,
+    class:  'box',
     object: ShapeKey,
     abst:   AbstName | null
 }
