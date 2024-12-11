@@ -11,11 +11,11 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
     const cssAnim = 'transition-all duration-200 ease-in-out';
     const width = 232 - 8 * data.depth;
     const cssWidth = `w-[${width}px]`;
-    const mm = 32 + 18 + 16*1; // read from view storage: if collapsed or not
     const members = Object.entries(data.absts['default'].members).map(([label, member]) => {
         switch (member.class) {
             case 'box':
-                return <div key={label} className={`w-full ${cssAnim} h-[${mm}px]`}/>;
+                const mm = 32 + 18 + 16*1; // read from view storage: if collapsed or not
+                return <div key={label} className={`w-full ${cssAnim}`} style={{height: `${mm}px`}}/>;
             case 'text':
                 return <Field key={label} width={width} label={label} value={member.value} size={member.size}/>;
             default:
