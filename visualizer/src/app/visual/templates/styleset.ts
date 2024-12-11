@@ -55,16 +55,16 @@ export let styleset: StyleSet = {
         "font": "17px Inconsolata, Times New Roman" // 21
     }, {
         "color": {
-            "bg_title": "#CCCCCC",
-            "bg_inner": "#CCCCCC",
+            "bg_title": "#DDDDDD",
+            "bg_inner": "#DDDDDD",
             "frame":    "#000000",
             "font":     "#000000"
         },
         "font": "13px Inconsolata, Times New Roman" // 17
     }, {
         "color": {
-            "bg_title": "#EDEDED",
-            "bg_inner": "#EDEDED",
+            "bg_title": "#CDCDCD",
+            "bg_inner": "#CDCDCD",
             "frame":    "#000000",
             "font":     "#000000"
         },

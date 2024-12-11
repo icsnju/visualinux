@@ -5,8 +5,16 @@ define TaskSched as Box<task_struct> {
         Text ppid: parent.pid
     ]
     :default => :sched [
+        Text vruntime: se.vruntime
+    ]
+    :default => :sched_details [
         Box se [
+            Text load_weight: load.weight
+            Text<bool> on_rq
             Text vruntime
+            Text exec_start
+            Text sum_runtime: sum_exec_runtime
+            Text psum_runtime: prev_sum_exec_runtime
         ]
     ]
 }
@@ -35,11 +43,11 @@ diag textbook_06_cfs_runqueue {
     plot RunqueueCFS(${&cpu_rq(0).cfs})
 } with {
     root = SELECT cfs_rq FROM *
-    UPDATE root WITH abst: sched_tree
+    UPDATE root WITH view: sched_tree
 
     rq = SELECT cfs_rq->tasks_timeline FROM *
     UPDATE rq WITH direction: vertical
 
     tasks = SELECT task_struct FROM *
-    UPDATE tasks WITH abst: sched
+    UPDATE tasks WITH view: sched
 }

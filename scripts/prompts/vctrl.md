@@ -10,3 +10,5 @@ If the message is willing to control the panes, you should choose one from the f
 If the message is willing to control the object graph in a pane, you should use the command:
 - apply <id> <message>, to do something on pane #id. You should modify the message to remove descriptions about which pane(s) to control, then paste it on the tail of the apply command. Example: `apply 2 I want to ...`.
 The object graphs are extracted from the runtime state of Linux kernel. A node of such a graph is called object or box, and a edge is called pointer or link. Each object has its key in the form of <address>:<type> (For example: 0xffffff77ffab86c0:task_struct). If the message tells you to change the displayed view of object(s), collapse or expand object(s), or change the printing direction of a data structure, it is willing to control the object graph.
+
+If the pane is not specified, use pane #0 by default.

@@ -28,7 +28,7 @@ export class ViewDB {
             "$members":   [],
             "$reachable": [],
             "$attrs": {
-                "abst": 'default' // TODO: create another file as default templates of box/container/field
+                'view': 'default' // TODO: create another file as default templates of box/container/field
             }
         };
         for (let abst of Object.values(box.absts)) {
@@ -87,12 +87,12 @@ export class ViewDB {
         return data['$attrs'];
     }
     apply(stmts: vql.Stmt[]) {
-        // console.log('start apply vql', stmts.toString());
-        // console.log('this.objects', this.objects.data);
-        // console.log('this.fields', this.fields.data);
+        console.log('start apply vql', stmts.toString());
+        console.log('this.objects', this.objects.data);
+        console.log('this.fields', this.fields.data);
         let scope: Scope = {};
         for (let stmt of stmts) {
-            // console.log('apply', stmt.toString());
+            console.log('apply', stmt.toString());
             if (vql.isStmtSelect(stmt)) {
                 this.intpSelect(stmt, scope);
             } else if (vql.isStmtUpdate(stmt)) {
@@ -101,7 +101,7 @@ export class ViewDB {
                 console.log('ERROR: unknown stmt:', stmt);
             }
         }
-        // console.log('apply vql OK');
+        console.log('apply vql OK');
     }
     private intpSelect(stmt: vql.Select, scope: Scope) {
         let source = this.intpSetOpt(stmt.srcId, scope).copy();

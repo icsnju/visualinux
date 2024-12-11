@@ -310,7 +310,7 @@ class ModelDataGenerator {
         return this.viewStorage.getAttrs(this.subviewName, key)[attrName];
     }
     private getAbst(key: string): string {
-        return this.getAttr(key, 'abst');
+        return this.getAttr(key, 'view');
     }
     private isCollapsed(key: string): boolean {
         return this.getAttr(key, 'collapsed');

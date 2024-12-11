@@ -82,7 +82,7 @@ class Core:
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         try:
             response = requests.post(url, headers=headers, json=json_data)
-            print(f'POST data {response = }')
+            print(f'POST request {response}')
         except Exception as e:
             print(f'[ERROR] Failed to POST data to visualizer; please check the connection.')
             print(f'- {e!s}')

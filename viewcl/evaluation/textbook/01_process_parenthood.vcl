@@ -26,7 +26,7 @@ diag textbook_01_task_children {
     // plot TaskParenthood("task_current": ${per_cpu_current_task(current_cpu())})
 } with {
     all_tasks = SELECT task_struct FROM *
-    UPDATE all_tasks WITH abst: show_children
+    UPDATE all_tasks WITH view: show_children
 
     kthreads = SELECT task_struct
         FROM all_tasks

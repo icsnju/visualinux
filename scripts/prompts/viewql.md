@@ -24,7 +24,7 @@ Example 1: select all cfs_rq boxes and change their views to sched_tree.
 a = SELECT cfs_rq FROM *
 UPDATE a WITH view: sched_tree
 
-Example 2: select all task_struct whose text field ppid has the value 2, and change their views to show_mm. Then, collapse other task_struct whose ppid is not equals to 2.
+Example 2: select all task_struct whose ppid is 2, and change their views to show_mm. Then, collapse other task_struct whose ppid is not equals to 2.
 
 a = SELECT task_struct
     FROM *
@@ -50,5 +50,21 @@ bar = SELECT slab
     WHERE inuse > 1
 UPDATE bar WITH view: full
 UPDATE all \ bar WITH shrinked: true
+
+Example 5: only show the read-only vm_area_structs.
+
+a = SELECT vm_area_struct
+    FROM *
+    WHERE is_writable != true
+UPDATE a WITH shrinked: true
+
+To change the view according to a description, find the most relevant view that matches the description, do not use the view not in the following list:
+
+default: basic information about the thread's memory management
+mm_mt: show the maple tree that manages the thread's address space
+as: show the modeled address space of the thread
+sched_tree: show the red-black tree managing the scheduler runqueue
+sched_queue: show the modeled, simplified scheduler runqueue
+sched_details: show detailed scheduling information of the thread
 
 I will give you a message which describes the user's need to manipulate the kernel object graph. You should synthesize a ViewQL program that matches the description. The answer should only contain the ViewQL code without quotes or any other description or explanation.
