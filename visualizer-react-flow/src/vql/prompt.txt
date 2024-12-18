@@ -1,0 +1,84 @@
+I have a specific type of graph, called ViewGraph:
+- A node of a ViewGraph is a box.
+- A edge of a ViewGraph is a link.
+Each box has its type, and it has several members. Each member of a box is either an embedded box, or a text, or the source point of a link.
+Each text has its value.
+Each link points from the source point to a box.
+A box, a text, or a link has their own attributes.
+
+I have a domain-specific language, named VQL, whose syntax is similar to database query language such as MySQL.
+VQL programs are applied to a ViewGraph. The VQL only has two types of statements:
+- Select statement is used to pick up a set of boxes or a set of texts from a given set, which satisfy several given conditions.
+- Update statement is used to change an attribute of all boxes/texts in a given set.
+In the following, I give you some examples to show how VQL works.
+
+Example 1:
+```
+// This statement selects all boxes with type 'cfs_rq', from all boxes of the ViewGraph (which is the semantics of '*'). The selected set is named as 'a'.
+a = SELECT cfs_rq FROM *
+// This statement sets attribute 'abst' := 'sched_tree' for all boxes in the set 'a'.
+UPDATE a WITH abst: sched_tree
+```
+
+Example 2:
+```
+// This statement selects the boxes with type 'task_struct' whose text member 'ppid' has the value '2', from all boxes of the ViewGraph (which is the semantics of '*'). The selected set is named as 'b'.
+b = SELECT task_struct
+    FROM *
+    WHERE ppid == 2
+// This statement sets attribute 'shrinked' := 'true' for all boxes in the set 'a'.
+UPDATE b WITH shrinked: true
+```
+
+Example 3:
+```
+// This statement selects all boxes with type 'task_struct', from all boxes of the ViewGraph. The selected set is named as 'a'.
+a = SELECT task_struct FROM *
+// This statement selects the boxes whose text member 'pid' has the value '2' or 'ppid' has the value '2', from the previously obtained set 'a'. The selected set is named as 'b'.
+b = SELECT *
+    FROM a
+    WHERE pid == 2 OR ppid == 2
+// This statement sets attribute 'shrinked' := 'true' for all boxes in the set 'b'.
+UPDATE b WITH shrinked: true
+// This statement sets attribute 'abst' := 'show_threads' for all boxes in the set 'a' but not in the set 'b'. Here '\\' is the set minus operator.
+UPDATE a \\ b WITH abst: show_threads
+```
+
+Example 4:
+```
+// This statement selects the boxes with type 'tasks_timeline' which is a member of any box with type 'cfs_rq', from all boxes of the ViewGraph. The selected set is named as 'a'.
+a = SELECT cfs_rq->tasks_timeline FROM *
+// This statement sets attribute 'direction' := 'horizontal' for all boxes in the set 'a'.
+UPDATE a WITH direction: horizontal
+```
+
+Example 5:
+```
+// This statement selects the boxes with type 'tasks_timeline' which is a member of any box with type 'cfs_rq', from all boxes of the ViewGraph. The selected set is named as 'a'.
+a = SELECT cfs_rq->tasks_timeline FROM *
+// This statement selects the boxes with type 'task_struct' which is a member of any box in the set 'a'. The selected set is named as 'b'.
+b = SELECT task_struct
+    FROM * AS x
+    WHERE x IN a
+// This statement sets attribute 'abst' := 'sched' for all boxes in the set 'b'.
+UPDATE b WITH abst: sched
+```
+
+Could you please generate VQL program for the given purpose:
+"""
+I want to set attribute 'abst' := 'full' for the boxes with type 'kobject' whose 'parent' has the value 'NULL'.
+"""
+
+Could you please generate VQL program for the given purpose:
+"""
+First I want to pickup all boxes in inode->i_mapping->i_pages, called 'all'.
+Then I want to pickup boxes whose 'in_use' doesn't has the value '0', called 'used'.
+set attribute 'shrinked' := 'true' for the boxes in 'all' but not in 'used'.
+"""
+
+Could you please generate VQL program for the given purpose:
+"""
+First I want to pickup all boxes which are members of any box with type idr->idr_rt.
+Then I want to select boxes whose member nr == 2 or nr == 4, and set attribute shrinked = true for them.
+"""
+For the last purpose, Can you generate the first statement with the SELECT ... FROM ... AS ... WHERE ... in ... syntax?

@@ -1,22 +1,43 @@
+@import "@fontsource/inconsolata/400";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+    font-family: Inconsolata, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
 }
 
-html,
-body,
 #root {
-  height: 100%;
-  margin: 0;
+    height: 99.9vh;
+    overflow: hidden;
 }
 
 .react-flow__pane {
-  cursor: default;
+    cursor: default !important;
 }
+
+.react-flow__node {
+    cursor: move !important;
+    border: 2px solid rgb(26, 25, 43) !important;
+    border-radius: 6px !important;
+}
+.react-flow__node:hover {
+    box-shadow: 0 1px 4px 1px rgba(0, 0, 0, 0.15) !important;
+}
+.react-flow__node:focus {
+    box-shadow: 0 0 0 0.5px rgb(26, 25, 43) !important;
+}
+.react-flow__node.selected {
+    border: 2px solid rgb(245, 125, 189) !important;
+    box-shadow: 0 0 0 0.5px rgb(26, 25, 43) !important;
+    outline: none;
+}
+
 .react-flow__node.draggable {
-  cursor: move;
+    cursor: move !important;
 }
 .react-flow__node.draggable.dragging {
-  cursor: move;
+    cursor: move !important;
 }
