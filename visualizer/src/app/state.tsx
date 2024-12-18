@@ -64,12 +64,13 @@ export class GlobalState {
         this.getAttrs(subviewName, objectKey)[attr] = value;
     }
     getAbst(subviewName: string, objectKey: ShapeKey): string {
-        return this.getAttr(subviewName, objectKey, 'abst');
+        return this.getAttr(subviewName, objectKey, 'view');
     }
     setAbst(subviewName: string, objectKey: ShapeKey, abstName: string) {
-        this.setAttr(subviewName, objectKey, 'abst', abstName);
+        this.setAttr(subviewName, objectKey, 'view', abstName);
     }
     applyVql(subviewName: string, vqlCode: string) {
+        console.log('applyVql', subviewName, vqlCode);
         this.viewStorage?.applyVql(subviewName, vqlCode);
     }
     clone() {

@@ -213,8 +213,8 @@ function getNodeTemplate(level: number, val_length: number, controllable: boolea
                         editable: true,
                         alignment: go.Spot.Center,
                         margin: new go.Margin(5, 5, 1, 5),
-                        // spacingAbove: -3, spacingBelow: -1,
-                        spacingAbove: 1, spacingBelow: 1,
+                        spacingAbove: -3, spacingBelow: -1,
+                        // spacingAbove: 1, spacingBelow: 1,
                         font: ss.font,
                         stroke: ss.color.font_value
                     }, new go.Binding("text", "value"))

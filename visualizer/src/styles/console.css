@@ -4,8 +4,8 @@
 }
 .console-header {
     padding: 4px 8px;
-    border: 1px solid #000;
-    background-color: bisque;
+    /* border: 1px solid #000; */
+    background-color: white;
 }
 .console {
     display: flex;

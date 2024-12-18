@@ -245,7 +245,7 @@ abstract class WPanel {
         }
         let diagram = this.diagramRef.current?.getDiagram();
         if (diagram) {
-            let node = diagram.findNodeForKey(objectKey);
+            let node = diagram.findNodeForKey(objectKey) || diagram.findNodeForKey(objectKey + '(cloned)');
             if (node) {
                 diagram.selectCollection([node]);
                 diagram.centerRect(node.actualBounds);

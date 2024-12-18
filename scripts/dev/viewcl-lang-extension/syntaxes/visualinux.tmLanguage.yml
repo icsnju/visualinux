@@ -44,7 +44,7 @@ repository:
     name: meta.shape.decl.visualinux
     begin: ^\s*(define)\s+(?=\w+)
     beginCaptures:
-      "1": { name: keyword.other.typedef.define.visualinux }
+      "1": { name: keyword.control.define.visualinux }
     end: (?!\w)
     patterns:
     - include: "#shapedef_identifier"
@@ -55,7 +55,7 @@ repository:
     end: (?= \{|\[|$)
     match: \s+(as)\s+(\w+)(\<[^\s\<\>]+\>)?\s*
     captures:
-      "1": { name: keyword.other.typedef.as.visualinux }
+      "1": { name: keyword.control.as.visualinux }
       "2":
         patterns:
         - include: "#shapedef_entity_name"

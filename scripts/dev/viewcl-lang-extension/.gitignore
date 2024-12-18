@@ -6,3 +6,4 @@ client/server
 syntaxes/*.tmLanguage.json
 *.tmLanguage
 *.vsix
+*.tsbuildinfo

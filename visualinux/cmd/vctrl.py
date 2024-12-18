@@ -5,8 +5,8 @@ from visualinux.cmd.askllm import askllm
 import argparse
 import re
 
-VCTRL_PROMPT = (PROMPT_DIR / 'vctrl.md').read_text()
-VIEWQL_PROMPT = (PROMPT_DIR / 'viewql.md').read_text()
+VCTRL_PROMPT = lambda: (PROMPT_DIR / 'vctrl.md').read_text()
+VIEWQL_PROMPT = lambda: (PROMPT_DIR / 'viewql.md').read_text()
 
 class VCtrl(gdb.Command):
 
@@ -27,7 +27,7 @@ class VCtrlHandler:
         split_parser.add_argument('id', type=int, help='ID must be a number')
         split_parser.add_argument('-d', '--direction', type=str, 
                                     choices=['v', 'h', 'vertical', 'horizontal'], help='Split direction')
-        split_parser.set_defaults(func=cls.__invoke_split)
+        split_parser.set_defaults(handle=cls.__invoke_split)
 
         pick_parser = subparsers.add_parser('pick', help='pick command')
         pick_parser.add_argument('id', type=int, help='ID must be a number')
@@ -63,17 +63,17 @@ class VCtrlHandler:
     @classmethod
     def invoke_chat(cls, message: str):
         print(f'+ vctrl chat {message = }')
-        cmd = askllm(VCTRL_PROMPT, message)
+        cmd = askllm(VCTRL_PROMPT(), message)
         print(f'  + llm generated cmd: {cmd}')
         if cmd.startswith('apply'):
             _, id, apply_message = cmd.split(' ', maxsplit=2)
-            code = askllm(VIEWQL_PROMPT, apply_message)
+            code = askllm(VIEWQL_PROMPT(), apply_message)
             code = code.strip('`\n').rstrip('`\n')
             print(f'  > ViewQL code:\n{code}')
             data = {
-                'type': 'APPLY',
+                'command': 'APPLY',
                 'wKey': id,
-                'vql': code
+                'vqlCode': code
             }
             core.send(data)
         else:
@@ -86,7 +86,7 @@ class VCtrlHandler:
             args.direction = 'h'
         direction = 2 if args.direction[0] == 'h' else 1
         data = {
-            'type': 'SPLIT',
+            'command': 'SPLIT',
             'wKey': args.id,
             'direction': direction
         }

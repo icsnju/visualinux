@@ -125,7 +125,7 @@ class VPlotHandler:
     @classmethod
     def handle_file(cls, filename: str):
         src_path = VIEWCL_SOURCE_DIR / filename
-        print(f'+ vplot --file {src_path = }')
+        print(f'+ vplot --file {filename}')
         core.sync_file(src_path)
 
     @classmethod

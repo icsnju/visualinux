@@ -148,7 +148,7 @@ diag textbook_10_task_mm_mt {
     plot @tm_current_task
 } with {
     mm = SELECT mm_struct FROM *
-    UPDATE mm WITH abst: mm_mt
+    UPDATE mm WITH view: mm_mt
 
     slots = SELECT maple_node.slots FROM *
     UPDATE slots WITH collapsed: true

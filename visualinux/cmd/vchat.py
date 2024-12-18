@@ -25,11 +25,12 @@ class VChat(gdb.Command):
             print('    vchat horizontally split pane #1')
             return
         print(f'+ vchat {arg = }')
-        vcmd = askllm(VCHAT_PROMPT, arg)
-        print(f'  + llm judged: {vcmd}')
-        if vcmd == 'vplot':
-            VPlotHandler.invoke_chat(arg)
-        elif vcmd == 'vctrl':
-            VCtrlHandler.invoke_chat(arg)
-        else:
-            print(f'[VCHAT ERROR] LLM returns neither vplot nor vctrl. You have to fine-tune the prompt to match the rule.')
+        VCtrlHandler.invoke_chat(arg)
+        # vcmd = askllm(VCHAT_PROMPT, arg)
+        # print(f'  + llm judged: {vcmd}')
+        # if vcmd == 'vplot':
+        #     VPlotHandler.invoke_chat(arg)
+        # elif vcmd == 'vctrl':
+        #     VCtrlHandler.invoke_chat(arg)
+        # else:
+        #     print(f'[VCHAT ERROR] LLM returns neither vplot nor vctrl. You have to fine-tune the prompt to match the rule.')

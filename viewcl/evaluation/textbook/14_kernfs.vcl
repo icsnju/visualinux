@@ -46,5 +46,5 @@ diag textbook_14_kernfs_example {
     plot @kernfs_root
 } with {
     kobjects = SELECT kobject FROM *
-    UPDATE kobjects WITH abst: parent
+    UPDATE kobjects WITH view: parent
 }
