@@ -3,7 +3,8 @@
   "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev-old": "vite",
+    "dev": "node src/server-editor.mjs",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -11,6 +12,7 @@
   "dependencies": {
     "@fontsource/inconsolata": "^5.1.0",
     "@xyflow/react": "^12.3.0",
+    "express": "^4.21.2",
     "lokijs": "^1.5.12",
     "nearley": "^2.20.1",
     "openai": "^4.76.0",

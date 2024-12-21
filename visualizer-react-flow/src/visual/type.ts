@@ -18,12 +18,13 @@ export type Pool = {
 }
 
 export type Box = {
-    key:   ShapeKey,
-    type:  string,
-    size:  number,
-    addr:  string,
-    label: string,
-    absts: {[name: AbstName]: Abst},
+    key:    ShapeKey,
+    type:   string,
+    size:   number,
+    addr:   string,
+    label:  string,
+    absts:  {[name: AbstName]: Abst},
+    parent: ShapeKey | null
 }
 export type Abst = {
     parent: string | null,
