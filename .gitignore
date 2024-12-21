@@ -22,6 +22,7 @@
 
 *~
 __pycache__/
+node_modules/
 out/
 tmp/
 temp/

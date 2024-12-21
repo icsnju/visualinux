@@ -40,7 +40,7 @@ class FlagHandler:
     def load(cls, filename: str) -> FlagConfig:
 
         if vl_debug_on(): printd(f'[FLAG] load {filename = }')
-        path = FLAG_CONFIG_DIR / f'{filename}.gdb'
+        path = GDB_FLAGCONFIG_DIR / f'{filename}.gdb'
         if not path.is_file():
             raise fuck_exc(FileNotFoundError, path)
 
