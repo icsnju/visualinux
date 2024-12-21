@@ -26,7 +26,7 @@ class Parser:
 
     def parse(self, code: str) -> DiagramSet:
         try:
-            parsetree = ParseTree('start', self.__parse(code, VIEWCL_SOURCE_DIR))
+            parsetree = ParseTree('start', self.__parse(code, VIEWCL_SRC_DIR))
         finally:
             self.__imported.clear()
         insts, typemap_for_llm = Converter().convert(parsetree)

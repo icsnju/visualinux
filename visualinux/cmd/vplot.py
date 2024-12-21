@@ -46,8 +46,9 @@ class VPlotHandler:
         parser.add_argument('-f', '--file',   type=str, help='File to process')
         parser.add_argument('-c', '--chat', action='store_true', help='Chat with LLM')
         parser.add_argument('entries', nargs='*')
-        parser.add_argument('--debug', action='store_true', help='Show debug info while processing request')
-        parser.add_argument('--perf',  action='store_true', help='Show profiling results while processing request')
+        parser.add_argument('--export', action='store_true', help='Export plots to json files in local')
+        parser.add_argument('--debug',  action='store_true', help='Show debug info while processing request')
+        parser.add_argument('--perf',   action='store_true', help='Show profiling results while processing request')
 
         args = parser.parse_args(re.split(r'\s+', arg))
 
@@ -64,7 +65,7 @@ class VPlotHandler:
         if args.list:
             cls.handle_list(args.list)
         elif args.file:
-            cls.handle_file(args.file)
+            cls.handle_file(args.file, args.export)
         elif args.chat:
             cls.invoke_chat(' '.join(args.entries))
         elif len(args.entries) > 0:
@@ -74,7 +75,7 @@ class VPlotHandler:
             parser.print_help()
 
     @classmethod
-    def invoke_chat(cls, message: str):
+    def invoke_chat(cls, message: str, if_export: bool = False):
         print(f'+ vplot --chat {message = }')
         type, args = askllm(VPLOT_PROMPT, message).split(' ', maxsplit=1)
         # direct plot
@@ -84,7 +85,7 @@ class VPlotHandler:
         # find the most appropriate predefined shape of a symbol
         elif type == 'B':
             print(f'    + llm judged: find a predefined shape, {args = }')
-            model = core.parse_file(VIEWCL_SOURCE_DIR / 'stdlib.vcl')
+            model = core.parse_file(VIEWCL_SRC_DIR / 'stdlib.vcl')
             symbol = args
             gval = KValue.gdb_eval(symbol)
             if vl_debug_on(): printd(f'B {model.typemap_for_llm = !s}')
@@ -92,7 +93,7 @@ class VPlotHandler:
             prompt = VPLOT_FIND_PROMPT.replace('!!!TYPEMAP!!!', '\n'.join([desc.to_prompt() for desc in descs]))
             shapename, viewname = re.split(r',\s*', askllm(prompt, message), maxsplit=1)
             init_vql = f'UPDATE {gval.json_data_key} WITH view: {viewname}\n'
-            VPlotHandler.handle_plot('__anon__ ', f'{shapename}({symbol})', init_vql)
+            VPlotHandler.handle_plot('__anon__ ', f'{shapename}({symbol})', init_vql, if_export)
         # try to reconstruct the type info of a container
         elif type == 'C':
             print(f'[VPLOT CHAT] feature CONTAINER not implemented yet')
@@ -100,7 +101,7 @@ class VPlotHandler:
             print(f'[VPLOT CHAT ERROR] LLM does not return A/B/C. You have to fine-tune the prompt to match the rule.')
 
     @classmethod
-    def handle_plot(cls, viewname: str, entries_text: str, init_vql: str = '') -> bool:
+    def handle_plot(cls, viewname: str, entries_text: str, init_vql: str = '', if_export: bool = False) -> bool:
         print(f'+ vplot {viewname = } {entries_text = }')
         parsetree = cls.parser.parse(entries_text)
         entries: list[VPlotHandler.Entry] = []
@@ -111,7 +112,7 @@ class VPlotHandler:
         except:
             return False
         print(f'  > ViewCL code:\n{code}')
-        core.sync(code)
+        core.sync(code, if_export)
         return True
 
     @classmethod
@@ -123,10 +124,10 @@ class VPlotHandler:
         print('\n'.join(fields))
 
     @classmethod
-    def handle_file(cls, filename: str):
-        src_path = VIEWCL_SOURCE_DIR / filename
+    def handle_file(cls, filename: str, if_export: bool = False):
+        src_path = VIEWCL_SRC_DIR / filename
         print(f'+ vplot --file {filename}')
-        core.sync_file(src_path)
+        core.sync_file(src_path, if_export)
 
     @classmethod
     def synthesize_viewcl(cls, diagname: str, entries: list[Entry], init_vql: str = '') -> str:

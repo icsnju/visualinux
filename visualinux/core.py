@@ -8,6 +8,7 @@ from visualinux.runtime.gdb.adaptor import gdb_adaptor
 import json
 import shutil
 import requests
+from datetime import datetime
 
 import cProfile, pstats, io
 from pstats import SortKey
@@ -29,10 +30,10 @@ class Core:
         model = self.parser.parse(code)
         return model
 
-    def sync_file(self, src_file: Path):
-        return self.sync(src_file.read_text())
+    def sync_file(self, src_file: Path, if_export: bool = False):
+        return self.sync(src_file.read_text(), if_export)
 
-    def sync(self, code: str):
+    def sync(self, code: str, if_export: bool = False):
         ''' The start point of ViewCL parsing and object graph extraction.
         '''
         if vl_debug_on(): printd(f'vl_sync()')
@@ -64,15 +65,16 @@ class Core:
             'command': 'NEWSTATE',
             'data': state.to_json()
         })
-
-        if vl_debug_on():
+        if if_export or vl_debug_on():
             TMP_DIR.mkdir(exist_ok=True)
-            EXPORT_DEBUG_DIR.mkdir(exist_ok=True)
+            EXPORT_DIR.mkdir(exist_ok=True)
+            timestamp = datetime.now().strftime('%m%d%H%M%S')
+            export_dir = EXPORT_DIR / timestamp
+            export_dir.mkdir(exist_ok=True)
             for name, substate in state.substates.items():
                 print(f'--export {name}.json')
-                print(f'    {substate.init_vql=}')
-                self.export_for_debug(substate.to_json(), EXPORT_DEBUG_DIR / f'{name}.json')
-            self.reload_and_reexport_debug()
+                self.export_for_debug(substate.to_json(), export_dir / f'{name}.json')
+            # self.reload_and_reexport_debug()
 
         return state
 
@@ -101,7 +103,7 @@ class Core:
         DUMP_DIR.mkdir(exist_ok=True)
         print(f'vl_sync(): data export')
         full_json_data = {}
-        for path in EXPORT_DEBUG_DIR.glob('**/*.json'):
+        for path in DUMP_DIR.glob('**/*.json'):
             full_json_data[path.stem] = self.import_for_debug(path)
         if (DUMP_DIR / 'latest.json').is_file():
             shutil.copy(DUMP_DIR / 'latest.json', DUMP_DIR / 'old.json')
