@@ -1,4 +1,4 @@
-import { View, SubView, Box, Container, ContainerConv, ShapeKey, Member } from "./type";
+import { State, View, Box, Container, ContainerConv, ShapeKey, Member } from "./type";
 import { isMemberText, isMemberLink, isMemberBox, isContainerConv, shouldCompress } from "./type";
 import { ViewStorage } from "@app/vql/storage";
 

@@ -64,8 +64,9 @@ export const initialNodes: AppNode[] = [
                         },
                     },
                     distilled: false
-                }
+                },
             },
+            parent: null,
             depth: 0,
             collapsed: false
         },
@@ -93,6 +94,7 @@ export const initialNodes: AppNode[] = [
                     distilled: false
                 }
             },
+            parent: '0xaa:task_struct',
             depth: 1,
             collapsed: false
         },

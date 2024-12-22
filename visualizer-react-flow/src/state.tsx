@@ -1,4 +1,4 @@
-import { Label, ShapeKey, View } from '@app/visual/type';
+import { Label, ShapeKey, State } from '@app/visual/type';
 import { ViewStorage } from '@app/vql/storage';
 import { Attrs, genGoModelData } from '@app/visual/model';
 import { preprocess } from '@app/visual/preprocess';
@@ -11,7 +11,7 @@ export class GlobalState {
     viewStorage: ViewStorage | undefined
     windowModel: Panels
     lastTime: number
-    constructor(viewData?: View, viewStorage?: ViewStorage, windowModel?: Panels) {
+    constructor(viewData?: State, viewStorage?: ViewStorage, windowModel?: Panels) {
         // this.viewHistory = [];
         if (viewData === undefined) {
             this.viewStorage = viewStorage;
@@ -74,7 +74,7 @@ export class GlobalState {
         state.lastTime = this.lastTime;
         return state;
     }
-    resetViewData(data: View) {
+    resetViewData(data: State) {
         let state = new GlobalState(data, undefined, this.windowModel);
         state.lastTime = this.lastTime;
         let vv = Object.values(data);
@@ -88,7 +88,7 @@ export class GlobalState {
 const initialState = new GlobalState();
 
 export type GlobalStateAction =
-  { command: 'NEWSTATE', data: View }
+  { command: 'NEWSTATE', data: State }
 | { command: 'SPLIT',    wKey: number, direction: SplitDirection }
 | { command: 'PICK',     wKey: number, objectKey: string }
 | { command: 'SWITCH',   wKey: number, viewName: string }
@@ -108,7 +108,7 @@ export const GlobalStateContext = createContext<{
     stateDispatch: () => null
 });
 
-export function GlobalStateProvider({ initData, children }: { initData?: View, children: React.ReactNode }) {
+export function GlobalStateProvider({ initData, children }: { initData?: State, children: React.ReactNode }) {
     const [state, stateDispatch] = useReducer(
         globalStateReducer,
         initialState

@@ -1,11 +1,21 @@
+// react flow metadata
+
+type NodeMetadata = {
+    depth: number,
+    collapsed: boolean,
+    notifier?: (id: string) => void
+}
+
+// json type of diagrams received from the gdb extension
+
 export type ShapeKey = string
 export type AbstName = string
 export type Label    = string
 
-export type View = {
-    [name: string]: SubView
+export type State = {
+    [name: string]: View
 }
-export type SubView = {
+export type View = {
     name: string,
     pool: Pool,
     plot: ShapeKey[],
@@ -25,7 +35,8 @@ export type Box = {
     label:  string,
     absts:  {[name: AbstName]: Abst},
     parent: ShapeKey | null
-}
+} & NodeMetadata
+
 export type Abst = {
     parent: string | null,
     members: {[label: Label]: Member},
@@ -58,15 +69,14 @@ export type Container = {
     members: ContainerMember[],
     style: {[name: string]: string}
     parent: ShapeKey | null,
-    depth?: number
-}
+} & NodeMetadata
+
 export type ContainerConv = {
     source: ShapeKey,
     key:  ShapeKey,
     members: ContainerMember[],
     parent: ShapeKey | null,
-    depth?: number
-}
+} & NodeMetadata
 
 export type ContainerMember = {
     key:  ShapeKey,

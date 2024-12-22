@@ -4,12 +4,13 @@
   "type": "module",
   "scripts": {
     "dev-old": "vite",
-    "dev": "node src/server-editor.mjs",
+    "dev": "node src/server.mjs",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^1.1.4",
     "@fontsource/inconsolata": "^5.1.0",
     "@xyflow/react": "^12.3.0",
     "express": "^4.21.2",
@@ -24,6 +25,7 @@
     "tailwindcss": "^3.4.16"
   },
   "devDependencies": {
+    "@types/dagre": "^0.7.52",
     "@types/lokijs": "^1.5.14",
     "@types/nearley": "^2.11.5",
     "@types/react": "^18.2.53",

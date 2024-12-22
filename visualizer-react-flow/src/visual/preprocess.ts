@@ -1,48 +1,48 @@
-import { View, SubView, Pool, Box, Abst, Container, ContainerConv, Member, BoxMember, ShapeKey } from "./type";
-import { isMemberText, isMemberLink, isMemberBox, isContainerConv } from "./type";
+import { State, View, Pool, Box, Abst, Container, ContainerConv, Member, BoxMember, ShapeKey } from '@app/visual/type';
+import { isMemberText, isMemberLink, isMemberBox, isContainerConv } from '@app/visual/type';
 
-export function preprocess(view: View) {
-    for (let name in view) {
-        preprocess_subview(view[name]);
+export function preprocess(state: State) {
+    for (let name in state) {
+        preprocess_view(state[name]);
     }
 }
 
-function preprocess_subview(subview: SubView) {
+function preprocess_view(view: View) {
     // clone members of ContainerConv
-    for (let key in subview.pool.containers) {
-        let container = subview.pool.containers[key];
+    for (let key in view.pool.containers) {
+        let container = view.pool.containers[key];
         if (isContainerConv(container)) {
-            preprocess_clone_conv_start(subview.pool, container);
+            preprocess_clone_conv_start(view.pool, container);
         }
     }
     // calculate node depth
-    for (let key in subview.pool.boxes) {
-        let box = subview.pool.boxes[key];
+    for (let key in view.pool.boxes) {
+        let box = view.pool.boxes[key];
         if (box.parent == null) {
-            preprocess_set_depth_box(subview.pool, box, 0);
+            preprocess_set_depth_box(view.pool, box, 0);
         }
     }
-    for (let key in subview.pool.containers) {
-        let container = subview.pool.containers[key];
+    for (let key in view.pool.containers) {
+        let container = view.pool.containers[key];
         if (container.parent == null) {
-            preprocess_set_depth_container(subview.pool, container, 0);
+            preprocess_set_depth_container(view.pool, container, 0);
         }
     }
     // dupliaction check
-    for (let key in subview.pool.boxes) {
-        if (key in subview.pool.containers) {
+    for (let key in view.pool.boxes) {
+        if (key in view.pool.containers) {
             console.log(`ERROR: duplicated ${key} in both boxes and containers`);
-            console.log(subview);
+            console.log(view);
         }
     }
-    for (let key in subview.pool.containers) {
-        if (key in subview.pool.boxes) {
+    for (let key in view.pool.containers) {
+        if (key in view.pool.boxes) {
             console.log(`ERROR: duplicated ${key} in both boxes and containers`);
-            console.log(subview);
+            console.log(view);
         }
     }
     // all-must-initialized check
-    const poolMerged = {...subview.pool.boxes, ...subview.pool.containers};
+    const poolMerged = {...view.pool.boxes, ...view.pool.containers};
     for (let key in poolMerged) {
         const shape = poolMerged[key];
         if (shape.depth === undefined) {

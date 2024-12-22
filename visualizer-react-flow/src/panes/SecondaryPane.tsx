@@ -1,5 +1,5 @@
-import { PanelsContext } from '@app/panes/model/Context';
-import { SecondaryPanel } from '@app/panes/model/state';
+import { PanelsContext } from '@app/panes/model/PanelsContext';
+import { SecondaryPanel } from '@app/panes/model/Panels';
 import { ButtonDef, ButtonsWrapper, ButtonWrapper } from '@app/panes/buttons';
 
 import { useContext, useMemo, useRef, useState } from 'react';

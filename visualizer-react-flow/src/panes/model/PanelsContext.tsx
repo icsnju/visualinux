@@ -1,5 +1,5 @@
 import { createContext, useReducer } from 'react';
-import Panels, { SplitDirection } from './state';
+import Panels, { SplitDirection } from './Panels';
 
 const initialState = new Panels();
 
@@ -14,7 +14,6 @@ export type PanelsAction =
 | { command: 'SETABST',  viewName: string, objectKey: string, abstName: string }
 | { command: 'APPLY',    wKey: number, vqlCode: string }
 
-// export const GlobalStatusContext = createContext(new GlobalStatus());
 export const PanelsContext = createContext<{
     state: Panels;
     stateDispatch: React.Dispatch<PanelsAction>;
@@ -23,7 +22,7 @@ export const PanelsContext = createContext<{
     stateDispatch: () => null
 });
 
-export function PanelsProvider({ children }: { children: React.ReactNode }) {
+export function PanelsContextProvider({ children }: { children: React.ReactNode }) {
     const [state, stateDispatch] = useReducer(
         panelsReducer,
         initialState
@@ -58,7 +57,6 @@ function panelsReducer(state: Panels, action: PanelsAction) {
         case 'REFRESH':
             return state.clone();
         default:
-            console.log('warning: unknown window model action', action);
-            return state;
+            throw new Error('unknown panels action');
     }
 }

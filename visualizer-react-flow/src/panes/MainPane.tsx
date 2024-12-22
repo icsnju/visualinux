@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import SplitPane, { Pane } from 'split-pane-react';
-import { PanelsContext } from '@app/panes/model/Context';
-import { PrimaryArea, PrimaryPanel, SecondaryPanel, isPrimaryPanel } from '@app/panes/model/state';
+import { PanelsContext } from '@app/panes/model/PanelsContext';
+import { PrimaryArea, PrimaryPanel, SecondaryPanel, isPrimaryPanel } from '@app/panes/model/Panels';
 import PrimaryPane from '@app/panes/PrimaryPane';
 import SecondaryPane from '@app/panes/SecondaryPane';
 

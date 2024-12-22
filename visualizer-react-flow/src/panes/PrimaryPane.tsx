@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { PanelsContext } from '@app/panes/model/Context';
-import { SplitDirection } from '@app/panes/model/state';
+import { PanelsContext } from '@app/panes/model/PanelsContext';
+import { SplitDirection } from '@app/panes/model/Panels';
 import Diagram from '@app/visual/Diagram';
 import { ButtonDef, ButtonsWrapper, ButtonWrapper } from '@app/panes/buttons';
 // import { DropdownAbstSelector, PopViewSelector } from './view-selector';
