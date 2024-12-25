@@ -8,6 +8,12 @@ type NodeMetadata = {
 
 // json type of diagrams received from the gdb extension
 
+export type Plot = {
+    key: string
+    pausetime: number
+    state: State
+}
+
 export type ShapeKey = string
 export type AbstName = string
 export type Label    = string
@@ -16,71 +22,77 @@ export type State = {
     [name: string]: View
 }
 export type View = {
-    name: string,
-    pool: Pool,
-    plot: ShapeKey[],
-    init_vql: string,
+    name: string
+    pool: Pool
+    plot: ShapeKey[]
+    init_vql: string
+    attrs: ViewAttrs
     stat: number
 }
 export type Pool = {
     boxes: {[key: ShapeKey]: Box},
     containers: {[key: ShapeKey]: Container | ContainerConv}
 }
+export type ViewAttrs = {
+    [node: string]: {
+        [attr: string]: string
+    }
+}
 
 export type Box = {
-    key:    ShapeKey,
-    type:   string,
-    size:   number,
-    addr:   string,
-    label:  string,
-    absts:  {[name: AbstName]: Abst},
+    key:    ShapeKey
+    type:   string
+    size:   number
+    addr:   string
+    label:  string
+    absts:  {[name: AbstName]: Abst}
     parent: ShapeKey | null
 } & NodeMetadata
 
 export type Abst = {
-    parent: string | null,
-    members: {[label: Label]: Member},
+    parent: string | null
+    members: {[label: Label]: Member}
     distilled: boolean
 }
 
 export type Member = TextMember | LinkMember | BoxMember
 
 export type TextMember = {
-    class: 'text',
-    type:  string,
-    size:  number,
+    class: 'text'
+    type:  string
+    size:  number
     value: string
 }
 export type LinkMember = {
-    class:  'link',
-    type:   string,
-    target: ShapeKey | null,
+    class:  'link'
+    type:   string
+    target: ShapeKey | null
     abst:   AbstName | null
 }
 export type BoxMember = {
-    class:  'box',
-    object: ShapeKey,
+    class:  'box'
+    object: ShapeKey
     abst:   AbstName | null
 }
 
 export type Container = {
-    key:  ShapeKey,
-    label: string,
-    members: ContainerMember[],
+    key:  ShapeKey
+    label: string
+    members: ContainerMember[]
     style: {[name: string]: string}
-    parent: ShapeKey | null,
+    parent: ShapeKey | null
 } & NodeMetadata
 
 export type ContainerConv = {
-    source: ShapeKey,
-    key:  ShapeKey,
-    members: ContainerMember[],
-    parent: ShapeKey | null,
+    source: ShapeKey
+    key:  ShapeKey
+    members: ContainerMember[]
+    parent: ShapeKey | null
 } & NodeMetadata
 
 export type ContainerMember = {
-    key:  ShapeKey,
-    abst: AbstName | null,
+    key:  ShapeKey
+    abst: AbstName | null
     links: {[label: Label]: ShapeKey}
 }
 

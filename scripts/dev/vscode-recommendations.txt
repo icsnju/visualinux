@@ -6,4 +6,4 @@ ms-python.vscode-pylance
 pierre-payen.gdb-syntax
 dirk-thomas.vscode-lark
 ms-azuretools.vscode-docker
-jacqueslucke.gcov-viewer
+bradlc.vscode-tailwindcss

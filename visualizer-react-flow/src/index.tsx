@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { PanelsContextProvider } from '@app/panes/model/PanelsContext';
-import { KernSnapshotsContextProvider } from '@app/visual/model/KernSnapshotsContext';
+import { PlotsContextProvider } from '@app/visual/model/PlotsContext';
 import Main from "@app/Main";
 
 import './index.css';
@@ -11,10 +11,10 @@ import './index.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <PanelsContextProvider>
-            <KernSnapshotsContextProvider>
+            <PlotsContextProvider>
                 <Main/>
                 {/* <Diagram wKey={0} updateSelected={() => {}}/> */}
-            </KernSnapshotsContextProvider>
+            </PlotsContextProvider>
         </PanelsContextProvider>
     </React.StrictMode>
 );
