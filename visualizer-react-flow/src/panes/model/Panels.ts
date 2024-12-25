@@ -7,22 +7,25 @@ export default class Panels {
      * Each PrimaryPanel has a list of connected SecondaryPanel.
      */
     root: PrimaryArea
-    followers: (SecondaryPanel | undefined)[]
-    constructor(root?: PrimaryArea, followers?: (SecondaryPanel | undefined)[]) {
+    secondaries: (SecondaryPanel | undefined)[]
+    constructor(root?: PrimaryArea, secondaries?: (SecondaryPanel | undefined)[]) {
         if (root === undefined) {
             root = new PrimaryArea(null, []);
             root.children.push(new PrimaryPanel(root));
         }
         this.root = root;
-        this.followers = followers || [];
+        this.secondaries = secondaries || [];
     }
     toString() {
-        return this.root.toString() + ', ' + this.followers.toString();
+        return this.root.toString() + ', ' + this.secondaries.toString();
     }
     private find(key: number) {
         // since there are at most a few dozen windows, brute-force dfs is enough.
         return this.root.find(key);
     }
+    //
+    // TODO: pass these functions downstream; a (unnecessary) global dispatcher is strange.
+    //
     setViewDisplayed(key: number, viewDisplayed: string | undefined) {
         let node = this.find(key);
         if (node === undefined) {
@@ -106,21 +109,21 @@ export default class Panels {
             return;
         }
         let follower = new SecondaryPanel(viewDisplayed, objectKey);
-        let index = this.followers.findIndex(node => !node);
+        let index = this.secondaries.findIndex(node => !node);
         if (index == -1) {
-            this.followers.push(follower);
+            this.secondaries.push(follower);
         } else {
-            this.followers[index] = follower;
+            this.secondaries[index] = follower;
         }
     }
     erase(wKey: number) {
-        this.followers = this.followers.map(node => node && node.key == wKey ? undefined : node);
+        this.secondaries = this.secondaries.map(node => node && node.key == wKey ? undefined : node);
     }
     focus(objectKey: string) {
         this.root.focus(objectKey);
     }
     clone() {
-        return new Panels(this.root, this.followers);
+        return new Panels(this.root, this.secondaries);
     }
 }
 
@@ -210,8 +213,7 @@ export class PrimaryArea {
 
 // it is preferred not to use a static field in the class, since it will trigger an hydration warning,
 // and it might take much more progress to eliminate the warning.
-let PrimaryPanelNextKey = 0;
-let SecondaryPanelNextKey = 0;
+let PanelNextKey = 0;
 
 abstract class Panel {
     public diagramRef?: null
@@ -236,7 +238,7 @@ export class PrimaryPanel extends Panel {
     public viewDisplayed?: string
     constructor(parent: PrimaryArea) {
         super();
-        this.key = PrimaryPanelNextKey ++;
+        this.key = PanelNextKey ++;
         this.parent = parent;
         this.consoleText = '';
     }
@@ -262,7 +264,7 @@ export class SecondaryPanel extends Panel {
     public readonly objectKey: string
     constructor(viewDisplayed: string, objectKey: string) {
         super();
-        this.key = SecondaryPanelNextKey ++;
+        this.key = PanelNextKey ++;
         this.viewDisplayed = viewDisplayed;
         this.objectKey = objectKey;
     }

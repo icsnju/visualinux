@@ -1,11 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
+import { PlotsContext } from '@app/visual/model/PlotsContext';
 import { PanelsContext } from '@app/panes/model/PanelsContext';
-import { KernSnapshotsContext } from '@app/visual/model/KernSnapshotsContext';
 import MainPane from '@app/panes/MainPane';
 
 export default function Main() {
+    const { stateDispatch: plotsStateDispatch } = useContext(PlotsContext);
     const { stateDispatch: panelsStateDispatch } = useContext(PanelsContext);
-    const { stateDispatch: kernSnapshotsStateDispatch } = useContext(KernSnapshotsContext);
     const [avoidHydrationError, setAvoidHydrationError] = useState(false);
     useEffect(() => {
         setAvoidHydrationError(true);
@@ -14,8 +14,8 @@ export default function Main() {
             const data = JSON.parse(event.data);
             console.log('sse receive:', data);
             try {
-                if (['NEWSTATE', 'UPDATE'].includes(data.command)) {
-                    kernSnapshotsStateDispatch(data);
+                if (['ADDPLOT', 'UPDATE'].includes(data.command)) {
+                    plotsStateDispatch(data);
                 } else {
                     panelsStateDispatch(data);
                 }

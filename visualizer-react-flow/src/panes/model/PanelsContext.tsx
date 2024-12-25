@@ -9,10 +9,7 @@ export type PanelsAction =
 | { command: 'SWITCH',   wKey: number, viewName: string }
 | { command: 'FOCUS',    objectKey: string }
 | { command: 'REMOVE',   wKey: number }
-| { command: 'ERASE',    wKey: number } // remove secondary // TODO: merge prim/seco pane key
 | { command: 'REFRESH' }
-| { command: 'SETABST',  viewName: string, objectKey: string, abstName: string }
-| { command: 'APPLY',    wKey: number, vqlCode: string }
 
 export const PanelsContext = createContext<{
     state: Panels;
@@ -50,9 +47,6 @@ function panelsReducer(state: Panels, action: PanelsAction) {
             return state;
         case 'REMOVE':
             state.remove(action.wKey);
-            return state.clone();
-        case 'ERASE':
-            state.erase(action.wKey);
             return state.clone();
         case 'REFRESH':
             return state.clone();
