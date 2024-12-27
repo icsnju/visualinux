@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { PanelsContextProvider } from '@app/panes/model/PanelsContext';
-import { PlotsContextProvider } from '@app/visual/model/PlotsContext';
+import { GlobalStateProvider } from '@app/context/Context';
 import Main from "@app/Main";
 
 import './index.css';
@@ -10,11 +9,9 @@ import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <PanelsContextProvider>
-            <PlotsContextProvider>
-                <Main/>
-                {/* <Diagram wKey={0} updateSelected={() => {}}/> */}
-            </PlotsContextProvider>
-        </PanelsContextProvider>
+        <GlobalStateProvider>
+            <Main/>
+            {/* <Diagram wKey={0} updateSelected={() => {}}/> */}
+        </GlobalStateProvider>
     </React.StrictMode>
 );

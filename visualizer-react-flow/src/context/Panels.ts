@@ -1,4 +1,5 @@
 import { ISplitProps } from 'split-pane-react/esm/types';
+import { ViewAttrs } from '@app/visual/type';
 
 export default class Panels {
     /**
@@ -19,81 +20,81 @@ export default class Panels {
     toString() {
         return this.root.toString() + ', ' + this.secondaries.toString();
     }
-    private find(key: number) {
-        // since there are at most a few dozen windows, brute-force dfs is enough.
-        return this.root.find(key);
-    }
     //
-    // TODO: pass these functions downstream; a (unnecessary) global dispatcher is strange.
+    // panel actions
     //
-    setViewDisplayed(key: number, viewDisplayed: string | undefined) {
-        let node = this.find(key);
-        if (node === undefined) {
-            throw new Error(`setViewDisplayed #${key}: window not found`);
-        }
-        node.viewDisplayed = viewDisplayed;
-    }
-    getViewDisplayed(key: number): string | undefined {
-        return this.find(key)?.viewDisplayed;
-    }
-    getObjectSelected(key: number, isPrimary: boolean = true): string | undefined {
-        // we assume that diagram.maxSelected == 1.
-        // return this.getDiagramRef(key, isPrimary)?.current?.getDiagram()?.selection.first()?.data.key;
-        return undefined;
-    }
-    setConsoleText(key: number, text: string) {
-        if (text.length > 10) {
-            text = text.substring(0, 10) + '...';
-        }
-        this.find(key)?.setConsoleText(text);
-    }
-    getConsoleText(key: number): string {
-        let node = this.find(key);
-        if (node === undefined) {
-            return '';
-        }
-        return node.consoleText;
-    }
-    isRemovable(key: number) {
-        let node = this.find(key);
-        if (node === undefined) {
-            throw new Error(`window.remove(): failed to find window with key=${key}.`);
-        }
-        return this.isNodeRemovable(node);
-    }
-    private isNodeRemovable(node: PrimaryPanel) {
-        let parent = node.parent;
-        if (parent.parent == null && parent.children.length == 1) {
-            // removing the last node is not allowed
-            return false;
-        }
-        return true;
-    }
-    split(key: number, direction: SplitDirection) {
-        // TODO: only keep two buttons for lu or rd, and copy the diagram state while splitting
+    split(pKey: number, direction: SplitDirection) {
         // direction (l/r/u/d) => splitDirection (v/h), splitForward (T:lu/F:rd)
         // let splitDirection = Math.floor(direction / 2);
         // let splitDirection = (direction == Direction.left || direction == Direction.right ?
         //     SplitDirection.vertical : SplitDirection.horizontal);
         // let splitIsForward = (direction % 2 == 0);
-        let node = this.find(key);
+        let node = this.find(pKey);
         if (node === undefined) {
-            throw new Error(`window.split(): failed to find window with key=${key}.`);
+            throw new Error(`panels.split(): failed to find panel #${pKey}.`);
         }
         node.split(direction);
     }
-    remove(key: number) {
-        let node = this.find(key);
-        if (node === undefined) {
-            throw new Error(`window.remove(): failed to find window with key=${key}.`);
+    pick(pKey: number, objectKey: string) {
+        let viewDisplayed = this.getViewDisplayed(pKey);
+        if (viewDisplayed === undefined) {
+            throw new Error(`panels.pick(): no view displayed on panel #${pKey}.`);
         }
-        if (!this.isNodeRemovable(node)) {
+        let panel = new SecondaryPanel(viewDisplayed, objectKey);
+        let index = this.secondaries.findIndex(node => !node);
+        if (index == -1) {
+            this.secondaries.push(panel);
+        } else {
+            this.secondaries[index] = panel;
+        }
+    }
+    switch(pKey: number, viewDisplayed: string | undefined) {
+        let node = this.find(pKey);
+        if (node === undefined) {
+            throw new Error(`panels.switch(): failed to find panel #${pKey}.`);
+        }
+        node.viewDisplayed = viewDisplayed;
+    }
+    update(pKey: number, attrs: ViewAttrs) {
+        // TODO: merge find functions
+        let node = this.find(pKey);
+        if (node === undefined) {
+            throw new Error(`panels.update(): failed to find panel #${pKey}.`);
+        }
+        if (node.viewDisplayed === undefined) {
+            throw new Error(`panels.update(): no view displayed on panel #${pKey}.`);
+        }
+        node.viewAttrs[node.viewDisplayed] = {
+            ...node.viewAttrs[node.viewDisplayed] || {},
+            ...attrs
+        };
+    }
+    reset(pKey: number) {
+        let node = this.find(pKey);
+        if (node === undefined) {
+            throw new Error(`panels.update(): failed to find panel #${pKey}.`);
+        }
+        if (node.viewDisplayed === undefined) {
+            throw new Error(`panels.update(): no view displayed on panel #${pKey}.`);
+        }
+        node.viewAttrs[node.viewDisplayed] = {};
+    }
+    focus(objectKey: string) {
+        this.root.focus(objectKey);
+    }
+    remove(pKey: number) {
+        let node = this.find(pKey);
+        if (node === undefined) {
+            this.secondaries = this.secondaries.map(node => node && node.key == pKey ? undefined : node);
             return;
         }
+        if (!this.isNodeRemovable(node)) {
+            throw new Error(`panels.remove(): panel #${pKey} is not removable.`);
+        }
         let parent = node.parent;
-        parent.removeChild(key);
+        parent.removeChild(pKey);
         if (parent.children.length == 0) {
-            throw new Error(`window.remove(): empty children.`);
+            throw new Error(`panels.remove(): empty children.`);
         }
         let p: PrimaryArea | PrimaryPanel = parent;
         while (p.parent != null) {
@@ -103,27 +104,46 @@ export default class Panels {
             p = p.parent;
         }
     }
-    pick(wKey: number, objectKey: string) {
-        let viewDisplayed = this.getViewDisplayed(wKey);
-        if (viewDisplayed === undefined) {
-            return;
+    //
+    // other APIs
+    //
+    setViewDisplayed(pKey: number, viewDisplayed: string | undefined) {
+        let node = this.find(pKey);
+        if (node === undefined) {
+            throw new Error(`panels.setViewDisplayed(): panel #${pKey} not found`);
         }
-        let follower = new SecondaryPanel(viewDisplayed, objectKey);
-        let index = this.secondaries.findIndex(node => !node);
-        if (index == -1) {
-            this.secondaries.push(follower);
-        } else {
-            this.secondaries[index] = follower;
+        node.viewDisplayed = viewDisplayed;
+    }
+    getViewDisplayed(pKey: number): string | undefined {
+        return this.find(pKey)?.viewDisplayed;
+    }
+    getObjectSelected(pKey: number, isPrimary: boolean = true): string | undefined {
+        // we assume that diagram.maxSelected == 1.
+        // return this.getDiagramRef(key, isPrimary)?.current?.getDiagram()?.selection.first()?.data.key;
+        return undefined;
+    }
+    isRemovable(pKey: number) {
+        let node = this.find(pKey);
+        if (node === undefined) {
+            throw new Error(`panels.isRemovable(): failed to find panel with key=${pKey}.`);
         }
+        return this.isNodeRemovable(node);
     }
-    erase(wKey: number) {
-        this.secondaries = this.secondaries.map(node => node && node.key == wKey ? undefined : node);
+    //
+    // private utils
+    //
+    private find(pKey: number) {
+        // find the primary panel with the given key
+        // Since there are at most a few dozen windows, a brute-force DFS is sufficient.
+        return this.root.find(pKey);
     }
-    focus(objectKey: string) {
-        this.root.focus(objectKey);
-    }
-    clone() {
-        return new Panels(this.root, this.secondaries);
+    private isNodeRemovable(node: PrimaryPanel) {
+        let parent = node.parent;
+        if (parent.parent == null && parent.children.length == 1) {
+            // removing the last node is not allowed
+            return false;
+        }
+        return true;
     }
 }
 
@@ -211,7 +231,7 @@ export class PrimaryArea {
     }
 }
 
-// it is preferred not to use a static field in the class, since it will trigger an hydration warning,
+// it is preferred not to use a static field in the class, since it may trigger an hydration warning,
 // and it might take much more progress to eliminate the warning.
 let PanelNextKey = 0;
 
@@ -231,16 +251,19 @@ abstract class Panel {
         }
     }
 }
+
 export class PrimaryPanel extends Panel {
     public readonly key: number
     public parent: PrimaryArea
-    public consoleText: string
     public viewDisplayed?: string
+    public viewAttrs: {
+        [viewName: string]: ViewAttrs
+    }
     constructor(parent: PrimaryArea) {
         super();
         this.key = PanelNextKey ++;
         this.parent = parent;
-        this.consoleText = '';
+        this.viewAttrs = {};
     }
     public toString() {
         return `W(${this.key})`
@@ -252,12 +275,10 @@ export class PrimaryPanel extends Panel {
         if (!this.viewDisplayed) {
             return;
         }
-        return super.focus(objectKey);
-    }
-    public setConsoleText(text: string) {
-        this.consoleText = text;
+        super.focus(objectKey);
     }
 }
+
 export class SecondaryPanel extends Panel {
     public readonly key: number
     public readonly viewDisplayed: string
@@ -276,8 +297,9 @@ export class SecondaryPanel extends Panel {
 export function isPrimaryArea(node: PrimaryArea | PrimaryPanel): node is PrimaryArea {
     return (node as PrimaryArea).direction !== undefined;
 }
+
 export function isPrimaryPanel(node: PrimaryArea | PrimaryPanel): node is PrimaryPanel {
-    return Number.isInteger((node as PrimaryPanel).key);
+    return (node as PrimaryPanel).parent !== undefined;
 }
 
 export enum Direction {

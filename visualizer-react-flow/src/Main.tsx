@@ -1,11 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
-import { PlotsContext } from '@app/visual/model/PlotsContext';
-import { PanelsContext } from '@app/panes/model/PanelsContext';
+import { GlobalStateContext } from '@app/context/Context';
 import MainPane from '@app/panes/MainPane';
 
 export default function Main() {
-    const { stateDispatch: plotsStateDispatch } = useContext(PlotsContext);
-    const { stateDispatch: panelsStateDispatch } = useContext(PanelsContext);
+    const { stateDispatch } = useContext(GlobalStateContext);
     const [avoidHydrationError, setAvoidHydrationError] = useState(false);
     useEffect(() => {
         setAvoidHydrationError(true);
@@ -13,15 +11,7 @@ export default function Main() {
         eventSource.addEventListener('message', function(event) {
             const data = JSON.parse(event.data);
             console.log('sse receive:', data);
-            try {
-                if (['ADDPLOT', 'UPDATE'].includes(data.command)) {
-                    plotsStateDispatch(data);
-                } else {
-                    panelsStateDispatch(data);
-                }
-            } catch (error) {
-                console.error('unknown front-end action', data.command, data);
-            }
+            stateDispatch(data);
         });
         eventSource.addEventListener('error', function(event) {
             if (event.eventPhase == EventSource.CLOSED) {

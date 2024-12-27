@@ -10,23 +10,23 @@ type NodeMetadata = {
 
 export type Plot = {
     key: string
-    pausetime: number
-    state: State
+    timestamp: number
+    views: {[name: string]: View}
 }
 
 export type ShapeKey = string
 export type AbstName = string
 export type Label    = string
 
-export type State = {
-    [name: string]: View
-}
+// old version TODO modify API betw gdb and visualizer
+// export type State = {
+//     [name: string]: View
+// }
 export type View = {
     name: string
     pool: Pool
     plot: ShapeKey[]
-    init_vql: string
-    attrs: ViewAttrs
+    init_attrs: ViewAttrs
     stat: number
 }
 export type Pool = {
