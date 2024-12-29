@@ -299,7 +299,7 @@ export function isPrimaryArea(node: PrimaryArea | PrimaryPanel): node is Primary
 }
 
 export function isPrimaryPanel(node: PrimaryArea | PrimaryPanel): node is PrimaryPanel {
-    return (node as PrimaryPanel).parent !== undefined;
+    return !isPrimaryArea(node);
 }
 
 export enum Direction {

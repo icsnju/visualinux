@@ -1,5 +1,5 @@
-import { PanelsContext } from '@app/panes/model/PanelsContext';
-import { SecondaryPanel } from '@app/panes/model/Panels';
+import { GlobalStateContext } from '@app/context/Context';
+import { SecondaryPanel } from '@app/context/Panels';
 import { ButtonDef, ButtonsWrapper, ButtonWrapper } from '@app/panes/buttons';
 
 import { useContext, useMemo, useRef, useState } from 'react';
@@ -13,7 +13,7 @@ export default function SecondaryPane({ node }: { node: SecondaryPanel }) {
     const [rndSize, setRndSize] = useState({
         width: 360, height: 256
     });
-    const { state, stateDispatch } = useContext(PanelsContext);
+    const { state, stateDispatch } = useContext(GlobalStateContext);
     // let modelData = useMemo(() => state.getGoModelDataFocused(node.viewDisplayed, node.objectKey), [state, node]);
     // let diagramRef = useRef<ReactDiagram>(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -33,7 +33,7 @@ export default function SecondaryPane({ node }: { node: SecondaryPanel }) {
     }, {
         onClick: () => {
             console.log('click erase', node.key);
-            stateDispatch({ command: 'ERASE', wKey: node.key });
+            stateDispatch({ command: 'REMOVE', pKey: node.key });
         },
         ifEnabled: true,
         icon: "delete",
@@ -69,7 +69,7 @@ export default function SecondaryPane({ node }: { node: SecondaryPanel }) {
                         {buttons.map((btn, i) => <ButtonWrapper buttonDef={btn} key={i}/>)}
                     </ButtonsWrapper>
                 </div>
-                <Diagram wKey={node.key} updateSelected={() => {}}/>
+                <Diagram pKey={node.key} updateSelected={() => {}}/>
                 {/* <GoJSDiagram modelData={modelData} diagramRef={diagramRef} style={{backgroundColor: 'seashell'}}/> */}
             </div>
         </Rnd>

@@ -19,11 +19,6 @@
     background-color: white;
     border-bottom: 1px solid #5755d9;
 }
-.primary-window-body {
-    display: flex;
-    height: 100%;
-    background-color: white;
-}
 
 .secondary-window {
     display: flex;

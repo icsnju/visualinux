@@ -1,17 +1,17 @@
 import { useContext, useState } from 'react';
 import SplitPane, { Pane } from 'split-pane-react';
-import { PanelsContext } from '@app/panes/model/PanelsContext';
-import { PrimaryArea, PrimaryPanel, SecondaryPanel, isPrimaryPanel } from '@app/panes/model/Panels';
+import { GlobalStateContext } from '@app/context/Context';
+import { PrimaryArea, PrimaryPanel, SecondaryPanel, isPrimaryPanel } from '@app/context/Panels';
 import PrimaryPane from '@app/panes/PrimaryPane';
 import SecondaryPane from '@app/panes/SecondaryPane';
 
 import '@app/panes/style.css';
 
 export default function MainPane() {
-    const { state } = useContext(PanelsContext);
+    const { state } = useContext(GlobalStateContext);
     return (
         <div id="popup-root" className="h-full">
-            <PrimaryPanes node={state.root}/>
+            <PrimaryPanes node={state.panels.root}/>
             {/* <SecondaryPanes nodes={state.followers}/> */}
         </div>
     );
@@ -24,7 +24,7 @@ function PrimaryPanes({ node }: { node: PrimaryArea | PrimaryPanel }) {
     if (isPrimaryPanel(node)) {
         return (
             <Pane key={node.key} minSize={minPrimaryPaneSize} style={{height: '100%'}}>
-                <PrimaryPane wKey={node.key}/>
+                <PrimaryPane pKey={node.key}/>
             </Pane>
         );
     }

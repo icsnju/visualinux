@@ -23,15 +23,15 @@ import '../index.css';
 import { initialNodes, nodeTypes } from '@app/nodes';
 import { initialEdges, edgeTypes } from '@app/edges';
 
-export default function Diagram({ wKey, updateSelected }: { wKey: number, updateSelected: (s: string | undefined) => void }) {
+export default function Diagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     return (
         <ReactFlowProvider>
-            <ReactFlowDiagram wKey={wKey} updateSelected={updateSelected} />
+            <ReactFlowDiagram pKey={pKey} updateSelected={updateSelected} />
         </ReactFlowProvider>
     );
 }
 
-function ReactFlowDiagram({ wKey, updateSelected }: { wKey: number, updateSelected: (s: string | undefined) => void }) {
+function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
     const nodesInitialized = useNodesInitialized();

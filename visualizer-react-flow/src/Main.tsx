@@ -11,14 +11,18 @@ export default function Main() {
         eventSource.addEventListener('message', function(event) {
             const data = JSON.parse(event.data);
             console.log('sse receive:', data);
-            stateDispatch(data);
+            if (Array.isArray(data)) {
+                data.forEach(item => stateDispatch(item));
+            } else {
+                stateDispatch(data);
+            }
         });
         eventSource.addEventListener('error', function(event) {
             if (event.eventPhase == EventSource.CLOSED) {
-                console.log('sse closed');
+                console.error('sse closed');
                 eventSource.close();
             } else {
-                console.log('sse error: ', event);
+                console.error('sse error: ', event);
             }
         }, false);
         return () => {
