@@ -13,7 +13,7 @@ export type ButtonDef = {
 export function ButtonWrapper({ buttonDef }: { buttonDef: ButtonDef }) {
     let hoverStyles = buttonDef.ifEnabled ? '' : 'opacity-50 cursor-not-allowed';
     return (
-        <div>
+        <div className="group relative">
             <button 
                 className={`w-[30px] h-[30px] flex items-center justify-center border-2 ${borderColorCSS} rounded ${hoverStyles}`}
                 onClick={buttonDef.onClick}
@@ -22,7 +22,7 @@ export function ButtonWrapper({ buttonDef }: { buttonDef: ButtonDef }) {
                 {buttonDef.icon}
             </button>
             <div className="invisible group-hover:visible absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full z-10">
-                <div className="bg-white border border-gray-200 rounded shadow-lg mt-1">
+                <div className={`bg-white border-2 ${borderColorCSS} rounded shadow-lg mt-3`}>
                     <div className="px-3 py-1 text-sm text-center text-gray-700">
                         {buttonDef.desc}
                     </div>
