@@ -10,14 +10,21 @@ const __dirname = path.dirname(path.dirname(__filename));
 
 const app = express();
 
+// Configure body parser before other middleware
+app.use(bodyParser.json({ limit: '100mb' }));
+app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
+
 // vite middleware
- 
 const vite = await createServer({
+    appType: 'custom',
     configFile: 'vite.config.ts',
     server: {
-        middlewareMode: true
-    },
-    appType: 'custom',
+        middlewareMode: true,
+        // does not work; failed to fix.
+        hmr: {
+            host: 'localhost',
+        },
+    }
 });
 app.use(vite.middlewares);
 
@@ -52,8 +59,6 @@ app.get('/sse', (request, respond) => {
     });
     sseClients.push(respond);
 });
-
-app.use(bodyParser.json({ limit: '50mb' }));
 
 // localfs interaction (test)
 
