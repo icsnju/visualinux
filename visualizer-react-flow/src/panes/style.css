@@ -1,40 +1,5 @@
 @import "./libs/style.css";
 
-.main-window {
-    grid-area: gg;
-    width: 100%;
-    background-color: bisque;
-}
-
-.primary-window {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border: 2px solid #5755d9;
-}
-.primary-window .react-diagram {
-    flex-grow: 1;
-}
-.primary-window-header {
-    background-color: white;
-    border-bottom: 1px solid #5755d9;
-}
-
-.secondary-window {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border: 3px solid #5755d9;
-    background-color: seashell;
-}
-.secondary-window .react-diagram {
-    flex-grow: 1;
-}
-.secondary-window-header {
-    background-color: seashell;
-    border-bottom: 1px solid #5755d9;
-}
-
 .react-draggable {
     position: absolute;
     z-index: 999;

@@ -18,6 +18,16 @@ export default class Plots {
         this.currIndex = this.data.length - 1;
     }
     //
+    //
+    //
+    getViewList(): string[] {
+        const plot = this.current();
+        if (plot === null) {
+            return [];
+        }
+        return Object.keys(plot.views);
+    }
+    //
     // utilities
     //
     isEmpty() {

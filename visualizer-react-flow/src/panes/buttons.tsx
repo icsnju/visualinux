@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 
-export const borderColor = 'border-[#5755d9]';
+export const borderColor = '#5755d9';
+export const borderColorCSS = `border-[${borderColor}]`;
 
 export type ButtonDef = {
     onClick: () => void
@@ -14,7 +15,7 @@ export function ButtonWrapper({ buttonDef }: { buttonDef: ButtonDef }) {
     return (
         <div>
             <button 
-                className={`w-[30px] h-[30px] flex items-center justify-center border-2 ${borderColor} rounded ${hoverStyles}`}
+                className={`w-[30px] h-[30px] flex items-center justify-center border-2 ${borderColorCSS} rounded ${hoverStyles}`}
                 onClick={buttonDef.onClick}
                 disabled={!buttonDef.ifEnabled}
             >

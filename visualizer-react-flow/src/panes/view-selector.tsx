@@ -1,28 +1,26 @@
 'use client'
 
-import { GlobalStateContext } from "@app/state";
+import { useContext } from 'react';
+import { GlobalStateContext } from '@app/context/Context';
 
-import { useContext } from "react";
+import Popup from 'reactjs-popup';
 
-import Popup from "reactjs-popup";
-
-export function PopViewSelector({ wKey, trigger }: { wKey: number, trigger: JSX.Element }) {
+export function PopViewSelector({ pKey, trigger }: { pKey: number, trigger: JSX.Element }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);
-    const viewList = state.getViewList();
-    // I'm not sure how to solve this vscode typecheck error, I event don't know what happened;
-    // but it is correctly compiled...
-    // it comes from https://react-popup.elazizi.com/react-modal
-    // TODO: explore it after paper submission
+    // const viewList = state.plots.getViewList();
+    const viewList = ['a', 'b', 'c']; // test
     const Poped = ((closePopup: (() => void)) => (
-        <ul className="menu">
-            {viewList.map((viewName, index) => 
-                <li className="menu-item" key={index} onClick={() => {
-                    stateDispatch({ command: 'SWITCH', wKey, viewName });
-                    closePopup();
-                } }><a className="text-tiny">{viewName}</a></li>
-            )}
-        </ul>
-    )) as unknown as JSX.Element;
+        <div className="fixed inset-0 flex items-center justify-center" onClick={closePopup}>
+            <ul className="w-48 py-1 bg-white rounded-lg shadow-lg" onClick={(e) => e.stopPropagation()}>
+                {viewList.map((viewName, index) => 
+                    <li className="px-2 py-1 border border-gray-200 hover:bg-gray-100 cursor-pointer" key={index} onClick={() => {
+                        stateDispatch({ command: 'SWITCH', pKey, viewName });
+                        closePopup();
+                    } }><a className="block text-gray-800">{viewName}</a></li>
+                )}
+            </ul>
+        </div>
+    )) as any as JSX.Element;
     return (
         <Popup trigger={trigger} modal>
             {Poped}
@@ -30,19 +28,31 @@ export function PopViewSelector({ wKey, trigger }: { wKey: number, trigger: JSX.
     )
 }
 
-export function DropdownAbstSelector({ wKey, enabled }: { wKey: number, enabled: boolean }) {
+export function DropdownAbstSelector({ pKey, enabled }: { pKey: number, enabled: boolean }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);
-    const model = state.windowModel;
-    let viewDisplayed = model.getViewDisplayed(wKey);
-    let objectKey = model.getObjectSelected(wKey);
+    let viewDisplayed = state.panels.getViewDisplayed(pKey);
+    let objectKey = state.panels.getObjectSelected(pKey);
     let abstList: string[];
     if (viewDisplayed !== undefined && objectKey !== undefined) {
-        abstList = state.getAbstList(viewDisplayed, objectKey);
+        abstList = [];//state.plots.getAbstList(viewDisplayed, objectKey);
     } else {
         abstList = [];
     }
     if (abstList.length == 0) { 
         enabled = false;
+    }
+    const onSwitchAbst = (abstName: string) => {
+        if (viewDisplayed !== undefined && objectKey !== undefined) {
+            stateDispatch({
+                command: 'UPDATE',
+                pKey,
+                attrs: {
+                    [objectKey]: {
+                        abst: abstName
+                    }
+                }
+            });
+        }
     }
     return (
         <div className="popover popover-bottom">
@@ -55,9 +65,9 @@ export function DropdownAbstSelector({ wKey, enabled }: { wKey: number, enabled:
                         <div className="card-body text-center px-0 py-0">
                             <ul className="menu">
                                 {abstList.map((abstName, index) => 
-                                    <li className="menu-item" key={index} onClick={() => {
-                                        stateDispatch({ command: 'SETABST', viewName: viewDisplayed, objectKey, abstName });
-                                    } }><a>{abstName}</a></li>
+                                    <li className="menu-item" key={index} onClick={() => onSwitchAbst(abstName)}>
+                                        <a>{abstName}</a>
+                                    </li>
                                 )}
                             </ul>
                         </div>

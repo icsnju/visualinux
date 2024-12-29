@@ -2,8 +2,9 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { GlobalStateContext } from '@app/context/Context';
 import { SplitDirection } from '@app/context/Panels';
 import Diagram from '@app/visual/Diagram';
-import { ButtonDef, ButtonsWrapper, ButtonWrapper, borderColor } from '@app/panes/buttons';
-import * as icons from './libs/Icons';
+import { ButtonDef, ButtonsWrapper, ButtonWrapper, borderColor, borderColorCSS } from '@app/panes/buttons';
+import { PopViewSelector } from '@app/panes/view-selector';
+import * as icons from '@app/panes/libs/Icons';
 // import { DropdownAbstSelector, PopViewSelector } from './view-selector';
 
 type useStateSelected = typeof useState<string | undefined>;
@@ -24,7 +25,7 @@ export default function PrimaryPane({ pKey }: { pKey: number }) {
     };
     //
     return (
-        <div className={`h-full flex flex-col border-2 ${borderColor}`}>
+        <div className={`h-full flex flex-col border-2 ${borderColorCSS}`}>
             <PrimaryWindowHeader pKey={pKey} onMount={onChildMount}/>
             <div className="flex h-full bg-white">
                 <Diagram pKey={pKey} updateSelected={updateSelected}/>
@@ -58,7 +59,7 @@ function PrimaryWindowHeader({ pKey, onMount }: {
             }
         },
         ifEnabled: state.panels.getObjectSelected(pKey) !== undefined,
-        icon: <icons.AkarIconsAugmentedReality color="purple"/>,
+        icon: <icons.AkarIconsAugmentedReality color={borderColor}/>,
         desc: "focus"
     }, {
         onClick: () => {
@@ -70,17 +71,17 @@ function PrimaryWindowHeader({ pKey, onMount }: {
             }
         },
         ifEnabled: state.panels.getObjectSelected(pKey) !== undefined,
-        icon: <></>,
+        icon: <icons.AkarIconsArrowForwardThick color={borderColor}/>,
         desc: "pick"
     }, {
         onClick: () => clickSplit(SplitDirection.horizontal),
         ifEnabled: true,
-        icon: <icons.AkarIconsAugmentedReality color="red"/>,
+        icon: <icons.AkarIconsChevronVertical color={borderColor}/>,
         desc: "split (vert)"
     }, {
         onClick: () => clickSplit(SplitDirection.vertical),
         ifEnabled: true,
-        icon: <></>,
+        icon: <icons.AkarIconsChevronHorizontal color={borderColor}/>,
         desc: "split (horiz)"
     }, {
         onClick: () => {
@@ -92,7 +93,7 @@ function PrimaryWindowHeader({ pKey, onMount }: {
             // }
         },
         ifEnabled: viewDisplayed !== undefined,
-        icon: "photo",
+        icon: <icons.AkarIconsDownload color={borderColor}/>,
         desc: "download"
     }, {
         onClick: () => {
@@ -100,24 +101,21 @@ function PrimaryWindowHeader({ pKey, onMount }: {
             stateDispatch({ command: 'REMOVE', pKey });
         },
         ifEnabled: state.panels.isRemovable(pKey),
-        icon: "delete",
+        icon: <icons.AkarIconsTrashCan color={borderColor}/>,
         desc: "remove"
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }], [state, selected]);
     return (
-        <div className={`h-auto flex flex-row justify-between border-b-2 ${borderColor}`}>
+        <div className={`h-auto flex flex-row justify-between border-b-2 ${borderColorCSS}`}>
             <ButtonsWrapper direction="left">
-                <div className="w-[30px] h-[30px] flex items-center justify-center border-2 border-[#5755d9] rounded cursor-pointer">
+                <div className={`w-[30px] h-[30px] flex items-center justify-center border-2 ${borderColorCSS} rounded cursor-pointer`}>
                     #{pKey}
                 </div>
-                {/* <PopViewSelector wKey={wKey} trigger={
-                    <button className="btn btn-sm btn-primary">
-                        <i className="icon icon-apps"></i>
+                <PopViewSelector pKey={pKey} trigger={
+                    <button className={`h-[30px] px-2 flex items-center justify-center border-2 ${borderColorCSS} rounded cursor-pointer`}>
+                        {viewDisplayed ? viewDisplayed.slice(viewDisplayed.lastIndexOf('.') + 1) : 'select a plot...'}
                     </button>
-                }/> */}
-                <span className="btn btn-sm btn-link c-auto px-0 text-dark text-bold">
-                    {viewDisplayed ? viewDisplayed.slice(viewDisplayed.lastIndexOf('.') + 1) : 'select a view...'}
-                </span>
+                }/>
             </ButtonsWrapper>
             <ButtonsWrapper direction="right">
                 {/* <DropdownAbstSelector wKey={wKey} enabled={selected !== undefined}/> */}
