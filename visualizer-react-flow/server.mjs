@@ -1,14 +1,15 @@
-import fs from 'fs';
+import { fileURLToPath } from 'url';
 import path from 'path';
 import express from 'express';
 import bodyParser from 'body-parser';
 import { createServer } from 'vite';
-import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { exec } from 'child_process';
 
+import './loadenv.mjs';
+
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(path.dirname(__filename));
-const __rootdir = path.dirname(__dirname);
+const __rootdir = path.dirname(path.dirname(__filename));
 
 const app = express();
 
@@ -66,7 +67,7 @@ app.get('/sse', (request, respond) => {
 
 app.post('/writelocal', (request, respond) => {
     let body = '';
-    let filePath = path.resolve(__dirname, 'tmp', 'test.txt');
+    let filePath = path.resolve(__rootdir, 'tmp', 'test.txt');
     console.log('recv writelocal', filePath);
     request.on('data', function(data) {
         body += data;
