@@ -4,9 +4,11 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { createServer } from 'vite';
 import { fileURLToPath } from 'url';
+import { exec } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(path.dirname(__filename));
+const __rootdir = path.dirname(__dirname);
 
 const app = express();
 
@@ -62,7 +64,7 @@ app.get('/sse', (request, respond) => {
 
 // localfs interaction (test)
 
-app.post('/writelocal', function(request, respond) {
+app.post('/writelocal', (request, respond) => {
     let body = '';
     let filePath = path.resolve(__dirname, 'tmp', 'test.txt');
     console.log('recv writelocal', filePath);
@@ -74,6 +76,23 @@ app.post('/writelocal', function(request, respond) {
             respond.end();
         });
     });
+});
+
+app.post('/vcmd-debug', (request, respond) => {
+    const scriptPath = path.resolve(__rootdir, 'scripts', 'resend-dump.py');
+    const dumpDir = path.resolve(__rootdir, 'tmp', 'export');
+    exec(`${scriptPath} ${dumpDir}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`/vcmd-debug: Error executing debug script: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`/vcmd-debug: Debug script stderr: ${stderr}`);
+            return;
+        }
+        console.log(`/vcmd-debug: ${stdout}`);
+    });
+    respond.sendStatus(200);
 });
 
 // general router
