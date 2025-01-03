@@ -1,10 +1,10 @@
-import { GlobalStateContext } from '@app/context/Context';
-import { SecondaryPanel } from '@app/context/Panels';
-import { ButtonDef, ButtonsWrapper, ButtonWrapper } from '@app/panes/buttons';
+import { GlobalStateContext } from "@app/context/Context";
+import { SecondaryPanel } from "@app/context/Panels";
+import { ButtonDef, ButtonsWrapper, ButtonWrapper } from "@app/panes/buttons";
 
-import { useContext, useMemo, useRef, useState } from 'react';
-import { Rnd } from 'react-rnd';
-import Diagram from '@app/visual/Diagram';
+import { useContext, useMemo, useRef, useState } from "react";
+import { Rnd } from "react-rnd";
+import Diagram from "@app/visual/Diagram";
 
 export default function SecondaryPane({ node }: { node: SecondaryPanel }) {
     const [rndPosition, setRndPosition] = useState({

@@ -1,7 +1,7 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
 import { type BoxNode } from './types';
-import { BoxMember } from '@app/visual/type';
+import { BoxMember } from '@app/visual/types';
 
 // <div className="react-flow__node-default">
 

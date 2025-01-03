@@ -1,12 +1,12 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import { GlobalStateProvider } from '@app/context/Context';
-import Main from '@app/Main';
+import { GlobalStateProvider } from "@app/context/Context";
+import Main from "@app/Main";
 
-import './index.css';
+import "./index.css";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
     // <React.StrictMode>
         <GlobalStateProvider>
             <Main/>

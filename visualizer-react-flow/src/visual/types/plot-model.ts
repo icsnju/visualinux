@@ -42,7 +42,6 @@ export type ViewAttrs = {
 export type Box = {
     key:    ShapeKey
     type:   string
-    size:   number
     addr:   string
     label:  string
     absts:  {[name: AbstName]: Abst}

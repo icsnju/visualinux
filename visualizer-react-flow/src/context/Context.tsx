@@ -1,7 +1,7 @@
-import { createContext, useReducer } from 'react';
-import Plots from './Plots';
-import Panels, { SplitDirection } from './Panels';
-import { Plot, ViewAttrs } from '@app/visual/type';
+import { createContext, useReducer } from "react";
+import Plots from "./Plots";
+import Panels, { SplitDirection } from "./Panels";
+import { Plot, ViewAttrs } from "@app/visual/types";
 
 type LogEntry = {
     timestamp: number

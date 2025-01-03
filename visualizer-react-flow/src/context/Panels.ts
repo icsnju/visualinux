@@ -1,5 +1,5 @@
-import { ISplitProps } from 'split-pane-react/esm/types';
-import { ViewAttrs } from '@app/visual/type';
+import { ISplitProps } from "split-pane-react/esm/types";
+import { ViewAttrs } from "@app/visual/types";
 
 export default class Panels {
     /**

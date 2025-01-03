@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from "react";
 import {
     ReactFlow,
     Background,
@@ -14,14 +14,14 @@ import {
     Panel,
     ReactFlowProvider,
     useNodesInitialized,
-} from '@xyflow/react';
+} from "@xyflow/react";
 
-import '@xyflow/react/dist/style.css';
-import '../index.css';
+import "@xyflow/react/dist/style.css";
+import "../index.css";
 
-import { initialNodes, nodeTypes } from '@app/nodes';
-import { initialEdges, edgeTypes } from '@app/edges';
-import { getLayoutedPlot } from '@app/visual/layout';
+import { initialNodes, nodeTypes } from "@app/nodes";
+import { initialEdges, edgeTypes } from "@app/edges";
+import { getLayoutedPlot } from "@app/visual/layout";
 
 export default function Diagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     return (

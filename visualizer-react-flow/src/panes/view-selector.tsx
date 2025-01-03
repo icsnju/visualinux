@@ -1,9 +1,6 @@
-'use client'
-
-import { useContext } from 'react';
-import { GlobalStateContext } from '@app/context/Context';
-
-import Popup from 'reactjs-popup';
+import { useContext } from "react";
+import { GlobalStateContext } from "@app/context/Context";
+import Popup from "reactjs-popup";
 
 export function PopViewSelector({ pKey, trigger }: { pKey: number, trigger: JSX.Element }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);

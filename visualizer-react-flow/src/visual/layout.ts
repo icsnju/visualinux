@@ -1,6 +1,6 @@
-import { type Node, type Edge } from '@xyflow/react';
-import Dagre from '@dagrejs/dagre';
-import { Box } from '@app/visual/type';
+import { type Node, type Edge } from "@xyflow/react";
+import Dagre from "@dagrejs/dagre";
+import { Box } from "@app/visual/types";
 
 export type PlotLayoutOptions = {
     direction: string

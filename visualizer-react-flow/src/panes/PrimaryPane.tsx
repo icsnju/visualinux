@@ -1,10 +1,10 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
-import { GlobalStateContext } from '@app/context/Context';
-import { SplitDirection } from '@app/context/Panels';
-import Diagram from '@app/visual/Diagram';
-import { ButtonDef, ButtonsWrapper, ButtonWrapper, borderColor, borderColorCSS } from '@app/panes/buttons';
-import { PopViewSelector } from '@app/panes/view-selector';
-import * as icons from '@app/panes/libs/Icons';
+import { useContext, useEffect, useMemo, useState } from "react";
+import { GlobalStateContext } from "@app/context/Context";
+import { SplitDirection } from "@app/context/Panels";
+import Diagram from "@app/visual/Diagram";
+import { ButtonDef, ButtonsWrapper, ButtonWrapper, borderColor, borderColorCSS } from "@app/panes/buttons";
+import { PopViewSelector } from "@app/panes/view-selector";
+import * as icons from "@app/panes/libs/Icons";
 // import { DropdownAbstSelector, PopViewSelector } from './view-selector';
 
 type useStateSelected = typeof useState<string | undefined>;

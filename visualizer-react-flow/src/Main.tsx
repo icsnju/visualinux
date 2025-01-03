@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
-import { GlobalStateContext } from '@app/context/Context';
-import MainPane from '@app/panes/MainPane';
+import { useContext, useEffect, useState } from "react";
+import { GlobalStateContext } from "@app/context/Context";
+import MainPane from "@app/panes/MainPane";
 
 export default function Main() {
     const { stateDispatch } = useContext(GlobalStateContext);

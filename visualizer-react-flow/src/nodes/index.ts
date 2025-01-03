@@ -32,7 +32,6 @@ export const initialNodes: AppNode[] = [
         data: {
             key: '0xaa:task_struct',
             type: 'task_struct',
-            size: 1145,
             addr: '0xaa',
             label: 'test',
             absts: {
@@ -77,7 +76,6 @@ export const initialNodes: AppNode[] = [
         data: {
             key: '0xab:sched_entity',
             type: 'sched_entity',
-            size: 376,
             addr: '0xab',
             label: 'test se',
             absts: {

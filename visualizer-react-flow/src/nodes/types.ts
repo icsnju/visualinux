@@ -1,5 +1,5 @@
 import type { Node, BuiltInNode } from '@xyflow/react';
-import { Box } from '@app/visual/type';
+import { Box } from '@app/visual/types';
 
 export type Group = Node<{ label: string }, 'group'>;
 export type PositionLoggerNode = Node<{ label: string }, 'position-logger'>;

@@ -1,4 +1,4 @@
-import { Plot } from '@app/visual/type';
+import { Plot } from "@app/visual/types";
 
 export default class Plots {
     data: Plot[]
@@ -13,6 +13,14 @@ export default class Plots {
     // context APIs
     //
     plot(plotKey: string, plot: Plot) {
+        // preprocess
+        // preprocess(plot.views);
+        let orderedViews = Object.keys(plot.views).sort().reduce((obj: any, key) => { 
+            obj[key] = plot.views[key]; 
+            return obj;
+        }, {});
+        plot.views = orderedViews;
+        // store
         this.data.push(plot);
         this.dataIndex.set(plotKey, this.data.length - 1);
         this.currIndex = this.data.length - 1;
