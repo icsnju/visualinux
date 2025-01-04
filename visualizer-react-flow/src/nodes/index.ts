@@ -34,35 +34,28 @@ export const initialNodes: AppNode[] = [
             type: 'task_struct',
             addr: '0xaa',
             label: 'test',
-            absts: {
-                'default': {
-                    parent: null,
-                    members: {
-                        'refcount.count': {
-                            class: 'text',
-                            type: 'int',
-                            size: 4,
-                            value: '2147483647'
-                        },
-                        'foo': {
-                            class: 'text',
-                            type: 'string',
-                            size: 3,
-                            value: 'bar'
-                        },
-                        'se': {
-                            class: 'box',
-                            object: '0xab:sched_entity',
-                            abst: 'default'
-                        },
-                        'faasdsad': {
-                            class: 'text',
-                            type: 'uint64_t',
-                            size: 8,
-                            value: '9223372036854775808'
-                        },
-                    },
-                    distilled: false
+            members: {
+                'refcount.count': {
+                    class: 'text',
+                    type: 'int',
+                    size: 4,
+                    value: '2147483647'
+                },
+                'foo': {
+                    class: 'text',
+                    type: 'string',
+                    size: 3,
+                    value: 'bar'
+                },
+                'se': {
+                    class: 'box',
+                    object: '0xab:sched_entity',
+                },
+                'faasdsad': {
+                    class: 'text',
+                    type: 'uint64_t',
+                    size: 8,
+                    value: '9223372036854775808'
                 },
             },
             parent: null,
@@ -78,19 +71,23 @@ export const initialNodes: AppNode[] = [
             type: 'sched_entity',
             addr: '0xab',
             label: 'test se',
-            absts: {
-                'default': {
-                    parent: null,
-                    members: {
-                        'vruntime': {
-                            class: 'text',
-                            type: 'int',
-                            size: 8,
-                            value: '1145141919810'
-                        }
-                    },
-                    distilled: false
-                }
+            members: {
+                'vruntime': {
+                    class: 'text',
+                    type: 'int',
+                    size: 8,
+                    value: '1145141919810'
+                },
+                'linktest1': {
+                    class: 'link',
+                    type: 'box',
+                    target: '0xffff:test1',
+                },
+                'linktest2': {
+                    class: 'link',
+                    type: 'box',
+                    target: null,
+                },
             },
             parent: '0xaa:task_struct',
             depth: 1,
@@ -100,6 +97,27 @@ export const initialNodes: AppNode[] = [
         extent: 'parent',
         draggable: false,
         selectable: true,
+    }, {
+        id: '0xffff:test1',
+        type: 'box',
+        position: { x: 320, y: 30 },
+        data: {
+            key: '0xffff:test1',
+            type: 'test1',
+            addr: '0xffff',
+            label: 'test1',
+            members: {
+                'foobar': {
+                    class: 'text',
+                    type: 'int',
+                    size: 4,
+                    value: '114514'
+                },
+            },
+            parent: null,
+            depth: 0,
+            collapsed: false
+        },
     }
 ];
 

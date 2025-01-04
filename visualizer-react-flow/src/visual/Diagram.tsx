@@ -68,6 +68,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             }));
         }
         const { view, attrs } = state.getPlotOfPanel(pKey);
+        console.log('getplotofpanel', view, attrs);
         if (view == null) {
             setNodes(initialNodes);
             setEdges(initialEdges);
@@ -99,7 +100,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     }, [nodes, edges]);
     useEffect(() => {
         if (nodesInitialized) {
-            onLayout('TB');
+            onLayout('LR');
         }
     }, [nodesInitialized]);
     // const onConnect: OnConnect = useCallback(

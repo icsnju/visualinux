@@ -1,11 +1,3 @@
-// react flow metadata
-
-type NodeMetadata = {
-    depth: number,
-    collapsed: boolean,
-    notifier?: (id: string) => void
-}
-
 // json type of diagrams received from the gdb extension
 
 export type Plot = {
@@ -47,7 +39,7 @@ export type Box = {
     label:  string
     absts:  {[name: AbstName]: Abst}
     parent: ShapeKey | null
-} & NodeMetadata
+}
 
 export type Abst = {
     parent: string | null
@@ -67,12 +59,10 @@ export type LinkMember = {
     class:  'link'
     type:   string
     target: ShapeKey | null
-    abst:   AbstName | null
 }
 export type BoxMember = {
     class:  'box'
     object: ShapeKey
-    abst:   AbstName | null
 }
 
 export type Container = {
@@ -81,14 +71,14 @@ export type Container = {
     members: ContainerMember[]
     style: {[name: string]: string}
     parent: ShapeKey | null
-} & NodeMetadata
+}
 
 export type ContainerConv = {
     source: ShapeKey
     key:  ShapeKey
     members: ContainerMember[]
     parent: ShapeKey | null
-} & NodeMetadata
+}
 
 export type ContainerMember = {
     key:  ShapeKey

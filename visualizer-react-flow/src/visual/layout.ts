@@ -20,6 +20,8 @@ export function getLayoutedPlot(nodes: Node[], edges: Edge[], options: PlotLayou
 }
 
 function layoutGraph(nodes: Node[], edges: Edge[], options: PlotLayoutOptions): LayoutResult {
+    let fuck = layoutGraphByDagre(nodes, edges, options);
+    return fuck;
     // first layout the outer graph
     let nodesOuter: Node[] = [], nodesInner: Node[] = [];
     let nodesOuterRec: Set<string> = new Set();
