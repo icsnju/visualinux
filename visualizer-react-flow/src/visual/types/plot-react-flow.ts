@@ -1,3 +1,4 @@
+import { type Edge, type Node } from '@xyflow/react';
 import { ViewAttrs } from './plot-model';
 
 export type ReactFlowPlot = {
@@ -8,7 +9,6 @@ export type ReactFlowPlot = {
 
 // TODO: think it carefully
 export type ReactFlowGraph = {
-    name: string
-    init_attrs: ViewAttrs
-    stat: number
+    nodes: Node[]
+    edges: Edge[]
 }

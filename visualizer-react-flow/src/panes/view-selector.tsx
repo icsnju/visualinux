@@ -4,16 +4,15 @@ import Popup from "reactjs-popup";
 
 export function PopViewSelector({ pKey, trigger }: { pKey: number, trigger: JSX.Element }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);
-    // const viewList = state.plots.getViewList();
-    const viewList = ['a', 'b', 'c']; // test
+    const viewnameList = state.plots.getViewnameList();
     const Poped = ((closePopup: (() => void)) => (
         <div className="fixed inset-0 flex items-center justify-center" onClick={closePopup}>
-            <ul className="w-48 py-1 bg-white rounded-lg shadow-lg" onClick={(e) => e.stopPropagation()}>
-                {viewList.map((viewName, index) => 
+            <ul className="min-w-48 py-1 bg-white rounded-lg shadow-lg" onClick={(e) => e.stopPropagation()}>
+                {viewnameList.map((viewname, index) => 
                     <li className="px-2 py-1 border border-gray-200 hover:bg-gray-100 cursor-pointer" key={index} onClick={() => {
-                        stateDispatch({ command: 'SWITCH', pKey, viewName });
+                        stateDispatch({ command: 'SWITCH', pKey, viewname });
                         closePopup();
-                    } }><a className="block text-gray-800">{viewName}</a></li>
+                    } }><a className="block text-gray-800">{viewname}</a></li>
                 )}
             </ul>
         </div>
@@ -27,11 +26,11 @@ export function PopViewSelector({ pKey, trigger }: { pKey: number, trigger: JSX.
 
 export function DropdownAbstSelector({ pKey, enabled }: { pKey: number, enabled: boolean }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);
-    let viewDisplayed = state.panels.getViewDisplayed(pKey);
+    let viewname = state.panels.getViewname(pKey);
     let objectKey = state.panels.getObjectSelected(pKey);
     let abstList: string[];
-    if (viewDisplayed !== undefined && objectKey !== undefined) {
-        abstList = [];//state.plots.getAbstList(viewDisplayed, objectKey);
+    if (viewname !== undefined && objectKey !== undefined) {
+        abstList = [];//state.plots.getAbstList(viewname, objectKey);
     } else {
         abstList = [];
     }
@@ -39,7 +38,7 @@ export function DropdownAbstSelector({ pKey, enabled }: { pKey: number, enabled:
         enabled = false;
     }
     const onSwitchAbst = (abstName: string) => {
-        if (viewDisplayed !== undefined && objectKey !== undefined) {
+        if (viewname !== undefined && objectKey !== undefined) {
             stateDispatch({
                 command: 'UPDATE',
                 pKey,
@@ -58,7 +57,7 @@ export function DropdownAbstSelector({ pKey, enabled }: { pKey: number, enabled:
             </button>
             <div className="popover-container" style={{width: "auto"}}>
                 <div className="card">
-                    {enabled && viewDisplayed !== undefined && objectKey !== undefined ? 
+                    {enabled && viewname !== undefined && objectKey !== undefined ? 
                         <div className="card-body text-center px-0 py-0">
                             <ul className="menu">
                                 {abstList.map((abstName, index) => 

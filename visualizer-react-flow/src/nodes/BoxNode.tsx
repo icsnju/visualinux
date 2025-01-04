@@ -38,7 +38,7 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
             <div className={`w-full pt-0.5 overflow-hidden ${cssAnim} ${data.collapsed ? 'max-h-0' : 'max-h-[500px]'}`}>
                 {members}
                 <div className="w-full flex justify-end">
-                    <p className="text-xs mr-1">0xaaabbccd</p>
+                    <p className="text-xs mr-1">{data.addr}</p>
                 </div>
             </div>
         </div>
@@ -46,15 +46,15 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
 }
 
 function Field({ width, label, value, size }: { width: number, label: string, value: string, size: number }) {
-    // value = '0xaabbccddeeff1122' // test
-    let valueWidth = 8 + size * 16;
+    size = 16;
+    let valueWidth = 8 + size * 8;
     let labelWidth = width - valueWidth;
     return (
         <div className="relative w-full flex items-center border-y border-black mt-[-1px]">
             <div className="w-full flex text-xs">
                 <p style={{width: `${labelWidth}px`}} className="w-24 px-1 border-r border-black truncate">{label}</p>
                 <p style={{width: `${valueWidth}px`}} className="px-1 text-center truncate">{value}</p>
-            </div>
+                </div>
             <Handle 
                 type="source" 
                 position={Position.Right} 

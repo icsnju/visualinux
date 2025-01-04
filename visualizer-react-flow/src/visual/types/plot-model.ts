@@ -34,9 +34,10 @@ export type Pool = {
     containers: {[key: ShapeKey]: Container | ContainerConv}
 }
 export type ViewAttrs = {
-    [node: string]: {
-        [attr: string]: string
-    }
+    [node: string]: NodeAttrs
+}
+export type NodeAttrs = {
+    [attr: string]: string
 }
 
 export type Box = {

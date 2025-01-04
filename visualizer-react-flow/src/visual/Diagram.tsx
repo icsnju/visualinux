@@ -1,4 +1,7 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useContext, useEffect, useMemo } from "react";
+import { GlobalStateContext } from "@app/context/Context";
+import { convertToReactFlow } from "@app/visual/convert";
+import { getLayoutedPlot } from "@app/visual/layout";
 import {
     ReactFlow,
     Background,
@@ -21,7 +24,6 @@ import "../index.css";
 
 import { initialNodes, nodeTypes } from "@app/nodes";
 import { initialEdges, edgeTypes } from "@app/edges";
-import { getLayoutedPlot } from "@app/visual/layout";
 
 export default function Diagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     return (
@@ -32,10 +34,12 @@ export default function Diagram({ pKey, updateSelected }: { pKey: number, update
 }
 
 function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
+    const { state, stateDispatch } = useContext(GlobalStateContext);
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
     const nodesInitialized = useNodesInitialized();
     const { fitView } = useReactFlow();
+    // Update nodes and edges when graph changes
     useEffect(() => {
         const nodeNotifier = (id: string) => {
             console.log(id, 'notified!');
@@ -63,19 +67,28 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                 return nd;
             }));
         }
-        setNodes(nds => nds.map(nd => {
-            if (nd.type != 'box') {
-                return nd;
-            }
-            return {
-                ...nd,
-                data: {
-                    ...nd.data,
-                    notifier: nodeNotifier
+        const { view, attrs } = state.getPlotOfPanel(pKey);
+        if (view == null) {
+            setNodes(initialNodes);
+            setEdges(initialEdges);
+        } else {
+            const graph = convertToReactFlow(view, attrs);
+            setNodes(graph.nodes.map(nd => {
+                if (nd.type != 'box') {
+                    return nd;
                 }
-            };
-        }));
-    }, []);
+                return {
+                    ...nd,
+                    data: {
+                        ...nd.data,
+                        notifier: nodeNotifier
+                    }
+                };
+            }));
+            setEdges(graph.edges);
+            console.log('graph', graph);
+        }
+    }, [pKey, state]);
     const onLayout = useCallback((direction: string) => {
         const layouted = getLayoutedPlot(nodes, edges, { direction });
         setNodes(layouted.nodes);

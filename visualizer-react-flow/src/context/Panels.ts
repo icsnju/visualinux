@@ -1,5 +1,5 @@
-import { ISplitProps } from "split-pane-react/esm/types";
 import { ViewAttrs } from "@app/visual/types";
+import { ISplitProps } from "split-pane-react/esm/types";
 
 export default class Panels {
     /**
@@ -36,11 +36,11 @@ export default class Panels {
         node.split(direction);
     }
     pick(pKey: number, objectKey: string) {
-        let viewDisplayed = this.getViewDisplayed(pKey);
-        if (viewDisplayed === undefined) {
-            throw new Error(`panels.pick(): no view displayed on panel #${pKey}.`);
+        let viewname = this.getViewname(pKey);
+        if (viewname === undefined) {
+            throw new Error(`panels.pick(): viewname is not set on panel #${pKey}.`);
         }
-        let panel = new SecondaryPanel(viewDisplayed, objectKey);
+        let panel = new SecondaryPanel(viewname, objectKey);
         let index = this.secondaries.findIndex(node => !node);
         if (index == -1) {
             this.secondaries.push(panel);
@@ -48,12 +48,12 @@ export default class Panels {
             this.secondaries[index] = panel;
         }
     }
-    switch(pKey: number, viewDisplayed: string | undefined) {
+    switch(pKey: number, viewname: string | undefined) {
         let node = this.find(pKey);
         if (node === undefined) {
             throw new Error(`panels.switch(): failed to find panel #${pKey}.`);
         }
-        node.viewDisplayed = viewDisplayed;
+        node.viewname = viewname;
     }
     update(pKey: number, attrs: ViewAttrs) {
         // TODO: merge find functions
@@ -61,11 +61,11 @@ export default class Panels {
         if (node === undefined) {
             throw new Error(`panels.update(): failed to find panel #${pKey}.`);
         }
-        if (node.viewDisplayed === undefined) {
-            throw new Error(`panels.update(): no view displayed on panel #${pKey}.`);
+        if (node.viewname === undefined) {
+            throw new Error(`panels.update(): viewname is not set on panel #${pKey}.`);
         }
-        node.viewAttrs[node.viewDisplayed] = {
-            ...node.viewAttrs[node.viewDisplayed] || {},
+        node.viewAttrs[node.viewname] = {
+            ...node.viewAttrs[node.viewname] || {},
             ...attrs
         };
     }
@@ -74,10 +74,10 @@ export default class Panels {
         if (node === undefined) {
             throw new Error(`panels.update(): failed to find panel #${pKey}.`);
         }
-        if (node.viewDisplayed === undefined) {
-            throw new Error(`panels.update(): no view displayed on panel #${pKey}.`);
+        if (node.viewname === undefined) {
+            throw new Error(`panels.update(): viewname is not set on panel #${pKey}.`);
         }
-        node.viewAttrs[node.viewDisplayed] = {};
+        node.viewAttrs[node.viewname] = {};
     }
     focus(objectKey: string) {
         this.root.focus(objectKey);
@@ -107,15 +107,28 @@ export default class Panels {
     //
     // other APIs
     //
-    setViewDisplayed(pKey: number, viewDisplayed: string | undefined) {
+    setViewname(pKey: number, viewname: string | undefined) {
         let node = this.find(pKey);
         if (node === undefined) {
-            throw new Error(`panels.setViewDisplayed(): panel #${pKey} not found`);
+            throw new Error(`panels.setViewname(): panel #${pKey} not found`);
         }
-        node.viewDisplayed = viewDisplayed;
+        node.viewname = viewname;
     }
-    getViewDisplayed(pKey: number): string | undefined {
-        return this.find(pKey)?.viewDisplayed;
+    getViewname(pKey: number): string | undefined {
+        return this.find(pKey)?.viewname;
+    }
+    setViewAttrs(pKey: number, attrs: ViewAttrs) {
+        let node = this.find(pKey);
+        if (node === undefined) {
+            throw new Error(`panels.setViewname(): panel #${pKey} not found`);
+        }
+        if (node.viewname) {
+            node.viewAttrs[node.viewname] = attrs;
+        }
+    }
+    getViewAttrs(pKey: number): ViewAttrs {
+        let node = this.find(pKey);
+        return node && node.viewname ? node.viewAttrs[node.viewname] : {};
     }
     getObjectSelected(pKey: number, isPrimary: boolean = true): string | undefined {
         // we assume that diagram.maxSelected == 1.
@@ -208,7 +221,7 @@ export class PrimaryArea {
         // otherwise, a new area is created to replace the splitted window.
         if (this.direction == direction) {
             let splitted = new PrimaryPanel(this);
-            splitted.viewDisplayed = child.viewDisplayed;
+            splitted.viewname = child.viewname;
             // this.children.splice(isForward ? index : index + 1, 0, splitted);
             this.children.splice(index + 1, 0, splitted);
         } else {
@@ -255,7 +268,7 @@ abstract class Panel {
 export class PrimaryPanel extends Panel {
     public readonly key: number
     public parent: PrimaryArea
-    public viewDisplayed?: string
+    public viewname?: string
     public viewAttrs: {
         [viewName: string]: ViewAttrs
     }
@@ -272,7 +285,7 @@ export class PrimaryPanel extends Panel {
         this.parent.split(this.key, direction);
     }
     public focus(objectKey: string) {
-        if (!this.viewDisplayed) {
+        if (!this.viewname) {
             return;
         }
         super.focus(objectKey);
@@ -281,12 +294,12 @@ export class PrimaryPanel extends Panel {
 
 export class SecondaryPanel extends Panel {
     public readonly key: number
-    public readonly viewDisplayed: string
+    public readonly viewname: string
     public readonly objectKey: string
-    constructor(viewDisplayed: string, objectKey: string) {
+    constructor(viewname: string, objectKey: string) {
         super();
         this.key = PanelNextKey ++;
-        this.viewDisplayed = viewDisplayed;
+        this.viewname = viewname;
         this.objectKey = objectKey;
     }
     toString() {

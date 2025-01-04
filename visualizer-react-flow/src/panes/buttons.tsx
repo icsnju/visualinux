@@ -1,13 +1,10 @@
-import { ReactNode } from 'react';
-
-export const borderColor = '#5755d9';
-export const borderColorCSS = `border-[${borderColor}]`;
+import { ReactNode } from "react";
 
 export type ButtonDef = {
-    onClick: () => void
-    ifEnabled: boolean
     icon: ReactNode
     desc: string
+    ifEnabled: boolean
+    onClick: () => void
 }
 
 export function ButtonWrapper({ buttonDef }: { buttonDef: ButtonDef }) {
@@ -15,14 +12,14 @@ export function ButtonWrapper({ buttonDef }: { buttonDef: ButtonDef }) {
     return (
         <div className="group relative">
             <button 
-                className={`w-[30px] h-[30px] flex items-center justify-center border-2 ${borderColorCSS} rounded ${hoverStyles}`}
+                className={`w-[30px] h-[30px] flex items-center justify-center border-2 border-[#5755d9] rounded ${hoverStyles}`}
                 onClick={buttonDef.onClick}
                 disabled={!buttonDef.ifEnabled}
             >
                 {buttonDef.icon}
             </button>
             <div className="invisible group-hover:visible absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full z-10">
-                <div className={`bg-white border-2 ${borderColorCSS} rounded shadow-lg mt-3`}>
+                <div className={`bg-white border-2 border-[#5755d9] rounded shadow-lg mt-3`}>
                     <div className="px-3 py-1 text-sm text-center text-gray-700">
                         {buttonDef.desc}
                     </div>

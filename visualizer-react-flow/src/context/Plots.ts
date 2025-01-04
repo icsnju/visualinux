@@ -28,8 +28,18 @@ export default class Plots {
     //
     //
     //
-    getViewList(): string[] {
-        const plot = this.current();
+    getView(viewname: string | undefined) {
+        if (viewname === undefined) {
+            return null;
+        }
+        const plot = this.getCurrent();
+        if (plot === null) {
+            return null;
+        }
+        return plot.views[viewname];
+    }
+    getViewnameList(): string[] {
+        const plot = this.getCurrent();
         if (plot === null) {
             return [];
         }
@@ -48,7 +58,7 @@ export default class Plots {
         }
         return this.data[index];
     }
-    current() {
+    getCurrent() {
         if (this.isEmpty()) {
             return null;
         }

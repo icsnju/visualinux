@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalStateContext } from "@app/context/Context";
 import { SplitDirection } from "@app/context/Panels";
 import Diagram from "@app/visual/Diagram";
-import { ButtonDef, ButtonsWrapper, ButtonWrapper, borderColor, borderColorCSS } from "@app/panes/buttons";
+import { ButtonDef, ButtonsWrapper, ButtonWrapper } from "@app/panes/buttons";
 import { PopViewSelector } from "@app/panes/view-selector";
 import * as icons from "@app/panes/libs/Icons";
 // import { DropdownAbstSelector, PopViewSelector } from './view-selector';
@@ -25,7 +25,7 @@ export default function PrimaryPane({ pKey }: { pKey: number }) {
     };
     //
     return (
-        <div className={`h-full flex flex-col border-2 ${borderColorCSS}`}>
+        <div className="h-full flex flex-col border-2 border-[#5755d9]">
             <PrimaryWindowHeader pKey={pKey} onMount={onChildMount}/>
             <div className="flex h-full bg-white">
                 <Diagram pKey={pKey} updateSelected={updateSelected}/>
@@ -40,7 +40,7 @@ function PrimaryWindowHeader({ pKey, onMount }: {
     onMount: (dataFromChild: ReturnType<useStateSelected>) => void
 }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);
-    let viewDisplayed = state.panels.getViewDisplayed(pKey);
+    let viewname = useMemo(() => state.panels.getViewname(pKey), [state, pKey]);
     //
     let [selected, setSelected] = useState<string | undefined>(undefined);
     useEffect(() => {
@@ -52,38 +52,41 @@ function PrimaryWindowHeader({ pKey, onMount }: {
         stateDispatch({ command: 'SPLIT', pKey, direction });
     };
     let buttons: ButtonDef[] = useMemo(() => [{
+        icon: <icons.AkarIconsAugmentedReality color="#5755d9"/>,
+        desc: "focus",
+        ifEnabled: state.panels.getObjectSelected(pKey) !== undefined,
         onClick: () => {
             let objectKey = state.panels.getObjectSelected(pKey);
-            if (viewDisplayed !== undefined && objectKey !== undefined) {
+            if (viewname !== undefined && objectKey !== undefined) {
                 stateDispatch({ command: 'FOCUS', objectKey });
             }
-        },
-        ifEnabled: state.panels.getObjectSelected(pKey) !== undefined,
-        icon: <icons.AkarIconsAugmentedReality color={borderColor}/>,
-        desc: "focus"
+        }
     }, {
+        icon: <icons.AkarIconsArrowForwardThick color="#5755d9"/>,
+        desc: "pick",
+        ifEnabled: state.panels.getObjectSelected(pKey) !== undefined,
         onClick: () => {
             let objectKey = state.panels.getObjectSelected(pKey);
-            if (viewDisplayed !== undefined && objectKey !== undefined) {
-                // use wKey instead of viewDisplayed here to maintain protocol consistency,
-                // since it is hard for user (and LLM) to specify viewDisplayed in the gdb side.
+            if (viewname !== undefined && objectKey !== undefined) {
+                // use wKey instead of viewname here to maintain protocol consistency,
+                // since it is hard for user (and LLM) to specify viewname in the gdb side.
                 stateDispatch({ command: 'PICK', pKey, objectKey });
             }
-        },
-        ifEnabled: state.panels.getObjectSelected(pKey) !== undefined,
-        icon: <icons.AkarIconsArrowForwardThick color={borderColor}/>,
-        desc: "pick"
+        }
     }, {
-        onClick: () => clickSplit(SplitDirection.horizontal),
+        icon: <icons.AkarIconsChevronVertical color="#5755d9"/>,
+        desc: "split (vert)",
         ifEnabled: true,
-        icon: <icons.AkarIconsChevronVertical color={borderColor}/>,
-        desc: "split (vert)"
+        onClick: () => clickSplit(SplitDirection.horizontal)
     }, {
-        onClick: () => clickSplit(SplitDirection.vertical),
+        icon: <icons.AkarIconsChevronHorizontal color="#5755d9"/>,
+        desc: "split (horiz)",
         ifEnabled: true,
-        icon: <icons.AkarIconsChevronHorizontal color={borderColor}/>,
-        desc: "split (horiz)"
+        onClick: () => clickSplit(SplitDirection.vertical)
     }, {
+        icon: <icons.AkarIconsDownload color="#5755d9"/>,
+        desc: "download",
+        ifEnabled: viewname !== undefined,
         onClick: () => {
             alert('download to-be-reimplemented');
             // let diagram  = diagramRef.current?.getDiagram();
@@ -91,29 +94,26 @@ function PrimaryWindowHeader({ pKey, onMount }: {
             // if (diagram && filename) {
             //     downloadDiagram(diagram, filename);
             // }
-        },
-        ifEnabled: viewDisplayed !== undefined,
-        icon: <icons.AkarIconsDownload color={borderColor}/>,
-        desc: "download"
+        }
     }, {
+        icon: <icons.AkarIconsTrashCan color="#5755d9"/>,
+        desc: "remove",
+        ifEnabled: state.panels.isRemovable(pKey),
         onClick: () => {
             console.log('click remove', pKey);
             stateDispatch({ command: 'REMOVE', pKey });
-        },
-        ifEnabled: state.panels.isRemovable(pKey),
-        icon: <icons.AkarIconsTrashCan color={borderColor}/>,
-        desc: "remove"
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }], [state, selected]);
     return (
-        <div className={`h-auto flex flex-row justify-between border-b-2 ${borderColorCSS}`}>
+        <div className="h-auto flex flex-row justify-between border-b-2 border-[#5755d9]">
             <ButtonsWrapper direction="left">
-                <div className={`w-[30px] h-[30px] flex items-center justify-center border-2 ${borderColorCSS} rounded cursor-pointer`}>
+                <div className="w-[30px] h-[30px] flex items-center justify-center border-2 border-[#5755d9] rounded cursor-pointer">
                     #{pKey}
                 </div>
                 <PopViewSelector pKey={pKey} trigger={
-                    <button className={`h-[30px] px-2 flex items-center justify-center border-2 ${borderColorCSS} rounded cursor-pointer`}>
-                        {viewDisplayed ? viewDisplayed.slice(viewDisplayed.lastIndexOf('.') + 1) : 'select a plot...'}
+                    <button className="h-[30px] px-2 flex items-center justify-center border-2 border-[#5755d9] rounded cursor-pointer">
+                        {viewname ? viewname.slice(viewname.lastIndexOf('.') + 1) : 'select a plot...'}
                     </button>
                 }/>
             </ButtonsWrapper>

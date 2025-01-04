@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+import time
 import requests
 from pathlib import Path
 from dotenv import load_dotenv
@@ -50,9 +51,17 @@ def main():
             sys.exit(1)
 
     send({
-        'command': 'NEWSTATE',
-        'data': state
+        'command': 'PLOT',
+        'plotKey': 'test',
+        'plot': {
+            'key': 'test',
+            'timestamp': time_ms(),
+            'views': state
+        }
     })
+
+def time_ms() -> int:
+    return int(time.time_ns() / 1000000)
 
 if __name__ == '__main__':
     main()

@@ -10,6 +10,11 @@ type LogEntry = {
 }
 type LogType = 'info' | 'warning' | 'error'
 
+function getTimeText(timestamp: number) {
+    const time = new Date(timestamp);
+    return `${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
+}
+
 class GlobalState {
     plots: Plots;
     panels: Panels;
@@ -19,12 +24,28 @@ class GlobalState {
         this.panels = panels;
         this.logs   = logs;
     }
+    getPlotOfPanel(pKey: number) {
+        const viewname = this.panels.getViewname(pKey);
+        const view = this.plots.getView(viewname);
+        if (viewname === undefined || view === null) {
+            return { view: null, attrs: {} };
+        }
+        const panelAttrs = this.panels.getViewAttrs(pKey);
+        let attrs: ViewAttrs = {
+            ...view.init_attrs,
+            ...panelAttrs
+        };
+        return { view, attrs };
+    }
     log(type: LogType, message: string) {
-        this.logs.push({
+        const log: LogEntry = {
             timestamp: Date.now(),
             type: type,
             message: message
-        });
+        };
+        this.logs.push(log);
+        const time = getTimeText(log.timestamp);
+        console.log(`[${time}:${log.type}]`, log.message);
     }
     refresh() {
         return new GlobalState(this.plots, this.panels, this.logs);
@@ -40,7 +61,7 @@ export type GlobalStateAction =
 | { command: 'PLOT',   plotKey: string, plot: Plot }
 | { command: 'SPLIT',  pKey: number, direction: SplitDirection }
 | { command: 'PICK',   pKey: number, objectKey: string }
-| { command: 'SWITCH', pKey: number, viewName: string }
+| { command: 'SWITCH', pKey: number, viewname: string }
 | { command: 'UPDATE', pKey: number, attrs: ViewAttrs }
 | { command: 'RESET',  pKey: number }
 | { command: 'FOCUS',  objectKey: string }
@@ -91,8 +112,8 @@ function globalStateDispatcher(state: GlobalState, action: GlobalStateAction) {
             state.panels.pick(action.pKey, action.objectKey);
             return state.refresh();
         case 'SWITCH':
-            state.log('info', `SWITCH ${action.pKey} ${action.viewName}`);
-            state.panels.switch(action.pKey, action.viewName);
+            state.log('info', `SWITCH ${action.pKey} ${action.viewname}`);
+            state.panels.switch(action.pKey, action.viewname);
             return state.refresh();
         case 'UPDATE':
             state.log('info', `UPDATE ${action.pKey} ${JSON.stringify(action.attrs)}`);
