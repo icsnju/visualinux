@@ -11,8 +11,9 @@ export type ReactFlowGraph = {
     nodes: ReactFlowNode[]
     edges: Edge[]
 }
-export type ReactFlowNode = BoxNode;
+export type ReactFlowNode = BoxNode | ContainerNode;
 export type BoxNode = Node<BoxNodeData, 'box'>;
+export type ContainerNode = Node<ContainerNodeData, 'container'>;
 
 type NodeMetadata = {
     depth: number,
@@ -24,6 +25,13 @@ export type BoxNodeData = {
     key:    string
     type:   string
     addr:   string
+    label:  string
+    members: {[label: string]: Member}
+    parent: string | null
+} & NodeMetadata
+
+export type ContainerNodeData = {
+    key:    string
     label:  string
     members: {[label: string]: Member}
     parent: string | null

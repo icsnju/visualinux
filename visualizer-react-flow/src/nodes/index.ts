@@ -3,6 +3,7 @@ import type { NodeTypes } from '@xyflow/react';
 import { AppNode } from './types';
 import { PositionLoggerNode } from './PositionLoggerNode';
 import BoxNode from './BoxNode';
+import ContainerNode from './ContainerNode';
 
 export const initialNodes: AppNode[] = [
     { id: 'a', type: 'input', position: { x: 0, y: 0 }, data: { label: 'wire' } },
@@ -80,12 +81,12 @@ export const initialNodes: AppNode[] = [
                 },
                 'linktest1': {
                     class: 'link',
-                    type: 'box',
+                    type: 'DIRECT',
                     target: '0xffff:test1',
                 },
                 'linktest2': {
                     class: 'link',
-                    type: 'box',
+                    type: 'DIRECT',
                     target: null,
                 },
             },
@@ -124,6 +125,7 @@ export const initialNodes: AppNode[] = [
 export const nodeTypes = {
     'position-logger': PositionLoggerNode,
     'box': BoxNode,
+    'container': ContainerNode,
     // 'vobject': VObject,
     // 'field': Field,
     // Add any of your custom nodes here!

@@ -116,7 +116,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             fitView
         >
             <Background />
-            <MiniMap />
+            <MiniMap pannable={true} />
             <Controls />
             <Panel position="top-right">
                 <button onClick={() => onLayout('TB')}>vertical layout</button>

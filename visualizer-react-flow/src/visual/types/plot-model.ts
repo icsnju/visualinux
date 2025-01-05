@@ -26,10 +26,9 @@ export type Pool = {
     containers: {[key: ShapeKey]: Container | ContainerConv}
 }
 export type ViewAttrs = {
-    [node: string]: NodeAttrs
-}
-export type NodeAttrs = {
-    [attr: string]: string
+    [node: string]: {
+        [attr: string]: string
+    }
 }
 
 export type Box = {
@@ -57,7 +56,7 @@ export type TextMember = {
 }
 export type LinkMember = {
     class:  'link'
-    type:   string
+    type:   'DIRECT' | 'REMOTE'
     target: ShapeKey | null
 }
 export type BoxMember = {

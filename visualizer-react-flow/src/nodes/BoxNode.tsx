@@ -1,9 +1,6 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react';
-
-import { type BoxNode } from '@app/visual/types';
-import { BoxMember } from '@app/visual/types';
-
-// <div className="react-flow__node-default">
+import { useMemo } from "react";
+import { type BoxNode } from "@app/visual/types";
+import { Handle, Position, type NodeProps } from "@xyflow/react";
 
 export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
     // const [expanded, setExpanded] = useState(true);
@@ -11,7 +8,7 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
     const cssAnim = 'transition-all duration-200 ease-in-out';
     const width = 232 - 8 * data.depth;
     const cssWidth = `w-[${width}px]`;
-    const members = Object.entries(data.members).map(([label, member]) => {
+    const members = useMemo(() => Object.entries(data.members).map(([label, member]) => {
         switch (member.class) {
             case 'box':
                 const mm = 32 + 18 + 16*1; // read from view storage: if collapsed or not
@@ -19,11 +16,12 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
             case 'text':
                 return <Field key={label} width={width} label={label} value={member.value} isLink={false}/>;
             case 'link':
-                return <Field key={label} width={width} label={label} value={member.target || 'null'} isLink={true}/>;
+                const value = member.target ? member.target.split(':', 1)[0] : 'null';
+                return <Field key={label} width={width} label={label} value={value} isLink={true}/>;
             default:
                 return null;
         }
-    });
+    }), [data.members]);
     return (
         <div className={`rounded-md bg-slate-50 flex flex-col items-center ${cssAnim} ${cssWidth}`}>
             <div className="w-full ml-1 flex justify-begin items-center">
@@ -59,7 +57,6 @@ function Field({ width, label, value, isLink }: { width: number, label: string, 
     const size = 16;
     let valueWidth = 8 + size * 8;
     let labelWidth = width - valueWidth;
-    if (isLink) console.log('CreateHandle', label);
     return (
         <div className="relative w-full flex items-center border-y border-black mt-[-1px]">
             <div className="w-full flex text-xs">
