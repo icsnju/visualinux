@@ -18,7 +18,9 @@ export type ContainerNode = Node<ContainerNodeData, 'container'>;
 type NodeMetadata = {
     depth: number,
     collapsed: boolean,
-    notifier?: (id: string) => void
+    notifier?: (id: string) => void,
+    width?: number,
+    height?: number
 }
 
 export type BoxNodeData = {

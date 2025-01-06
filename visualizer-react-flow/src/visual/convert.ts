@@ -38,7 +38,20 @@ class ReactFlowConverter {
         } else if (key in this.view.pool.containers) {
             this.convertContainer(key);
         }
+        // post process
+        for (const node of this.graph.nodes) {
+            // estimate the box size for layout
+            if (node.type === 'box') {
+                this.estimateBoxNodeWidth(node);
+                this.estimateBoxNodeHeight(node);
+            } else if (node.type === 'container') {
+                // this.estimateContainerNodeSize(node);
+            }
+        }
     }
+    //
+    // convert functions (in the parent-first order)
+    //
     private convertBox(key: string) {
         // get box and attrs
         const box = this.view.pool.boxes[key];
@@ -162,5 +175,30 @@ class ReactFlowConverter {
                 }
             }
         }
+    }
+    //
+    // post process functions
+    //
+    private estimateBoxNodeWidth(node: BoxNode) {
+        node.width = 232 - 8 * node.data.depth;
+    }
+    private estimateBoxNodeHeight(node: BoxNode) {
+        const memberList = Object.values(node.data.members);
+        const boxMembers = memberList.filter(m => m.class === 'box');
+        const nonBoxMembersCount = memberList.length - boxMembers.length;
+        let height = 32 + 16 * nonBoxMembersCount;
+        for (let member of boxMembers) {
+            const memberNode = this.nodeMap[member.object];
+            if (memberNode.type === 'box') {
+                this.estimateBoxNodeHeight(memberNode);
+            } else if (memberNode.type === 'container') {
+                // this.estimateContainerNodeHeight(memberNode);
+            }
+            if (memberNode.height === undefined) {
+                throw new Error(`memberNode.height should not be undefined here: ${memberNode.id}`);
+            }
+            height += memberNode.height;
+        }
+        node.height = height;
     }
 }

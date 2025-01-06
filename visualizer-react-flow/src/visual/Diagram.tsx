@@ -74,7 +74,8 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             setEdges(initialEdges);
         } else {
             const graph = convertToReactFlow(view, attrs);
-            setNodes(graph.nodes.map(nd => {
+            const layouted = getLayoutedPlot(graph.nodes, graph.edges, { direction: 'LR' });
+            setNodes(layouted.nodes.map(nd => {
                 if (nd.type != 'box') {
                     return nd;
                 }
@@ -86,8 +87,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                     }
                 };
             }));
-            setEdges(graph.edges);
-            console.log('graph', graph);
+            setEdges(layouted.edges);
         }
     }, [pKey, state]);
     const onLayout = useCallback((direction: string) => {
@@ -99,9 +99,9 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
         });
     }, [nodes, edges]);
     useEffect(() => {
-        if (nodesInitialized) {
-            onLayout('LR');
-        }
+        // if (nodesInitialized) {
+        //     onLayout('LR');
+        // }
     }, [nodesInitialized]);
     // const onConnect: OnConnect = useCallback(
     //     (connection) => setEdges((edges) => addEdge(connection, edges)),
