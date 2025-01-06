@@ -22,9 +22,13 @@ class ReactFlowConverter {
         this.graph = { nodes: [], edges: [] };
     }
     public convert(): ReactFlowGraph {
+        // convert the nodes
         for (const key of this.view.plot) {
             this.convertShape(key);
         }
+        // post process
+        this.estimateNodeSize();
+        // return
         return this.graph;
     }
     private convertShape(key: string) {
@@ -38,14 +42,16 @@ class ReactFlowConverter {
         } else if (key in this.view.pool.containers) {
             this.convertContainer(key);
         }
-        // post process
+    }
+    private estimateNodeSize() {
+        // estimate the node size for layout
         for (const node of this.graph.nodes) {
-            // estimate the box size for layout
             if (node.type === 'box') {
-                this.estimateBoxNodeWidth(node);
-                this.estimateBoxNodeHeight(node);
+                node.width = this.estimateBoxNodeWidth(node);
+                node.height = this.estimateBoxNodeHeight(node);
             } else if (node.type === 'container') {
-                // this.estimateContainerNodeSize(node);
+                node.width = this.estimateContainerNodeWidth(node);
+                node.height = this.estimateContainerNodeHeight(node);
             }
         }
     }
@@ -80,6 +86,7 @@ class ReactFlowConverter {
                 parent: box.parent,
                 depth: depth,
                 collapsed: attrs.collapsed === 'true',
+                heightMembers: {},
             },
             position: { x: 0, y: 0 }
         };
@@ -145,6 +152,7 @@ class ReactFlowConverter {
                 parent: container.parent,
                 depth: depth,
                 collapsed: attrs.collapsed === 'true',
+                heightMembers: {},
             },
             position: { x: 0, y: 0 }
         };
@@ -180,25 +188,42 @@ class ReactFlowConverter {
     // post process functions
     //
     private estimateBoxNodeWidth(node: BoxNode) {
-        node.width = 232 - 8 * node.data.depth;
+        return 256 - 10 * node.data.depth;
     }
     private estimateBoxNodeHeight(node: BoxNode) {
-        const memberList = Object.values(node.data.members);
-        const boxMembers = memberList.filter(m => m.class === 'box');
-        const nonBoxMembersCount = memberList.length - boxMembers.length;
-        let height = 32 + 16 * nonBoxMembersCount;
-        for (let member of boxMembers) {
+        if (node.height !== undefined) {
+            return node.height;
+        }
+        let height = 49;
+        for (let member of Object.values(node.data.members)) {
+            if (member.class !== 'box') {
+                height += 20;
+                continue;
+            }
             const memberNode = this.nodeMap[member.object];
+            if (memberNode === undefined) {
+                console.error(`memberNode is undefined: ${member.object}`);
+                continue;
+            }
             if (memberNode.type === 'box') {
-                this.estimateBoxNodeHeight(memberNode);
+                memberNode.height = this.estimateBoxNodeHeight(memberNode);
             } else if (memberNode.type === 'container') {
-                // this.estimateContainerNodeHeight(memberNode);
+                memberNode.height = this.estimateContainerNodeHeight(memberNode);
             }
             if (memberNode.height === undefined) {
                 throw new Error(`memberNode.height should not be undefined here: ${memberNode.id}`);
             }
-            height += memberNode.height;
+            let memberHeight = memberNode.height + 8;
+            node.data.heightMembers[member.object] = memberHeight;
+            height += memberHeight;
         }
-        node.height = height;
+        return height;
+    }
+    private estimateContainerNodeWidth(node: ContainerNode) {
+        return 500;
+    }
+    private estimateContainerNodeHeight(node: ContainerNode) {
+        return 500;
     }
 }
+

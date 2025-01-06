@@ -19,8 +19,7 @@ type NodeMetadata = {
     depth: number,
     collapsed: boolean,
     notifier?: (id: string) => void,
-    width?: number,
-    height?: number
+    heightMembers: {[label: string]: number},
 }
 
 export type BoxNodeData = {

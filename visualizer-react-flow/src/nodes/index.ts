@@ -61,7 +61,8 @@ export const initialNodes: AppNode[] = [
             },
             parent: null,
             depth: 0,
-            collapsed: false
+            collapsed: false,
+            heightMembers: {},
         },
     }, {
         id: '0xab:sched_entity',
@@ -92,7 +93,8 @@ export const initialNodes: AppNode[] = [
             },
             parent: '0xaa:task_struct',
             depth: 1,
-            collapsed: false
+            collapsed: false,
+            heightMembers: {},
         },
         parentId: '0xaa:task_struct',
         extent: 'parent',
@@ -117,7 +119,8 @@ export const initialNodes: AppNode[] = [
             },
             parent: null,
             depth: 0,
-            collapsed: false
+            collapsed: false,
+            heightMembers: {},
         },
     }
 ];

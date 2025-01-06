@@ -48,11 +48,12 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                     return nd;
                 }
                 if (nd.id == id) {
+                    // TODO: re-calculate the height of the box for collapsing
                     return {
                         ...nd,
                         data: {
                             ...nd.data,
-                            collapsed: !nd.data.collapsed // should be managed in view storage
+                            collapsed: !nd.data.collapsed
                         }
                     }
                 }
