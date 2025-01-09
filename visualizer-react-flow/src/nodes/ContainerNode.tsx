@@ -3,10 +3,25 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 
 export default function ContainerNode({ id, data, parentId }: NodeProps<ContainerNode>) {
     // TODO: calculate the size and position of the container according to its children
+    // const type = data.key.split(':', 2)[1]; //container.type,
+    // switch (type) {
+    //     case 'array':
+    //         return <ArrayNode id={id} data={data} parentId={parentId} type={"container"} dragging={false} zIndex={0} isConnectable={false} positionAbsoluteX={0} positionAbsoluteY={0} />;
+    // }
+    const cssAnim = 'transition-all duration-200 ease-in-out';
     return (
-        <div className="react-flow__node-default bg-transparent w-[500px] h-[500px]">
-            <div className="p-2 text-sm text-gray-700">ContainerTest</div>
-            <div className="p-2 text-sm text-gray-700">{data.label}</div>
+        <div className={`${cssAnim}`}>
+            <div className="w-full ml-2 flex justify-begin items-center">
+                <button 
+                    className="w-4 h-4 mr-1 flex items-center justify-center border border-black rounded"
+                    onClick={() => {
+                        if (data.notifier) data.notifier(id);
+                    }}
+                >
+                    {data.collapsed ? '+' : '-'}
+                </button>
+                <p className="h-8 text-lg">{data.label}</p>
+            </div>
             <Handle 
                 type="target" 
                 position={Position.Left} 

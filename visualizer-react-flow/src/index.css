@@ -41,3 +41,8 @@
 .react-flow__node.draggable.dragging {
     cursor: move !important;
 }
+
+.react-flow__node-container {
+    border-color: rgb(100, 100, 100) !important;
+    border-style: dashed !important;
+}

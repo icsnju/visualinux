@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 import { GlobalStateContext } from "@app/context/Context";
 import { convertToReactFlow } from "@app/visual/convert";
-import { getLayoutedPlot } from "@app/visual/layout";
 import {
     ReactFlow,
     Background,
@@ -44,7 +43,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
         const nodeNotifier = (id: string) => {
             console.log(id, 'notified!');
             setNodes(nds => nds.map(nd => {
-                if (nd.type != 'box') {
+                if (nd.type != 'box' && nd.type != 'container') {
                     return nd;
                 }
                 if (nd.id == id) {
@@ -75,9 +74,8 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             setEdges(initialEdges);
         } else {
             const graph = convertToReactFlow(view, attrs);
-            const layouted = getLayoutedPlot(graph.nodes, graph.edges, { direction: 'LR' });
-            setNodes(layouted.nodes.map(nd => {
-                if (nd.type != 'box') {
+            setNodes(graph.nodes.map(nd => {
+                if (nd.type != 'box' && nd.type != 'container') {
                     return nd;
                 }
                 return {
@@ -88,13 +86,14 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                     }
                 };
             }));
-            setEdges(layouted.edges);
+            setEdges(graph.edges);
         }
     }, [pKey, state]);
     const onLayout = useCallback((direction: string) => {
-        const layouted = getLayoutedPlot(nodes, edges, { direction });
-        setNodes(layouted.nodes);
-        setEdges(layouted.edges);
+        console.error('onLayout to be reimplemented');
+        // const layouted = getLayoutedPlot(nodes, edges, { direction });
+        // setNodes(layouted.nodes);
+        // setEdges(layouted.edges);
         window.requestAnimationFrame(() => {
             fitView();
         });

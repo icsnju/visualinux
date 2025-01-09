@@ -15,13 +15,9 @@ type LayoutResult = {
 // for inter-object layout, use Dagre
 // for intra-object layout, calculate the position of embedded objects
 
-export function getLayoutedPlot(nodes: Node[], edges: Edge[], options: PlotLayoutOptions): LayoutResult {
-    return layoutGraph(nodes, edges, options);
-}
-
-function layoutGraph(nodes: Node[], edges: Edge[], options: PlotLayoutOptions): LayoutResult {
-    let fuck = layoutGraphByDagre(nodes, edges, options);
-    return fuck;
+function layoutGraph(nodes: Node[], edges: Edge[], options: PlotLayoutOptions) {
+    layoutGraphByDagre(nodes, edges, { rankdir: options.direction });
+    return;
     // first layout the outer graph
     let nodesOuter: Node[] = [], nodesInner: Node[] = [];
     let nodesOuterRec: Set<string> = new Set();
@@ -56,9 +52,9 @@ function layoutGraph(nodes: Node[], edges: Edge[], options: PlotLayoutOptions): 
     return layouted;
 }
 
-function layoutGraphByDagre(nodes: Node[], edges: Edge[], options: PlotLayoutOptions): LayoutResult {
+export function layoutGraphByDagre(nodes: Node[], edges: Edge[], options: Dagre.GraphLabel) {
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-    g.setGraph({ rankdir: options.direction });
+    g.setGraph(options);
     edges.forEach((edge) => g.setEdge(edge.source, edge.target));
     nodes.forEach((node) =>
         g.setNode(node.id, node)
@@ -69,18 +65,12 @@ function layoutGraphByDagre(nodes: Node[], edges: Edge[], options: PlotLayoutOpt
         // })
     );
     Dagre.layout(g);
-    return {
-        nodes: nodes.map((node) => {
-            const position = g.node(node.id);
-            // We are shifting the dagre node position (anchor=center center) to the top left
-            // so it matches the React Flow node anchor point (top left).
-            const x = position.x - (node.width ?? 0) / 2;
-            const y = position.y - (node.height ?? 0) / 2;
-    
-            return { ...node, position: { x, y } };
-        }),
-        edges,
-    };
+    for (let node of nodes) {
+        const position = g.node(node.id);
+        const x = position.x - (node.width ?? 0) / 2;
+        const y = position.y - (node.height ?? 0) / 2;
+        node.position = { x, y };
+    }
 };
 
 function layoutBox(node: Node, options: PlotLayoutOptions): LayoutResult {

@@ -1,5 +1,5 @@
-import { type Edge, type Node } from '@xyflow/react';
-import { Member } from './plot-model';
+import { Member, ContainerMember } from "@app/visual/types/plot-model";
+import { type Edge, type Node } from "@xyflow/react";
 
 export type ReactFlowPlot = {
     key: string
@@ -23,17 +23,17 @@ type NodeMetadata = {
 }
 
 export type BoxNodeData = {
-    key:    string
-    type:   string
-    addr:   string
-    label:  string
+    key:     string
+    type:    string
+    addr:    string
+    label:   string
     members: {[label: string]: Member}
-    parent: string | null
+    parent:  string | null
 } & NodeMetadata
 
 export type ContainerNodeData = {
-    key:    string
-    label:  string
-    members: {[label: string]: Member}
-    parent: string | null
+    key:     string
+    label:   string
+    members: ContainerMember[]
+    parent:  string | null
 } & NodeMetadata
