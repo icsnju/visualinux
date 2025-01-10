@@ -21,8 +21,8 @@ import {
 import "@xyflow/react/dist/style.css";
 import "../index.css";
 
-import { initialNodes, nodeTypes } from "@app/nodes";
-import { initialEdges, edgeTypes } from "@app/edges";
+import { nodeTypes } from "@app/visual/nodes";
+import { edgeTypes } from "@app/visual/edges";
 
 export default function Diagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     return (
@@ -34,8 +34,8 @@ export default function Diagram({ pKey, updateSelected }: { pKey: number, update
 
 function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);
-    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const nodesInitialized = useNodesInitialized();
     const { fitView } = useReactFlow();
     // Update nodes and edges when graph changes
@@ -70,8 +70,8 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
         const { view, attrs } = state.getPlotOfPanel(pKey);
         console.log('getplotofpanel', view, attrs);
         if (view == null) {
-            setNodes(initialNodes);
-            setEdges(initialEdges);
+            setNodes([]);
+            setEdges([]);
         } else {
             const graph = convertToReactFlow(view, attrs);
             setNodes(graph.nodes.map(nd => {
@@ -99,9 +99,11 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
         });
     }, [nodes, edges]);
     useEffect(() => {
-        // if (nodesInitialized) {
-        //     onLayout('LR');
-        // }
+        if (nodesInitialized) {
+            window.requestAnimationFrame(() => {
+                fitView();
+            });
+        }
     }, [nodesInitialized]);
     // const onConnect: OnConnect = useCallback(
     //     (connection) => setEdges((edges) => addEdge(connection, edges)),

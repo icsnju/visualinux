@@ -5,12 +5,23 @@ import {
     ReactFlowGraph, BoxNode, ContainerNode
 } from "@app/visual/types";
 import { layoutGraphByDagre } from "@app/visual/layout";
-import { type Edge } from "@xyflow/react";
+import { type Edge, MarkerType } from "@xyflow/react";
 import Dagre from "@dagrejs/dagre";
 
 export function convertToReactFlow(view: View, attrs: ViewAttrs): ReactFlowGraph {
     const converter = new ReactFlowConverter(view, attrs);
     return converter.convert();
+}
+
+const edgeProp = {
+    type: 'step',
+    zIndex: 10,
+    style: { stroke: 'black' },
+    markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 20, height: 20,
+        color: 'black',
+    },
 }
 
 class ReactFlowConverter {
@@ -121,8 +132,7 @@ class ReactFlowConverter {
                     source: box.key,
                     sourceHandle: memberKey,
                     target: member.target,
-                    zIndex: 10,
-                    style: { stroke: 'black' }, // TODO: use custom edge component
+                    ...edgeProp
                 });
                 this.convertShape(member.target);
             } else if (member.class == 'box') {
@@ -198,8 +208,7 @@ class ReactFlowConverter {
                         source: member.key,
                         sourceHandle: label,
                         target: target,
-                        zIndex: 10,
-                        style: { stroke: 'black' }, // TODO: use custom edge component
+                        ...edgeProp
                     });
                     this.convertShape(target);
                 }
@@ -328,7 +337,6 @@ class ReactFlowConverter {
         // return
         node.width  = width;
         node.height = height;
-        console.log('estimate result', node.id, node.width, node.height);
     }
     // layout the rest, i.e., outmost nodes
     private layoutOutmostNodes() {
