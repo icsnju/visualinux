@@ -57,12 +57,8 @@ export function layoutGraphByDagre(nodes: Node[], edges: Edge[], options: Dagre.
     g.setGraph(options);
     edges.forEach((edge) => g.setEdge(edge.source, edge.target));
     nodes.forEach((node) =>
-        g.setNode(node.id, node)
-        // g.setNode(node.id, {
-        //     ...node,
-        //     width: node.measured?.width ?? 0,
-        //     height: node.measured?.height ?? 0,
-        // })
+        // g.setNode(node.id, { width: node.measured?.width ?? 0, height: node.measured?.height ?? 0 })
+        g.setNode(node.id, { width: node.width, height: node.height })
     );
     Dagre.layout(g);
     for (let node of nodes) {
