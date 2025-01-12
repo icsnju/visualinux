@@ -23,12 +23,13 @@ export type View = {
 }
 export type Pool = {
     boxes: {[key: ShapeKey]: Box},
-    containers: {[key: ShapeKey]: Container | ContainerConv}
+    containers: {[key: ShapeKey]: Container}
 }
 export type ViewAttrs = {
-    [node: string]: {
-        [attr: string]: string
-    }
+    [key: string]: NodeAttrs
+}
+export type NodeAttrs = {
+    [attr: string]: string
 }
 
 export type Box = {
@@ -43,7 +44,6 @@ export type Box = {
 export type Abst = {
     parent: string | null
     members: {[label: Label]: Member}
-    distilled: boolean
 }
 
 export type Member = TextMember | LinkMember | BoxMember
@@ -67,14 +67,6 @@ export type BoxMember = {
 export type Container = {
     key:  ShapeKey
     label: string
-    members: ContainerMember[]
-    style: {[name: string]: string}
-    parent: ShapeKey | null
-}
-
-export type ContainerConv = {
-    source: ShapeKey
-    key:  ShapeKey
     members: ContainerMember[]
     parent: ShapeKey | null
 }
@@ -102,8 +94,4 @@ export function shouldCompress(box: Box): boolean {
     const abst = Object.values(box.absts)[0];
     const members = Object.values(abst.members);
     return members.length == 1 && members[0].class != 'box';
-}
-
-export function isContainerConv(container: Container | ContainerConv): container is ContainerConv {
-    return (container as ContainerConv).source !== undefined;
 }

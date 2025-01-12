@@ -5,10 +5,11 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
     // const [expanded, setExpanded] = useState(true);
     // const cssWidth = expanded ? 'max-w-[232px]' : 'max-w-[128px]';
+    const depth = 0;
     const cssBgColor = 
-        data.depth == 0 ? 'bg-[#FFFFFF]' :
-        data.depth == 1 ? 'bg-[#ECECEC]' :
-        data.depth == 2 ? 'bg-[#D5D5D5]' :
+        depth == 0 ? 'bg-[#FFFFFF]' :
+        depth == 1 ? 'bg-[#ECECEC]' :
+        depth == 2 ? 'bg-[#D5D5D5]' :
         'bg-[#B7B7B7]';
     const cssAnim = 'transition-all duration-200 ease-in-out';
     const members = useMemo(() => Object.entries(data.members).map(([label, member]) => {
@@ -17,10 +18,10 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
                 const spacing = data.heightMembers?.[member.object] ?? 0;
                 return <div key={label} className={`w-full ${cssAnim}`} style={{height: `${spacing}px`}}/>;
             case 'text':
-                return <Field key={label} depth={data.depth} label={label} value={member.value} isLink={false}/>;
+                return <Field key={label} depth={depth} label={label} value={member.value} isLink={false}/>;
             case 'link':
                 const value = member.target ? member.target.split(':', 1)[0] : 'null';
-                return <Field key={label} depth={data.depth} label={label} value={value} isLink={true}/>;
+                return <Field key={label} depth={depth} label={label} value={value} isLink={true}/>;
             default:
                 return null;
         }

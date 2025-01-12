@@ -1,8 +1,8 @@
 import {
-    View, Box, Abst, Container,
-    ViewAttrs, NodeAttrs,
-    ReactFlowGraph, BoxNode, ContainerNode,
-    BoxNodeData,
+    View, Box, Abst,
+    Container, ContainerConv, isContainerConv,
+    ViewAttrs,
+    ReactFlowGraph, BoxNode, ContainerNode
 } from "@app/visual/types";
 import { layoutGraphByDagre } from "@app/visual/layout";
 import { type Edge, MarkerType } from "@xyflow/react";
@@ -27,27 +27,17 @@ const edgeProp = {
 class ReactFlowConverter {
     private view: View;
     private attrs: ViewAttrs;
-    private rootMap:   { [key: string]: string };
     private nodeMap: { [key: string]: BoxNode | ContainerNode };
     private graph: ReactFlowGraph;
-    private layoutDirection: 'LR' | 'TB' = 'LR';
+    private layoutDirection: "LR" | "TB" = "LR";
     constructor(view: View, attrs: ViewAttrs) {
-        this.view      = view;
-        this.attrs     = attrs;
-        this.rootMap   = {};
-        this.nodeMap   = {};
-        this.graph     = { nodes: [], edges: [] };
+        this.view = view;
+        this.attrs = attrs;
+        this.nodeMap = {};
+        this.graph = { nodes: [], edges: [] };
     }
     public convert(): ReactFlowGraph {
-        // calculate the root box of each shape for further node compaction
-        for (const key of Object.keys(this.view.pool.boxes)) {
-            this.calcRootShapeOf(key);
-        }
-        for (const key of Object.keys(this.view.pool.containers)) {
-            this.calcRootShapeOf(key);
-        }
-        console.log('rootmap', this.rootMap);
-        // convert viewcl shapes to react flow nodes
+        // convert the nodes
         for (const key of this.view.plot) {
             this.convertShape(key);
         }
@@ -55,52 +45,18 @@ class ReactFlowConverter {
         this.estimateNodeSize();
         this.layoutOutmostNodes();
         // return
-        console.log('final graph', this.graph);
         return this.graph;
     }
-    private getShape(key: string): Box | Container {
-        if (key in this.view.pool.boxes) {
-            return this.view.pool.boxes[key];
-        } else if (key in this.view.pool.containers) {
-            return this.view.pool.containers[key];
-        }
-        throw new Error(`getShape: shape not found: ${key}`);
-    }
-    private isShapeOutmost(key: string) {
-        return this.rootMap[key] == key;
-    }
-    private calcRootShapeOf(key: string) {
-        // avoid redundant searching
-        if (key in this.rootMap) {
-            return;
-        }
-        let shape = this.getShape(key);
-        // for the outmost shape its root shape is itself
-        if (shape.parent == null) {
-            this.rootMap[key] = key;
-            return;
-        }
-        // calculate the root shape according to its parent
-        this.calcRootShapeOf(shape.parent);
-        if (shape.parent in this.view.pool.containers && !shouldCompactContainer(this.view.pool.containers[shape.parent])) {
-            this.rootMap[key] = key;
-        } else {
-            this.rootMap[key] = this.rootMap[shape.parent];
-        }
-    }
     private convertShape(key: string) {
-        // for several reasons/optimizations, we only convert the outmost shapes to react flow nodes
-        console.log('convertShape?', key, this.rootMap[key]);
-        key = this.rootMap[key];
         // avoid redundant conversion
         if (this.nodeMap[key] != null) {
             return;
         }
         // convert according to the node type
         if (key in this.view.pool.boxes) {
-            this.convertBox(this.view.pool.boxes[key], this.attrs[key] || {});
+            this.convertBox(key);
         } else if (key in this.view.pool.containers) {
-            this.convertContainer(this.view.pool.containers[key], this.attrs[key] || {});
+            this.convertContainer(key);
         }
     }
     private estimateNodeSize() {
@@ -109,27 +65,52 @@ class ReactFlowConverter {
             if (node.type == 'box') {
                 this.estimateBoxNodeSize(node);
             } else if (node.type == 'container') {
-                this.estimateContainerNodeSize(node);
+                 this.estimateContainerNodeSize(node);
             }
         }
     }
     //
-    // convert functions (only for outmost shapes)
+    // convert functions (in the parent-first order)
     //
-    private convertBox(box: Box, attrs: NodeAttrs) {
-        // only convert the outmost shapes
-        if (!this.isShapeOutmost(box.key)) {
-            return;
+    private convertBox(key: string) {
+        // get box and attrs
+        const box = this.view.pool.boxes[key];
+        const attrs = this.attrs[key] || {};
+        console.log('convertBox', key, box, attrs);
+        // convert parent first since react flow requires parent nodes to be listed before their children
+        if (box.parent != null) {
+            this.convertShape(box.parent);
         }
-        console.log('convertBox', box.key, box, attrs);
+        // get the depth from its parent
+        const parent = box.parent != null ? this.nodeMap[box.parent] : null;
+        let depth;
+        if (parent == null) {
+            depth = 0;
+        } else if (parent.type == 'box') {
+            depth = parent.data.depth + 1;
+        } else {
+            depth = parent.data.depth;
+        }
         // avoid redundant conversion
-        if (this.nodeMap[box.key] != null) {
+        if (this.nodeMap[key] != null) {
             return;
         }
-        // generate the node
+        // handle view inheritance to get all members
+        const abst = box.absts[attrs.view || 'default'];
+        const members = this.getMembersOfBox(box, abst);
+        console.log('attrs.view', attrs.view, members);
+        // convert the box itself
         let node: BoxNode = {
-            id: box.key, type: 'box',
-            data: this.convertBoxData(box, attrs),
+            id: key, type: "box",
+            data: {
+                key: key,
+                type: box.type, addr: box.addr, label: box.label,
+                members: members,
+                parent: box.parent,
+                depth: depth,
+                collapsed: attrs.collapsed == 'true',
+                heightMembers: {},
+            },
             position: { x: 0, y: 0 }
         };
         if (box.parent != null) {
@@ -139,144 +120,76 @@ class ReactFlowConverter {
         }
         this.nodeMap[node.id] = node;
         this.graph.nodes.push(node);
-    }
-    private convertBoxData(box: Box | Container, attrs: NodeAttrs): BoxNodeData {
-        // handle Container type
-        if ('members' in box) {
-            return this._convertArrayDataToBox(box, attrs);
-        }
-        // handle view inheritance to get all members
-        const abst = box.absts[attrs.view || 'default'];
-        return {
-            key: box.key,
-            type: box.type, addr: box.addr, label: box.label,
-            members: this.convertBoxMembers(box, abst),
-            parent: box.parent,
-            collapsed: attrs.collapsed == 'true',
-        };
-    }
-    private _convertArrayDataToBox(container: Container, attrs: NodeAttrs): BoxNodeData {
-        // this is a temp solution
-        // TODO: semantics of array-like containers HOWTO?
-        if (!shouldCompactContainer(container)) {
-            throw new Error(`container.type should be Array here: ${container.key}`);
-        }
-        let nodeData: BoxNodeData = {
-            key: container.key,
-            type: '', addr: '', label: container.label,
-            members: {},
-            parent: container.parent,
-            collapsed: attrs.collapsed == 'true',
-        };
-        for (const member of container.members) {
-            if (member.key != null) {
-                nodeData.members[member.key] = {
-                    class: 'box',
-                    object: member.key,
-                    data: this.convertBoxData(
-                        this.getShape(member.key),
-                        this.attrs[member.key] || {}
-                    )
-                };
-            }
-        }
-        return nodeData;
-    }
-    private convertBoxMembers(box: Box, abst: Abst): BoxNodeData['members'] {
-        if (abst.parent == null) {
-            return this.convertAbstMembers(box, abst)
-        }
-        const parentMembers = this.convertBoxMembers(box, box.absts[abst.parent]);
-        return { ...parentMembers, ...this.convertAbstMembers(box, abst) };
-    }
-    private convertAbstMembers(box: Box, abst: Abst) {
-        let members = abst.members as BoxNodeData['members'];
-        for (let [label, member] of Object.entries(members)) {
-            // generate the edge
+        // convert the pointers, pointed nodes, and nested boxes
+        for (const memberKey in members) {
+            const member = members[memberKey];
             if (member.class == 'link' && member.target != null) {
-                const edgeId = `${box.key}.${label}`;
-                console.log('for edge ', edgeId);
-                console.log(member.target, 'root:', this.rootMap[member.target]);
-                const edge: Edge = {
-                    id: edgeId,
-                    source: this.rootMap[box.key],
-                    sourceHandle: edgeId,
-                    target: this.rootMap[member.target],
-                    targetHandle: member.target,
+                // convert the pointer and pointed node
+                this.graph.edges.push({
+                    id: `${box.key}.${memberKey}`,
+                    // id: `${box.key}.${memberKey}->${member.target}`,
+                    source: box.key,
+                    sourceHandle: memberKey,
+                    target: member.target,
                     ...edgeProp
-                };
-                this.graph.edges.push(edge);
-                if (edge.source != edge.target) this.convertShape(edge.target);
-            // put data of nested box into the box data
+                });
+                this.convertShape(member.target);
             } else if (member.class == 'box') {
-                if (member.object != null) {
-                    member.data = this.convertBoxData(
-                        this.getShape(member.object),
-                        this.attrs[member.object] || {}
-                    );
-                }
+                this.convertShape(member.object);
             }
         }
-        return members;
     }
-    private convertContainer(container: Container, attrs: NodeAttrs) {
-        // only convert the outmost shapes
-        if (!this.isShapeOutmost(container.key)) {
-            return;
+    private getMembersOfBox(box: Box, abst: Abst): typeof abst.members {
+        if (abst.parent == null) {
+            return { ...abst.members };
         }
-        console.log('convertContainer', container.key, container, attrs);
+        const parentMembers = this.getMembersOfBox(box, box.absts[abst.parent]);
+        return { ...parentMembers, ...abst.members };
+    }
+    private convertContainer(key: string) {
+        // get container and attrs
+        const container = this.view.pool.containers[key];
+        const attrs = this.attrs[key] || {};
+        console.log('convertContainer', key, container, attrs);
+        // convert parent first since react flow requires parent nodes to be listed before their children
+        if (container.parent != null) {
+            this.convertShape(container.parent);
+        }
+        const depth = container.parent != null ? this.nodeMap[container.parent].data.depth + 1 : 0;
         // avoid redundant conversion
-        if (this.nodeMap[container.key] != null) {
+        if (this.nodeMap[key] != null) {
             return;
         }
-        // compact array-like containers
-        if (shouldCompactContainer(container)) {
-            const [addr, type] = container.key.split(':', 2);
-            const compacted: Box = {
-                key: container.key,
-                type: type, label: container.label, addr: addr,
-                parent: container.parent,
-                absts: {
-                    default: {
-                        members: Object.fromEntries(
-                            container.members.map(member => [
-                                member.key, {
-                                    class: 'box',
-                                    object: member.key,
-                                }
-                            ])
-                        ),
-                        parent: null
-                    }
-                }
-            }
-            this.convertBox(compacted, attrs);
-            // this._convertArrayDataToContainer(container, attrs);
+        // TODO: conv
+        if (isContainerConv(container)) {
             return;
         }
-        // generate the node
+        // convert the container itself
         let node: ContainerNode = {
             id: container.key,
-            type: 'container',
+            type: "container",
             data: {
                 key: container.key,
                 label: container.label,
                 members: Object.values(container.members).filter(member => member.key != null),
                 parent: container.parent,
+                depth: depth,
                 collapsed: attrs.collapsed == 'true',
+                heightMembers: {},
             },
             position: { x: 0, y: 0 }
         };
+        if (container.parent != null) {
+            node.parentId = container.parent;
+            node.extent = 'parent';
+            node.draggable = false;
+        }
         this.nodeMap[node.id] = node;
         this.graph.nodes.push(node);
         // convert its members
         for (const member of node.data.members) {
             this.convertShape(member.key);
             const memberNode = this.nodeMap[member.key];
-            if (memberNode === undefined) {
-                console.error(`container ${container.key} memberNode undefined: ${member.key}`);
-                continue;
-            }
             if (memberNode.type != 'box') {
                 continue;
             }
@@ -294,7 +207,6 @@ class ReactFlowConverter {
                         source: member.key,
                         sourceHandle: label,
                         target: target,
-                        targetHandle: target,
                         ...edgeProp
                     });
                     this.convertShape(target);
@@ -311,16 +223,11 @@ class ReactFlowConverter {
             return;
         }
         // estimate the width
-        let width = 256;
+        let width = 256 - 10 * node.data.depth;
         // estimate the height according to the height of its members
-        let height = this._estimateBoxNodeHeight(node.data);
-        // return
-        node.width  = width;
-        node.height = height;
-    }
-    private _estimateBoxNodeHeight(nodeData: BoxNodeData) {
+        // also perform the intra-node layout
         let height = 25;
-        let members = Object.values(nodeData.members);
+        let members = Object.values(node.data.members);
         for (let index = 0; index < members.length; index++) {
             const member = members[index];
             // simple estimation for primitive members
@@ -329,24 +236,38 @@ class ReactFlowConverter {
                 continue;
             }
             // handle non-primitive members
-            if (member.data === undefined) {
+            const memberNode = this.nodeMap[member.object];
+            if (memberNode === undefined) {
                 console.error(`memberNode is undefined: ${member.object}`);
                 continue;
             }
             // estimate the member node size first
-            let memberHeight = this._estimateBoxNodeHeight(member.data);
+            if (memberNode.type == 'box') {
+                this.estimateBoxNodeSize(memberNode);
+            } else if (memberNode.type == 'container') {
+                this.estimateContainerNodeSize(memberNode);
+            }
+            if (memberNode.width === undefined || memberNode.height === undefined) {
+                throw new Error(`memberNode.width/height should not be undefined here: ${memberNode.id}`);
+            }
+            // perform the intra-node layout
+            memberNode.position = { x: 5, y: height + 5 };
             // add necessary spaces to estimate the node size
-            let space = memberHeight + 8;
+            let space = memberNode.height + 8;
+            // also fine-tune the display style
             if (index > 0 && members[index - 1].class === 'box') {
+                memberNode.position.y -= 3;
                 space -= 3;
             }
             // finally estimated
+            node.data.heightMembers[member.object] = space;
             height += space;
         }
         // add spaces for the object address displayed at the bottom
         height += 24;
         // return
-        return height;
+        node.width  = width;
+        node.height = height;
     }
     private estimateContainerNodeSize(node: ContainerNode) {
         console.log('estimateContainerNodeSize', node.id, node.data.members);
@@ -423,9 +344,4 @@ class ReactFlowConverter {
         let edges = this.graph.edges;
         layoutGraphByDagre(nodes, edges, { rankdir: this.layoutDirection, marginx: 16, marginy: 16 });
     }
-}
-
-function shouldCompactContainer(container: Container) {
-    const typo = container.key.split(':')[1];
-    return ['Array', 'XArray'].includes(typo);
 }
