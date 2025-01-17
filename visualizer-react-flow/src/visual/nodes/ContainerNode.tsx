@@ -23,6 +23,8 @@ export default function ContainerNode({ id, data, parentId }: NodeProps<Containe
                 <p className="h-8 text-lg">{data.label}</p>
             </div>
             <Handle 
+                key={`handle#${id}`}
+                id={id}
                 type="target" 
                 position={Position.Left} 
                 style={{

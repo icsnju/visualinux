@@ -1,33 +1,41 @@
 import { useMemo } from "react";
-import { type BoxNode } from "@app/visual/types";
+import { BoxNodeData, type BoxNode } from "@app/visual/types";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
-export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
-    // const [expanded, setExpanded] = useState(true);
-    // const cssWidth = expanded ? 'max-w-[232px]' : 'max-w-[128px]';
-    const depth = 0;
-    const cssBgColor = 
-        depth == 0 ? 'bg-[#FFFFFF]' :
-        depth == 1 ? 'bg-[#ECECEC]' :
-        depth == 2 ? 'bg-[#D5D5D5]' :
-        'bg-[#B7B7B7]';
-    const cssAnim = 'transition-all duration-200 ease-in-out';
+const cssBgColor = (depth: number) => 
+    depth == 0 ? 'bg-[#FFFFFF]' :
+    depth == 1 ? 'bg-[#ECECEC]' :
+    depth == 2 ? 'bg-[#D5D5D5]' :
+    'bg-[#B7B7B7]';
+
+export default function BoxNode({ id, data }: NodeProps<BoxNode>) {
+    return (
+        <BoxField id={id} data={data} depth={0}/>
+    )
+}
+
+function BoxField({ id, data, depth }: { id: string, data: BoxNodeData, depth: number }) {
     const members = useMemo(() => Object.entries(data.members).map(([label, member]) => {
         switch (member.class) {
             case 'box':
-                const spacing = data.heightMembers?.[member.object] ?? 0;
-                return <div key={label} className={`w-full ${cssAnim}`} style={{height: `${spacing}px`}}/>;
+                return (
+                    <div key={label} className="w-full p-1">
+                        <BoxField id={member.object} data={member.data} depth={depth + 1}/>
+                    </div>
+                );
             case 'text':
-                return <Field key={label} depth={depth} label={label} value={member.value} isLink={false}/>;
+                return <PrimitiveField key={label} depth={depth} label={label} value={member.value} isValueEmoji={member.size == -1}/>;
             case 'link':
                 const value = member.target ? member.target.split(':', 1)[0] : 'null';
-                return <Field key={label} depth={depth} label={label} value={value} isLink={true}/>;
+                return <PrimitiveField key={label} depth={depth} label={label} value={value} edgeSource={`${id}.${label}`}/>;
             default:
                 return null;
         }
     }), [data.members]);
+    const cssBorder = depth > 0 ? 'border-2 border-black' : '';
+    const cssAnim = 'transition-all duration-200 ease-in-out';
     return (
-        <div className={`rounded-md ${cssBgColor} flex flex-col items-center ${cssAnim}`}>
+        <div className={`relative flex flex-col items-center rounded-md ${cssBorder} ${cssBgColor(depth)} ${cssAnim}`}>
             <div className="w-full ml-1 flex justify-begin items-center">
                 <button 
                     className="w-4 h-4 mr-1 flex items-center justify-center border border-black rounded"
@@ -39,7 +47,7 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
                 </button>
                 <p className="h-6 text-base">{data.label}</p>
             </div>
-            <div className={`w-full overflow-hidden ${cssAnim} ${data.collapsed ? 'max-h-0' : 'max-h-[500px]'}`}>
+            <div className={`w-full overflow-hidden ${cssAnim} ${data.collapsed ? 'max-h-0' : ''}`}>
                 <div className="border-y border-black">
                     {members}
                 </div>
@@ -48,6 +56,8 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
                 </div>
             </div>
             <Handle 
+                key={`handle#${id}`}
+                id={id}
                 type="target" 
                 position={Position.Left} 
                 style={{
@@ -59,16 +69,21 @@ export default function BoxNode({ id, data, parentId }: NodeProps<BoxNode>) {
     );
 }
 
-function Field({ depth, label, value, isLink }: { depth: number, label: string, value: string, isLink: boolean }) {
+function PrimitiveField({ depth, label, value, isValueEmoji, edgeSource }: { depth: number, label: string, value: string, isValueEmoji?: boolean, edgeSource?: string }) {
     const labelWidth = 96 - 5 * depth;
     return (
         <div className="relative w-full flex items-center border-y border-black h-5">
             <div className="w-full flex text-sm">
                 <p style={{width: `${labelWidth}px`}} className="px-1 border-r-2 border-black truncate">{label}</p>
-                <p className="flex-1 px-1 text-center truncate">{value}</p>
+                {isValueEmoji ?
+                    <p className="flex-1 px-1 text-center truncate" dangerouslySetInnerHTML={{__html: value}} />
+                :
+                    <p className="flex-1 px-1 text-center truncate">{value}</p>
+                }
             </div>
-            {isLink ? <Handle 
-                id={label}
+            {edgeSource ? <Handle 
+                key={`handle#${edgeSource}`}
+                id={edgeSource}
                 type="source" 
                 position={Position.Right} 
                 style={{

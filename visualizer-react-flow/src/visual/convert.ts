@@ -14,7 +14,7 @@ export function convertToReactFlow(view: View, attrs: ViewAttrs): ReactFlowGraph
 }
 
 const edgeProp = {
-    type: 'step',
+    // type: 'bezier',
     zIndex: 10,
     style: { stroke: 'black' },
     markerEnd: {
@@ -54,6 +54,12 @@ class ReactFlowConverter {
         // post process
         this.estimateNodeSize();
         this.layoutOutmostNodes();
+        // eliminate estimation errors
+        for (const node of this.graph.nodes) {
+            if (node.type == 'box') {
+                node.height = undefined;
+            }
+        }
         // return
         console.log('final graph', this.graph);
         return this.graph;
@@ -190,12 +196,11 @@ class ReactFlowConverter {
         return { ...parentMembers, ...this.convertAbstMembers(box, abst) };
     }
     private convertAbstMembers(box: Box, abst: Abst) {
-        let members = abst.members as BoxNodeData['members'];
+        let members = structuredClone(abst.members) as BoxNodeData['members'];
         for (let [label, member] of Object.entries(members)) {
             // generate the edge
             if (member.class == 'link' && member.target != null) {
                 const edgeId = `${box.key}.${label}`;
-                console.log('for edge ', edgeId);
                 console.log(member.target, 'root:', this.rootMap[member.target]);
                 const edge: Edge = {
                     id: edgeId,
@@ -238,8 +243,9 @@ class ReactFlowConverter {
                 parent: container.parent,
                 absts: {
                     default: {
-                        members: Object.fromEntries(
-                            container.members.map(member => [
+                        members: Object.fromEntries(container.members
+                            .filter(member => member.key != null)
+                            .map(member => [
                                 member.key, {
                                     class: 'box',
                                     object: member.key,
@@ -289,14 +295,16 @@ class ReactFlowConverter {
                     };
                 }
                 if (target != null) {
-                    this.graph.edges.push({
-                        id: `${member.key}.${label}`,
+                    const edgeId = `${member.key}.${label}`;
+                    const edge: Edge = {
+                        id: edgeId,
                         source: member.key,
-                        sourceHandle: label,
+                        sourceHandle: edgeId,
                         target: target,
                         targetHandle: target,
                         ...edgeProp
-                    });
+                    };
+                    this.graph.edges.push(edge);
                     this.convertShape(target);
                 }
             }
@@ -319,7 +327,7 @@ class ReactFlowConverter {
         node.height = height;
     }
     private _estimateBoxNodeHeight(nodeData: BoxNodeData) {
-        let height = 25;
+        let height = 26;
         let members = Object.values(nodeData.members);
         for (let index = 0; index < members.length; index++) {
             const member = members[index];
@@ -349,7 +357,6 @@ class ReactFlowConverter {
         return height;
     }
     private estimateContainerNodeSize(node: ContainerNode) {
-        console.log('estimateContainerNodeSize', node.id, node.data.members);
         // handle members one by one
         let memberNodes: (BoxNode | ContainerNode)[] = [];
         let memberEdges: Edge[] = [];
@@ -418,7 +425,6 @@ class ReactFlowConverter {
     }
     // layout the rest, i.e., outmost nodes
     private layoutOutmostNodes() {
-        // TODO: merge nested nodes to perform correct layout
         let nodes = this.graph.nodes.filter(node => node.parentId === undefined);
         let edges = this.graph.edges;
         layoutGraphByDagre(nodes, edges, { rankdir: this.layoutDirection, marginx: 16, marginy: 16 });
