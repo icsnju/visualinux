@@ -1,13 +1,7 @@
 import { type ContainerNode } from "@app/visual/types";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
-export default function ContainerNode({ id, data, parentId }: NodeProps<ContainerNode>) {
-    // TODO: calculate the size and position of the container according to its children
-    // const type = data.key.split(':', 2)[1]; //container.type,
-    // switch (type) {
-    //     case 'array':
-    //         return <ArrayNode id={id} data={data} parentId={parentId} type={"container"} dragging={false} zIndex={0} isConnectable={false} positionAbsoluteX={0} positionAbsoluteY={0} />;
-    // }
+export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
     const cssAnim = 'transition-all duration-200 ease-in-out';
     return (
         <div className={`${cssAnim}`}>

@@ -89,15 +89,6 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             setEdges(graph.edges);
         }
     }, [pKey, state]);
-    const onLayout = useCallback((direction: string) => {
-        console.error('onLayout to be reimplemented');
-        // const layouted = getLayoutedPlot(nodes, edges, { direction });
-        // setNodes(layouted.nodes);
-        // setEdges(layouted.edges);
-        window.requestAnimationFrame(() => {
-            fitView();
-        });
-    }, [nodes, edges]);
     useEffect(() => {
         if (nodesInitialized) {
             window.requestAnimationFrame(() => {
@@ -105,25 +96,20 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             });
         }
     }, [nodesInitialized]);
-    // const onConnect: OnConnect = useCallback(
-    //     (connection) => setEdges((edges) => addEdge(connection, edges)),
-    //     [setEdges]
-    // );
     return (
         <ReactFlow
             nodes={nodes} nodeTypes={nodeTypes} onNodesChange={onNodesChange}
             edges={edges} edgeTypes={edgeTypes} onEdgesChange={onEdgesChange}
-            // onConnect={onConnect}
             nodesConnectable={false} deleteKeyCode={null} // Prevent node deletion on backspace
             fitView
         >
             <Background />
             <MiniMap pannable={true} />
             <Controls />
-            <Panel position="top-right">
+            {/* <Panel position="top-right">
                 <button onClick={() => onLayout('TB')}>vertical layout</button>
                 <button onClick={() => onLayout('LR')}>horizontal layout</button>
-            </Panel>
+            </Panel> */}
         </ReactFlow>
     );
 }

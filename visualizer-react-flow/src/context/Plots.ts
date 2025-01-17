@@ -14,7 +14,6 @@ export default class Plots {
     //
     plot(plotKey: string, plot: Plot) {
         // preprocess
-        // preprocess(plot.views);
         let orderedViews = Object.keys(plot.views).sort().reduce((obj: any, key) => { 
             obj[key] = plot.views[key]; 
             return obj;
