@@ -1,9 +1,8 @@
 from visualinux import *
 from visualinux.viewcl import Parser
-from visualinux.model import View
-from visualinux.runtime import State
-from visualinux.model.symtable import *
+from visualinux.viewcl.model.symtable import *
 from visualinux.runtime.gdb.adaptor import gdb_adaptor
+from visualinux.snapshot import *
 
 import json
 import shutil
@@ -21,7 +20,7 @@ class Core:
     def __init__(self) -> None:
 
         self.parser = Parser(VIEWCL_GRAMMAR_PATH)
-        self.history: list[State] = []
+        self.history = SnapshotManager()
 
     def parse_file(self, src_file: Path):
         return self.parse(src_file.read_text())
@@ -46,11 +45,12 @@ class Core:
             pr.enable()
         try:
             model = self.parse(code)
-            state = model.sync()
+            snapshot = model.sync()
         except Exception as e:
             print(f'vl_sync() unhandled exception: ' + str(e))
-            state = State()
-        self.history.append(state)
+            snapshot = Snapshot()
+        # TODO: support vplot history
+        self.history.set('__ANON__', snapshot)
         if vl_debug_on(): printd(f'vl_sync(): view sync OK')
         if vl_perf_on():
             pr.disable()
@@ -63,7 +63,7 @@ class Core:
 
         self.send({
             'command': 'NEWSTATE',
-            'data': state.to_json()
+            'data': snapshot.to_json()
         })
         if if_export or vl_debug_on():
             TMP_DIR.mkdir(exist_ok=True)
@@ -71,12 +71,12 @@ class Core:
             timestamp = datetime.now().strftime('%m%d%H%M%S')
             export_dir = EXPORT_DIR / timestamp
             export_dir.mkdir(exist_ok=True)
-            for name, substate in state.substates.items():
-                print(f'--export {name}.json')
-                self.export_for_debug(substate.to_json(), export_dir / f'{name}.json')
+            for view in snapshot.views:
+                print(f'--export {view.name}.json')
+                self.export_for_debug(view.to_json(), export_dir / f'{view.name}.json')
             # self.reload_and_reexport_debug()
 
-        return state
+        return snapshot
 
     def send(self, json_data: dict):
         server_url = f'http://localhost:{VISUALIZER_PORT}'
@@ -110,15 +110,9 @@ class Core:
         self.export_for_debug(full_json_data, DUMP_DIR / 'latest.json')
         print(f'vl_sync(): data export OK')
 
-    def curr_state(self) -> State:
+    def curr_state(self) -> Snapshot:
+        # TODO: support vplot history
         assert self.history
-        return self.history[-1]
-
-    # def send(self, json_data: dict):
-    #     url = f'{self.server_url}/vcmd'
-    #     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    #     print(f'POST send data to {url!s}')
-    #     response = requests.post(url, headers=headers, json=json_data)
-    #     print(f'POST send data {response = }')
+        return self.history.get('__ANON__')
 
 core = Core()

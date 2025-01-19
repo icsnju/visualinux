@@ -1,6 +1,6 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.model.shape import *
+from visualinux.viewcl.model.shape import *
 from visualinux.runtime import utils
 
 class XArray(Container):
@@ -20,9 +20,8 @@ class XArray(Container):
         xarray.member_shape = self.member_shape.clone_to(xarray)
         return xarray
 
-    def evaluate_on(self, pool: Pool, iroot: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.Container:
-        super().evaluate_on(pool, iroot, distillers)
-        distillers = distillers or set()
+    def evaluate_on(self, pool: Pool, iroot: KValue | None = None) -> entity.Container:
+        super().evaluate_on(pool, iroot)
         assert self.root
 
         if vl_debug_on(): printd(f'{self.name} evaluate_on {self.root = !s}, {iroot = !s}')
@@ -46,19 +45,18 @@ class XArray(Container):
             node = 'undefined'
             shift = 0
         if vl_debug_on(): printd(f'{self.name} __evaluate_dfs before {entry!s}, {node = !s}, {index = }, {shift = }')
-        self.__evaluate_dfs(pool, distillers, ent_container, entry, index, shift)
+        self.__evaluate_dfs(pool, ent_container, entry, index, shift)
 
         pool.add_container(ent_container)
         return ent_container
 
-    def __evaluate_dfs(self, pool: Pool, distillers: set[Distiller],
-                       ent_container: entity.Container, entry: KValue, index: int, shift: int) -> None:
+    def __evaluate_dfs(self, pool: Pool, ent_container: entity.Container, entry: KValue, index: int, shift: int) -> None:
 
         if entry.value == KValue_NULL.value:
             return
 
         if vl_debug_on(): printd(f'{self.name} __evaluate_dfs {entry!s}, {index = }, {shift = }')
-        ent_spec = entity.Box(None, KValueXBox(pool.gen_key_for_xbox()), '', {'default': entity.View('default', None, {})})
+        ent_spec = entity.Box(None, KValueXBox(pool.gen_key_for_xbox()), '', OrderedDict({'default': entity.View('default', None, OrderedDict())}))
         ent_spec.parent = ent_container.key
         use_spec = True
         if self.xa_check('xa_is_node', entry):
@@ -73,13 +71,13 @@ class XArray(Container):
                     nshift = self.xa_node_shift(node)
                     nindex = index + (i << nshift)
                     if vl_debug_on(): printd(f'{self.name} __evaluate_dfs before {entry!s}, {slot = !s}, {nindex = }, {nshift = }')
-                    self.__evaluate_dfs(pool, distillers, ent_container, slot, nindex, nshift)
+                    self.__evaluate_dfs(pool, ent_container, slot, nindex, nshift)
                 use_spec = False
         elif self.xa_check('xa_is_value', entry):
             ent_spec.add_member('default', 
                 'entry_value',    entity.Text(self.xa_convert('xa_to_value',    entry), TextFormat.gen_default()))
         elif not self.xa_check('xa_is_internal', entry):
-            ent_curr = self.evaluate_member(pool, distillers, entry)
+            ent_curr = self.evaluate_member(pool, entry)
             ent_container.add_member(ent_curr.key)
             use_spec = False
         elif self.xa_check('xa_is_retry', entry):
@@ -111,7 +109,7 @@ class XArray(Container):
         shift = node.eval_field('shift').cast(Term.Type('uint8_t'), as_pointer=True).dereference()
         return shift.value
 
-    def evaluate_member(self, pool: Pool, distillers: set[Distiller], member: KValue) -> entity.NotPrimitive:
+    def evaluate_member(self, pool: Pool, member: KValue) -> entity.NotPrimitive:
 
         if isinstance(self.member_shape, SwitchCase):
             member_shape = self.member_shape.evaluate_on(pool, member)
@@ -123,4 +121,4 @@ class XArray(Container):
         if not isinstance(member_shape, Box | Container):
             raise fuck_exc(AssertionError, f'{self.name} member_shape must be Box or Container but {member_shape = !s}')
 
-        return member_shape.evaluate_on(pool, member, distillers)
+        return member_shape.evaluate_on(pool, member)

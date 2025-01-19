@@ -71,19 +71,4 @@ class LinkType(Enum):
             case '~>': return LinkType.REMOTE
             case _: raise fuck_exc(AssertionError, f'LinkType.gen_from illegal {desc = }')
 
-@dataclass
-class Distiller:
-    name: str
-    cond: Term | None
-    def __str__(self)  -> str: return f'{self.name}: {self.cond if self.cond else ""}'
-    def __repr__(self) -> str: return self.__str__()
-
-    def __hash__(self) -> int:
-        return hash((self.name, str(self.cond)))
-
-    def __eq__(self, other) -> bool:
-        if isinstance(other, Distiller):
-            return self.name == other.name and self.cond == other.cond
-        return False
-
 ShapeStyle = dict[str, str]

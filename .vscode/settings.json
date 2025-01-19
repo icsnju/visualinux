@@ -8,5 +8,5 @@
         "${workspaceFolder}/",
         "${workspaceFolder}/kernel/scripts/gdb/",
     ],
-    "python.analysis.typeCheckingMode": "off"
+    "python.analysis.typeCheckingMode": "basic"
 }

@@ -14,10 +14,11 @@
 %ignore WS
 
 %import .visualinux.grammar.cexpr.cexpr
+%import .visualinux.grammar.viewql.viewql
 
 // entry
 
-start: (import | instruction)*
+viewcl: (import | instruction)*
 
 import: "import" IMPORT_PATH
 IMPORT_PATH: /[\.\w\d_-]+/
@@ -93,8 +94,7 @@ plot_target: access_variable_as_shape
            | assignment_rhs
            | assignment_swc
 
-diag_init_vql: "with" "{" VIEWQL_SRC "}"
-VIEWQL_SRC: /[^{}]+/
+diag_init_vql: "with" "{" viewql "}"
 
 //// comment
 comment: "//" /.+/
@@ -200,7 +200,7 @@ view_annotation: "#" /[^#]+/ "#"
 view_identifier: ":" viewname
 view_identifier_inherit: view_identifier "=>" view_identifier
 
-view_def_body: view_def_insts [view_def_distillers]
+view_def_body: view_def_insts
 
 view_def_insts: "[" view_def_inst* "]"
 view_def_inst: prim_definition
@@ -213,9 +213,6 @@ view_def_inst: prim_definition
 ////// TODO: unsupported yet
 view_inherit_op: "!" "remove" field_term
                | "!" "unbox"  field_term "keep" field_terms
-
-view_def_distillers: "with" "[" distiller* "]"
-distiller: shapename ":" cexpr
 
 //// where block under box
 

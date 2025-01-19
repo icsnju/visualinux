@@ -116,8 +116,6 @@ define MapleTreeAR as Box<maple_tree> [
     Text height: ${mt_height(@this)}
     Text<bool> in_rcu: ${mt_in_rcu(@this)}
     Text<bool> ext_lk: ${mt_external_lock(@this)}
-] with [
-    MapleTreeARNode: false
 ] where {
     ma_root_entry = @this.ma_root
     type = ${mte_node_type(@ma_root_entry)}

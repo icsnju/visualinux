@@ -1,11 +1,11 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.model.decorators import *
+from visualinux.viewcl.model.decorators import *
 from visualinux.runtime.kvalue import *
 from visualinux.runtime.text import *
 
 if TYPE_CHECKING:
-    from visualinux.model import shape
+    from visualinux.viewcl.model import shape
 
 class JSONRepr(metaclass=ABCMeta):
 
@@ -113,13 +113,11 @@ class View(JSONRepr):
     name: str
     parent: str | None
     members: OrderedDict[str, ViewMember]
-    distilled: bool = True
 
     def to_json(self) -> dict:
         return {
             'parent': self.parent,
             'members': OrderedDict((label, member.to_json()) for label, member in self.members.items()),
-            'distilled': self.distilled
         }
 
 class Box(RuntimeShape):

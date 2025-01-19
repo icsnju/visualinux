@@ -376,17 +376,12 @@ class Converter:
     def parse_view_def_body(self, body: Tree[Token]) -> ViewDef:
 
         assert body.data == 'view_def_body'
-        view_def = ViewDef('default', None, [], set(), '')
+        view_def = ViewDef('default', None, [], '')
 
         node_insts = child_as_tree(body, 0)
         for node in scan_children_as_tree(node_insts):
             assert node.data == 'view_def_inst'
             view_def.insts += self.parse_view_inst_seq(node)
-
-        if node_distillers := child_as_tree(body, 1):
-            for node in scan_children_as_tree(node_distillers):
-                assert node.data == 'distiller'
-                view_def.distillers.add(self.parse_distiller(node))
 
         return view_def
 
@@ -514,16 +509,6 @@ class Converter:
         root = self.get_term_as_shape_from(child_as_tree(node_root, 0))
         distill = serialize(child_as_tree(node_root, 1))
         return ContainerConvDef(name, root, distill)
-
-    # ======================================================================
-    # handle the distiller
-    # ======================================================================
-
-    def parse_distiller(self, node: Tree[Token]) -> Distiller:
-        name = serialize(child_as_tree(node, 0))
-        cond = serialize(child_as_tree(node, 1))
-        cond = Term.CExpr(cond) if cond else None
-        return Distiller(name, cond)
 
     # ======================================================================
     # handle the primitive

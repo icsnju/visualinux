@@ -1,7 +1,7 @@
 from visualinux.viewcl.parser import *
 from visualinux.viewcl.parser.units import *
 from visualinux.viewcl.parser.utils import *
-from visualinux.model import *
+from visualinux.viewcl.model import *
 
 class Translator:
 
@@ -107,7 +107,7 @@ class Translator:
 
         used_labels: set[str] = set()
         for viewdef in shapedef.body:
-            view = View(viewdef.name, viewdef.parent, OrderedDict(), viewdef.distillers, box)
+            view = View(viewdef.name, viewdef.parent, OrderedDict(), box)
 
             for inst in viewdef.insts:
 

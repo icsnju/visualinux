@@ -4,7 +4,7 @@ from visualinux.runtime.kvalue import *
 from visualinux.runtime.utils import *
 
 if TYPE_CHECKING:
-    from visualinux.model.shape import Shape, Box, Container, SwitchCase, ContainerConv, NotPrimitive
+    from visualinux.viewcl.model.shape import Shape, Box, Container, SwitchCase, ContainerConv, NotPrimitive
 
 class UndefinedSymbolError(Exception):
     def __init__(self, symbol: str, *args) -> None:

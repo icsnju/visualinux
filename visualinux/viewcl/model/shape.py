@@ -1,10 +1,10 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.model.decorators import *
-from visualinux.model.symtable import SymTable
-from visualinux.runtime.state import Pool
+from visualinux.viewcl.model.decorators import *
+from visualinux.viewcl.model.symtable import SymTable
 from visualinux.runtime import entity
 from visualinux.runtime.kvalue import *
+from visualinux.snapshot import Pool
 
 from visualinux.evaluation import evaluation_counter
 
@@ -50,7 +50,7 @@ class PrimitiveShape(Shape):
         pass
 
     @abstractmethod
-    def evaluate_on(self, pool: Pool, item_value: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.RuntimePrimitive:
+    def evaluate_on(self, pool: Pool, item_value: KValue | None = None) -> entity.RuntimePrimitive:
         pass
 
 class Text(PrimitiveShape):
@@ -63,7 +63,7 @@ class Text(PrimitiveShape):
     def clone_to(self, parent_view: 'View') -> 'Text':
         return Text(self.label, self.root, self.typo, parent_view)
 
-    def evaluate_on(self, pool: Pool, item_value: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.Text:
+    def evaluate_on(self, pool: Pool, item_value: KValue | None = None) -> entity.Text:
         evaluation_counter.fields += 1
         if self.typo.type != TFType.AUTO:
             value = self.parent_box_scope.evaluate_term(self.root, item_value=item_value)
@@ -98,7 +98,7 @@ class Link(PrimitiveShape):
             new_target = None
         return Link(self.label, parent_view, self.link_type, new_target)
 
-    def evaluate_on(self, pool: Pool, item_value: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.Link:
+    def evaluate_on(self, pool: Pool, item_value: KValue | None = None) -> entity.Link:
         evaluation_counter.fields += 1
         if self.target is not None:
             if vl_debug_on(): printd(f'[DEBUG] Link evaluate_on {self.target.format_string_head()}, {item_value = !s}')
@@ -114,9 +114,9 @@ class Link(PrimitiveShape):
             #
             if vl_debug_on(): printd(f'[DEBUG] Link => {target.format_string_head() = }, {item_value = !s}')
             if isinstance(target, Box):
-                target_key = target.evaluate_on(pool, item_value, distillers).key
+                target_key = target.evaluate_on(pool, item_value).key
             elif isinstance(target, Container):
-                target_key = target.evaluate_on(pool, None, distillers).key
+                target_key = target.evaluate_on(pool, None).key
             elif isinstance(target, ContainerConv):
                 target_key = target.evaluate_on(pool).key
             else:
@@ -132,11 +132,10 @@ class View:
 
     def __init__(self, name: str, parent: str | None,
                  members: OrderedDict[str, 'PrimitiveShape | Box | Container | ContainerConv | SwitchCase'],
-                 distillers: set[Distiller], parent_box: 'Box') -> None:
+                 parent_box: 'Box') -> None:
         self.name = name
         self.parent = parent
         self.members = members or {}
-        self.distillers = distillers or set()
         self.parent_box = parent_box
 
     def __contains__(self, key: str): return self.members.__contains__(key)
@@ -158,14 +157,10 @@ class View:
         lines = [padding(depth) + head]
         for name, member in self.members.items():
             lines.append(padding(depth + 1) + f'{name} = ' + member.format_string(depth + 1).removeprefix(padding(depth + 1)))
-        lines.append(padding(depth) + 'distillers: [')
-        for distiller in self.distillers:
-            lines.append(padding(depth +  1) + str(distiller))
-        lines.append(padding(depth) + ']')
         return '\n'.join(lines)
 
     def clone_to(self, parent_box: 'Box') -> 'View':
-        new_view = View(self.name, self.parent, OrderedDict(), self.distillers, parent_box)
+        new_view = View(self.name, self.parent, OrderedDict(), parent_box)
         for label, member in self.members.items():
             if isinstance(member, PrimitiveShape):
                 new_member = member.clone_to(new_view)
@@ -175,14 +170,7 @@ class View:
             new_view.members[label] = new_member
         return new_view
 
-    def evaluate_on(self, pool: Pool, item_value: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.View:
-
-        distillers = distillers or set()
-        for distiller in self.distillers:
-            distillers.add(distiller)
-        if vl_debug_on(): printd(f'View {self.name} {distillers = !s}')
-        distilled = self.evaluate_distillers(distillers, item_value)
-        if vl_debug_on(): printd(f'View {self.name} {distilled = !s}')
+    def evaluate_on(self, pool: Pool, item_value: KValue | None = None) -> entity.View:
 
         members = OrderedDict()
         if vl_debug_on(): printd(f'view {self.name} eval {item_value = !s}')
@@ -198,40 +186,18 @@ class View:
                 raise fuck_exc(AssertionError, f'duplicated {member.label = } in {members = }')
 
             if isinstance(member, PrimitiveShape):
-                members[label] = member.evaluate_on(pool, item_value, distillers)
+                members[label] = member.evaluate_on(pool, item_value)
             elif isinstance(member, Box | Container):
                 if isinstance(member, BoxRecursion):
                     member = member.expand_to(self.parent_box)
-                # ent = member.evaluate_on(pool, item_value if isinstance(member, Box) else None, distillers)
-                ent = member.evaluate_on(pool, None, distillers)
+                ent = member.evaluate_on(pool, None)
                 members[label] = entity.BoxMember(ent.key)
             elif isinstance(member, ContainerConv):
-                members[label] = member.evaluate_on(pool, None, distillers)
+                members[label] = member.evaluate_on(pool, None)
             else:
                 raise fuck_exc(AssertionError, f'box.eval illegal {member = !s}')
 
-        return entity.View(self.name, self.parent, members, distilled)
-
-    def evaluate_distillers(self, distillers: set[Distiller], item_value: KValue | None = None) -> bool:
-        if vl_debug_on(): printd(f'View {self.name} eval {distillers = !s}')
-        has_distiller: bool = False
-        distilled:     bool = False
-        for distiller in distillers:
-            if vl_debug_on(): printd(f'    ~~~~ {distiller = !s} ({self.name = })')
-            if distiller.name != self.parent_box.name:
-                continue
-            has_distiller = True
-            if distiller.cond is None:
-                distilled = True
-                continue
-            cond = self.parent_box.scope.evaluate_term(distiller.cond, item_value=item_value)
-            if vl_debug_on(): printd(f'    ~~~~ distill => {cond = !s}')
-            if cond == True:
-                if vl_debug_on(): printd(f'    ~~~~ distilled !!')
-                distilled = True
-        # return show?
-        if vl_debug_on(): printd(f'View {self.name} => {distilled = }, {has_distiller = }')
-        return distilled or not has_distiller
+        return entity.View(self.name, self.parent, members)
 
 class Box(Shape):
 
@@ -259,13 +225,12 @@ class Box(Shape):
             lines.append(view.format_string(depth + 1))
         return '\n'.join(lines)
 
-    def evaluate_on(self, pool: Pool, item_value: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.Box:
+    def evaluate_on(self, pool: Pool, item_value: KValue | None = None) -> entity.Box:
         '''
         The end interface to real evaluation.
         All other evaluate_on() will finally call Box.evaluate_on(), and then call KValue.eval().
         '''
         evaluation_counter.objects += 1
-        distillers = distillers or set()
 
         papa = self.parent.format_string_head() if self.parent else 'NONE'
         if vl_debug_on(): printd(f'Box evaluate_on {self.root = !s}, {self.type = !s}, {item_value = !s}, {papa = }')
@@ -301,7 +266,7 @@ class Box(Shape):
             raise fuck_exc(AssertionError, f'Box evaluate_on root is not a pointer: {root!s}')
         if root.value == KValue_NULL.value:
             if vl_debug_on(): printd(f'    !KValue_NULL {root = !s}')
-            return entity.Box(self, root, self.label, OrderedDict({'default': entity.View('default', None, OrderedDict(), distilled=True)}))
+            return entity.Box(self, root, self.label, OrderedDict({'default': entity.View('default', None, OrderedDict())}))
 
         label = self.scope.demix_label(self.label)
         ent = entity.Box(self, root, label, OrderedDict())
@@ -311,7 +276,7 @@ class Box(Shape):
         if isinstance(root, KValueXBox):
             if vl_debug_on(): printd(f'!!XBOX {self=!s}')
         for view in self.views.values():
-            ent.views[view.name] = view.evaluate_on(pool, item_value, distillers)
+            ent.views[view.name] = view.evaluate_on(pool, item_value)
 
         if vl_debug_on(): printd(f'Box evaluate_on {root = !s} OK return {ent.key = }')
         return ent
@@ -402,10 +367,10 @@ class Container(Shape):
         pass
 
     @abstractmethod
-    def evaluate_on(self, pool: Pool, iroot: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.Container:
+    def evaluate_on(self, pool: Pool, iroot: KValue | None = None) -> entity.Container:
         evaluation_counter.objects += 1
 
-    def evaluate_member(self, pool: Pool, distillers: set[Distiller], member: KValue) -> entity.NotPrimitive:
+    def evaluate_member(self, pool: Pool, member: KValue) -> entity.NotPrimitive:
 
         if isinstance(self.member_shape, SwitchCase):
             member_shape = self.member_shape.evaluate_on(pool, member)
@@ -420,7 +385,7 @@ class Container(Shape):
         if isinstance(member_shape, Box) and not member_shape.type:
             raise fuck_exc(AssertionError, f'{self.name} {member_shape.type = } should not be None')
 
-        return member_shape.evaluate_on(pool, member, distillers)
+        return member_shape.evaluate_on(pool, member)
 
 class ContainerConv:
 
@@ -459,10 +424,10 @@ class ContainerConv:
         if vl_debug_on(): printd(f'is_member_distilled {member_key = } => {res}')
         return res
 
-    def evaluate_on(self, pool: Pool, iroot: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.ContainerConv:
+    def evaluate_on(self, pool: Pool, iroot: KValue | None = None) -> entity.ContainerConv:
         if vl_debug_on(): printd(f'Conv {self.format_string_head()} evaluate_on {iroot = !s}')
 
-        ent_source = self.source.evaluate_on(pool, iroot, distillers)
+        ent_source = self.source.evaluate_on(pool, iroot)
         if vl_debug_on(): printd(f'Conv {self.format_string_head()} => {ent_source.key = !s}')
 
         if not self.target_type.__name__ in ['Array', 'UnorderedSet']:

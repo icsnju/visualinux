@@ -1,6 +1,6 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.model.shape import *
+from visualinux.viewcl.model.shape import *
 
 class Array(Container):
     
@@ -14,9 +14,8 @@ class Array(Container):
         array.member_shape = self.member_shape.clone_to(array)
         return array
 
-    def evaluate_on(self, pool: Pool, iroot: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.Container:
-        super().evaluate_on(pool, iroot, distillers)
-        distillers = distillers or set()
+    def evaluate_on(self, pool: Pool, iroot: KValue | None = None) -> entity.Container:
+        super().evaluate_on(pool, iroot)
         assert self.root
 
         if vl_debug_on(): printd(f'{self.name} evaluate_on {self.root = !s} {iroot=!s}')
@@ -46,14 +45,14 @@ class Array(Container):
             if vl_debug_on(): printd(f'{self.name} __evaluate_member {i = }, {member_value = !s}')
             # if not member_value.is_pointer() and not member_value.type.is_scalar():
             #     member_value = member_value.address_of()
-            ent = self.evaluate_member(pool, distillers, member_value, i)
+            ent = self.evaluate_member(pool, member_value, i)
             if vl_debug_on(): printd(f'+ {member_value = !s}, {ent.key = !s}')
             ent_container.add_member(ent.key)
 
         pool.add_container(ent_container)
         return ent_container
 
-    def evaluate_member(self, pool: Pool, distillers: set[Distiller], member: KValue, index: int) -> entity.NotPrimitive:
+    def evaluate_member(self, pool: Pool, member: KValue, index: int) -> entity.NotPrimitive:
 
         member_shape = self.member_shape
         while isinstance(member_shape, SwitchCase):
@@ -75,4 +74,4 @@ class Array(Container):
             raise fuck_exc(AssertionError, 'Array temp_patch variable "index" conflicted')
         member_shape.scope['index'] = Term.CExpr(str(index))
 
-        return member_shape.evaluate_on(pool, member, distillers)
+        return member_shape.evaluate_on(pool, member)

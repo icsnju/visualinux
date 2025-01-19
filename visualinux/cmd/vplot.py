@@ -40,22 +40,27 @@ class VPlotHandler:
 
     @classmethod
     def invoke(cls, arg: str):
-        parser = argparse.ArgumentParser(description="vplot command line interface")
-        parser.add_argument('-o', '--output', type=str, help='View name')
-        parser.add_argument('-l', '--list',   type=str, help='Entry to list')
-        parser.add_argument('-f', '--file',   type=str, help='File to process')
-        parser.add_argument('-c', '--chat', action='store_true', help='Chat with LLM')
-        parser.add_argument('entries', nargs='*')
-        parser.add_argument('--export', action='store_true', help='Export plots to json files in local')
-        parser.add_argument('--debug',  action='store_true', help='Show debug info while processing request')
-        parser.add_argument('--perf',   action='store_true', help='Show profiling results while processing request')
+        parser = argparse.ArgumentParser(description="vplot command line interface (example: vplot $foo tsk { pid, comm })")
+        parser.add_argument('-o', '--output', type=str, help='optional: specify the view name (only used for plotting entries without -f)')
+        parser.add_argument('-l', '--list', type=str, help='list all fields of a given symbol')
+        parser.add_argument('-f', '--file', type=str, help='file to process')
+        parser.add_argument('-c', '--chat', action='store_true', help='chat with LLM')
+        parser.add_argument('convar',  nargs='?', help='optional: specify a convenient variable to store the snapshot (must start with $)')
+        parser.add_argument('entries', nargs='*', help='plot simple entries quickly')
+        parser.add_argument('--export', action='store_true', help='export plots to json files in local')
+        parser.add_argument('--debug',  action='store_true', help='show debug info while processing request')
+        parser.add_argument('--perf',   action='store_true', help='show profiling results while processing request')
 
         args = parser.parse_args(re.split(r'\s+', arg))
+
+        if args.convar is not None and not args.convar.startswith('$'):
+            args.entries = [args.convar] + args.entries
+            args.convar = None
 
         set_vl_debug(args.debug)
         set_vl_perf(args.perf)
 
-        mutual = (args.output is not None) + \
+        mutual = (args.output is not None or len(args.entries) > 0) + \
             (args.list is not None) + \
             (args.file is not None) + \
             (args.chat is True)
@@ -69,6 +74,7 @@ class VPlotHandler:
         elif args.chat:
             cls.invoke_chat(' '.join(args.entries))
         elif len(args.entries) > 0:
+            print(f'{args.entries = !s}, {len(args.entries) = !s}')
             if not cls.handle_plot(args.output or '__ANON__', ' '.join(args.entries)):
                 parser.print_help()
         else:

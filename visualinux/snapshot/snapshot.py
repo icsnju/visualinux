@@ -81,7 +81,7 @@ class Pool:
                 dict((key, ent.to_json()) for key, ent in self.__pool_container.items())
         }
 
-class Substate:
+class StateView:
 
     def __init__(self, name: str, init_vql: str, error: bool = True) -> None:
         self.name = name
@@ -130,10 +130,13 @@ class Substate:
             'stat': int(self.error),
         }
 
-class State:
+class Snapshot:
 
     def __init__(self) -> None:
-        self.substates: dict[str, Substate] = {}
+        self.views: list[StateView] = []
+
+    def add_view(self, view: StateView):
+        self.views.append(view)
 
     def to_json(self) -> dict:
-        return dict((name, substate.to_json()) for name, substate in self.substates.items())
+        return dict((view.name, view.to_json()) for view in self.views)

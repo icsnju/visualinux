@@ -3,7 +3,7 @@ from visualinux.viewcl.parser.utils import *
 from visualinux.viewcl.parser.converter  import Converter
 from visualinux.viewcl.parser.translator import Translator
 
-from visualinux.model import *
+from visualinux.viewcl.model import *
 
 from pathlib import Path
 
@@ -19,14 +19,12 @@ class Parser:
     '''
 
     def __init__(self, grammar: Path):
-        # self.__parser = Lark(grammar, parser='lalr')
-        # self.__parser = Lark(grammar.read_text(), keep_all_tokens=True)
-        self.__parser = Lark(grammar.read_text(), strict=True)
+        self.__parser = Lark(grammar.read_text(), start='viewcl', strict=True)
         self.__imported: set[Path] = set()
 
     def parse(self, code: str) -> DiagramSet:
         try:
-            parsetree = ParseTree('start', self.__parse(code, VIEWCL_SRC_DIR))
+            parsetree = ParseTree('viewcl', self.__parse(code, VIEWCL_SRC_DIR))
         finally:
             self.__imported.clear()
         insts, typemap_for_llm = Converter().convert(parsetree)

@@ -2,7 +2,7 @@ from visualinux import *
 from visualinux.term import *
 from visualinux.runtime.gdb.adaptor import *
 from visualinux.runtime.gdb.type import *
-from visualinux.model.decorators import *
+from visualinux.viewcl.model.decorators import *
 
 from visualinux.evaluation import evaluation_counter
 

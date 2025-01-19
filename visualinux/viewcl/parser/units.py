@@ -1,7 +1,7 @@
 from visualinux.term import *
 from visualinux.viewcl.parser import *
 from visualinux.viewcl.parser.utils import *
-from visualinux.model.decorators import *
+from visualinux.viewcl.model.decorators import *
 
 # ======================================================================
 # View classes to eliminate common fields/methods.
@@ -125,7 +125,6 @@ class ViewDef:
     name: str
     parent: str | None
     insts: list['ViewInst']
-    distillers: set[Distiller]
     annotation: str
 
     def __str__(self) -> str:
@@ -150,12 +149,6 @@ class ViewDef:
             lines.append(padding(depth) + ']')
         else:
             lines[-1] += ']'
-
-        if self.distillers:
-            lines[-1] += ' with ['
-            for distiller in self.distillers:
-                lines.append(padding(depth + 1) + str(distiller))
-            lines.append(padding(depth) + ']')
 
         return '\n'.join(lines)
 

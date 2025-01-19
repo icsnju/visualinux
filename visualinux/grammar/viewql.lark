@@ -1,0 +1,24 @@
+// ViewQL DSL grammar.
+
+%import common.CNAME
+
+// entry
+
+viewql: instruction*
+instruction: select | update
+
+variable: CNAME
+
+// select
+
+select: "SELECT" selector "FROM" variable ["WHERE" condition]
+
+selector:  CNAME
+condition: CNAME
+
+// update
+
+update: "UPDATE" variable "WITH" attr ":" value
+
+attr: CNAME
+value: CNAME

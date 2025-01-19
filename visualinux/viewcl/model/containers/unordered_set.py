@@ -1,6 +1,6 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.model.shape import *
+from visualinux.viewcl.model.shape import *
 
 class UnorderedSet(Container):
     
@@ -14,9 +14,8 @@ class UnorderedSet(Container):
         array.member_shape = self.member_shape.clone_to(array)
         return array
 
-    def evaluate_on(self, pool: Pool, iroot: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.Container:
-        super().evaluate_on(pool, iroot, distillers)
-        distillers = distillers or set()
+    def evaluate_on(self, pool: Pool, iroot: KValue | None = None) -> entity.Container:
+        super().evaluate_on(pool, iroot)
         assert self.root
 
         if vl_debug_on(): printd(f'{self.name} evaluate_on {self.root = !s} {iroot=!s}')
@@ -44,14 +43,14 @@ class UnorderedSet(Container):
 
         for i, member_value in enumerate(arr):
             if vl_debug_on(): printd(f'{self.name} __evaluate_member {i = }, {member_value = !s}')
-            ent = self.evaluate_member(pool, distillers, member_value)
+            ent = self.evaluate_member(pool, member_value)
             if vl_debug_on(): printd(f'+ {member_value = !s}, {ent.key = !s}')
             ent_container.add_member(ent.key)
 
         pool.add_container(ent_container)
         return ent_container
 
-    def evaluate_member(self, pool: Pool, distillers: set[Distiller], member: KValue) -> entity.NotPrimitive:
+    def evaluate_member(self, pool: Pool, member: KValue) -> entity.NotPrimitive:
 
         member_shape = self.member_shape
         while isinstance(member_shape, SwitchCase):
@@ -68,4 +67,4 @@ class UnorderedSet(Container):
         if vl_debug_on(): printd(f'{self.name} eval_member {member!s}')
         if vl_debug_on(): printd(f'    {self.name} {member_shape.format_string_head() = !s}')
 
-        return member_shape.evaluate_on(pool, member, distillers)
+        return member_shape.evaluate_on(pool, member)

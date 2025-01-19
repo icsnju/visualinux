@@ -1,6 +1,6 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.model.shape import *
+from visualinux.viewcl.model.shape import *
 
 class RBTree(Container):
 
@@ -19,9 +19,8 @@ class RBTree(Container):
         rbtree.member_shape = self.member_shape.clone_to(rbtree)
         return rbtree
 
-    def evaluate_on(self, pool: Pool, iroot: KValue | None = None, distillers: set[Distiller] | None = None) -> entity.Container:
-        super().evaluate_on(pool, iroot, distillers)
-        distillers = distillers or set()
+    def evaluate_on(self, pool: Pool, iroot: KValue | None = None) -> entity.Container:
+        super().evaluate_on(pool, iroot)
         assert self.root
 
         if vl_debug_on(): printd(f'{self.name} evaluate_on {self.root = !s}, {iroot = !s}')
@@ -43,27 +42,26 @@ class RBTree(Container):
         if vl_debug_on(): printd(f'{self.name} {ent_container = !s}')
 
         if vl_debug_on(): printd(f'!!! RBTREE __evaluate_dfs {pool = } {ent_container = } {root.eval_field("rb_node") = }')
-        self.__evaluate_dfs(pool, distillers, ent_container, root.eval_field('rb_node'))
+        self.__evaluate_dfs(pool, ent_container, root.eval_field('rb_node'))
 
         pool.add_container(ent_container)
         return ent_container
 
-    def __evaluate_dfs(self, pool: Pool, distillers: set[Distiller],
-                       ent_container: entity.Container, node_addr: KValue) -> entity.NotPrimitive:
+    def __evaluate_dfs(self, pool: Pool, ent_container: entity.Container, node_addr: KValue) -> entity.NotPrimitive:
 
         if vl_debug_on(): printd(f'??? RBTREE __evaluate_dfs {pool = } {ent_container = } {node_addr = }')
         if node_addr.value == KValue_NULL.value:
-            return entity.Box(None, KValue_NULL, '', {})
+            return entity.Box(None, KValue_NULL, '', OrderedDict())
 
         if vl_debug_on(): printd(f'RBTree __evaluate_dfs {node_addr = }')
-        ent_curr = self.evaluate_member(pool, distillers, node_addr)
+        ent_curr = self.evaluate_member(pool, node_addr)
         if vl_debug_on(): printd(f'    RBTree __evaluate_dfs {ent_curr.key = !s}')
 
-        ent_left  = self.__evaluate_dfs(pool, distillers, ent_container, node_addr.eval_field('rb_left'))
+        ent_left  = self.__evaluate_dfs(pool, ent_container, node_addr.eval_field('rb_left'))
 
         ent_container.add_member(ent_curr.key)
 
-        ent_right = self.__evaluate_dfs(pool, distillers, ent_container, node_addr.eval_field('rb_right'))
+        ent_right = self.__evaluate_dfs(pool, ent_container, node_addr.eval_field('rb_right'))
 
         # ent_container.add_member(ent_curr.key, view, left=ent_left.key, right=ent_right.key)
         ent_container.add_link_to_member(ent_curr.key, left=ent_left.key, right=ent_right.key)
