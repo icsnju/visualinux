@@ -10,7 +10,8 @@
         {
             "label": "startup",
             "dependsOrder": "parallel",
-            "dependsOn": ["gdb-qemu-startup", "visualizer-startup"]
+            "dependsOn": ["gdb-qemu-startup"]
+            // "dependsOn": ["gdb-qemu-startup", "visualizer-startup"]
         },
         {
             "type": "shell",

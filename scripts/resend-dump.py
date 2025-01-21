@@ -4,6 +4,7 @@ import os
 import sys
 import json
 import time
+from datetime import datetime
 import requests
 from pathlib import Path
 from dotenv import load_dotenv
@@ -22,7 +23,7 @@ def send(json_data: dict):
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     try:
         response = requests.post(url, headers=headers, json=json_data)
-        print(f'POST request {response}')
+        print(f'POST to visualizer {response}')
     except Exception as e:
         print(f'[ERROR] Failed to POST data to visualizer; please check the connection.')
         print(f'- {e!s}')
@@ -51,12 +52,23 @@ def main():
             sys.exit(1)
 
     send({
-        'command': 'PLOT',
-        'plotKey': 'test',
-        'plot': {
-            'key': 'test',
-            'timestamp': time_ms(),
-            'views': state
+        'command': 'NEW',
+        'snKey': '$foo',
+        'snapshot': {
+            'key': '$foo',
+            'views': state,
+            'pc': '0',
+            'timestamp': datetime.now().timestamp(),
+        }
+    })
+    send({
+        'command': 'NEW',
+        'snKey': '$bar',
+        'snapshot': {
+            'key': '$bar',
+            'views': state,
+            'pc': '11',
+            'timestamp': datetime.now().timestamp(),
         }
     })
 

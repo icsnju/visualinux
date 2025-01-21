@@ -1,32 +1,21 @@
 import { createContext, useReducer } from "react";
-import Plots from "./Plots";
+import Snapshots from "./Snapshots";
 import Panels, { SplitDirection } from "./Panels";
-import { Plot, ViewAttrs } from "@app/visual/types";
-
-type LogEntry = {
-    timestamp: number
-    type: LogType
-    message: string
-}
-type LogType = 'info' | 'warning' | 'error'
-
-function getTimeText(timestamp: number) {
-    const time = new Date(timestamp);
-    return `${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
-}
+import { Snapshot, ViewAttrs } from "@app/visual/types";
+import { addLogTo, LogEntry, LogType } from "@app/utils";
 
 class GlobalState {
-    plots: Plots;
+    snapshots: Snapshots;
     panels: Panels;
     logs: LogEntry[]
-    constructor(plots: Plots, panels: Panels, logs: LogEntry[]) {
-        this.plots  = plots;
-        this.panels = panels;
-        this.logs   = logs;
+    constructor(snapshots: Snapshots, panels: Panels, logs: LogEntry[]) {
+        this.snapshots = snapshots;
+        this.panels    = panels;
+        this.logs      = logs;
     }
     getPlotOfPanel(pKey: number) {
         const viewname = this.panels.getViewname(pKey);
-        const view = this.plots.getView(viewname);
+        const view = this.snapshots.getView(viewname);
         if (viewname === undefined || view === null) {
             return { view: null, attrs: {} };
         }
@@ -38,27 +27,22 @@ class GlobalState {
         return { view, attrs };
     }
     log(type: LogType, message: string) {
-        const log: LogEntry = {
-            timestamp: Date.now(),
-            type: type,
-            message: message
-        };
-        this.logs.push(log);
-        const time = getTimeText(log.timestamp);
-        console.log(`[${time}:${log.type}]`, log.message);
+        addLogTo(this.logs, type, message);
     }
     refresh() {
-        return new GlobalState(this.plots, this.panels, this.logs);
+        return new GlobalState(this.snapshots, this.panels, this.logs);
     }
     static create() {
-        return new GlobalState(new Plots(), new Panels(), []);
+        return new GlobalState(new Snapshots(), new Panels(), []);
     }
 }
 
 const initialState = GlobalState.create();
 
 export type GlobalStateAction =
-| { command: 'PLOT',   plotKey: string, plot: Plot }
+| { command: 'NEW',    snKey: string, snapshot: Snapshot, pc: string, timestamp: string }
+| { command: 'USE',    snKey: string }
+| { command: 'DIFF',   snKeySrc: string, snKeyDst: string }
 | { command: 'SPLIT',  pKey: number, direction: SplitDirection }
 | { command: 'PICK',   pKey: number, objectKey: string }
 | { command: 'SWITCH', pKey: number, viewname: string }
@@ -99,9 +83,17 @@ function globalStateReducer(state: GlobalState, action: GlobalStateAction) {
 
 function globalStateDispatcher(state: GlobalState, action: GlobalStateAction) {
     switch (action.command) {
-        case 'PLOT':
-            state.log('info', `PLOT ${action.plotKey}`);
-            state.plots.plot(action.plotKey, action.plot);
+        case 'NEW':
+            state.log('info', `NEW ${action.snKey} ${action.snapshot.pc} ${action.snapshot.timestamp}`);
+            state.snapshots.new(action.snKey, action.snapshot);
+            return state.refresh();
+        case 'USE':
+            state.log('info', `USE ${action.snKey}`);
+            state.snapshots.use(action.snKey);
+            return state.refresh();
+        case 'DIFF':
+            state.log('info', `DIFF ${action.snKeySrc} ${action.snKeyDst}`);
+            state.snapshots.diff(action.snKeySrc, action.snKeyDst);
             return state.refresh();
         case 'SPLIT':
             state.log('info', `SPLIT ${action.pKey} ${action.direction}`);

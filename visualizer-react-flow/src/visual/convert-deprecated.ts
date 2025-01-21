@@ -1,5 +1,5 @@
 import {
-    View, Box, Abst,
+    StateView, Box, Abst,
     Container, ContainerConv, isContainerConv,
     ViewAttrs,
     ReactFlowGraph, BoxNode, ContainerNode
@@ -8,7 +8,7 @@ import { layoutGraphByDagre } from "@app/visual/layout";
 import { type Edge, MarkerType } from "@xyflow/react";
 import Dagre from "@dagrejs/dagre";
 
-export function convertToReactFlow(view: View, attrs: ViewAttrs): ReactFlowGraph {
+export function convertToReactFlow(view: StateView, attrs: ViewAttrs): ReactFlowGraph {
     const converter = new ReactFlowConverter(view, attrs);
     return converter.convert();
 }
@@ -25,12 +25,12 @@ const edgeProp = {
 }
 
 class ReactFlowConverter {
-    private view: View;
+    private view: StateView;
     private attrs: ViewAttrs;
     private nodeMap: { [key: string]: BoxNode | ContainerNode };
     private graph: ReactFlowGraph;
     private layoutDirection: "LR" | "TB" = "LR";
-    constructor(view: View, attrs: ViewAttrs) {
+    constructor(view: StateView, attrs: ViewAttrs) {
         this.view = view;
         this.attrs = attrs;
         this.nodeMap = {};

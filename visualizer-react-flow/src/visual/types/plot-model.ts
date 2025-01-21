@@ -1,24 +1,21 @@
 // json type of diagrams received from the gdb extension
 
-export type Plot = {
+export type Snapshot = {
     key: string
+    views: {[name: string]: StateView}
+    pc: string
     timestamp: number
-    views: {[name: string]: View}
 }
 
 export type ShapeKey = string
 export type AbstName = string
 export type Label    = string
 
-// old version TODO modify API betw gdb and visualizer
-// export type State = {
-//     [name: string]: View
-// }
-export type View = {
+export type StateView = {
     name: string
     pool: Pool
     plot: ShapeKey[]
-    init_attrs: ViewAttrs
+    init_attrs: ViewAttrs // TODO: clarify where are attrs attached to
     stat: number
 }
 export type Pool = {

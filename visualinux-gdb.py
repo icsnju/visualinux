@@ -13,5 +13,6 @@ try:
     VPlot()
     VCtrl()
     VChat()
+    VDiff()
 except:
     raise fuck_exc(AssertionError, 'internal error on loading v-commands')

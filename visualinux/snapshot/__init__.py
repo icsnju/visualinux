@@ -1,2 +1,2 @@
-from visualinux.snapshot.snapshot import *
+from visualinux.snapshot.state import *
 from visualinux.snapshot.snapshots import *

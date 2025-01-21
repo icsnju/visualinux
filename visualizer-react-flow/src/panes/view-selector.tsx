@@ -4,7 +4,7 @@ import Popup from "reactjs-popup";
 
 export function PopViewSelector({ pKey, trigger }: { pKey: number, trigger: JSX.Element }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);
-    const viewnameList = state.plots.getViewnameList();
+    const viewnameList = state.snapshots.getViewnameList();
     const Poped = ((closePopup: (() => void)) => (
         <div className="fixed inset-0 flex items-center justify-center" onClick={closePopup}>
             <ul className="min-w-48 py-1 bg-white rounded-lg shadow-lg" onClick={(e) => e.stopPropagation()}>

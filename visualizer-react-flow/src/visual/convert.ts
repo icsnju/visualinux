@@ -1,5 +1,5 @@
 import {
-    View, Box, Abst, Container,
+    StateView, Box, Abst, Container,
     ViewAttrs, NodeAttrs,
     ReactFlowGraph, BoxNode, ContainerNode,
     BoxNodeData,
@@ -8,7 +8,7 @@ import { layoutGraphByDagre } from "@app/visual/layout";
 import { type Edge, MarkerType } from "@xyflow/react";
 import Dagre from "@dagrejs/dagre";
 
-export function convertToReactFlow(view: View, attrs: ViewAttrs): ReactFlowGraph {
+export function convertToReactFlow(view: StateView, attrs: ViewAttrs): ReactFlowGraph {
     const converter = new ReactFlowConverter(view, attrs);
     return converter.convert();
 }
@@ -25,13 +25,13 @@ const edgeProp = {
 }
 
 class ReactFlowConverter {
-    private view: View;
+    private view: StateView;
     private attrs: ViewAttrs;
     private rootMap:   { [key: string]: string };
     private nodeMap: { [key: string]: BoxNode | ContainerNode };
     private graph: ReactFlowGraph;
     private layoutDirection: 'LR' | 'TB' = 'LR';
-    constructor(view: View, attrs: ViewAttrs) {
+    constructor(view: StateView, attrs: ViewAttrs) {
         this.view      = view;
         this.attrs     = attrs;
         this.rootMap   = {};
@@ -96,7 +96,6 @@ class ReactFlowConverter {
     }
     private convertShape(key: string) {
         // for several reasons/optimizations, we only convert the outmost shapes to react flow nodes
-        console.log('convertShape?', key, this.rootMap[key]);
         key = this.rootMap[key];
         // avoid redundant conversion
         if (this.nodeMap[key] != null) {
