@@ -32,27 +32,29 @@ function BoxField({ id, data, depth }: { id: string, data: BoxNodeData, depth: n
                 return null;
         }
     }), [data.members]);
-    const cssBorder = depth > 0 ? 'border-2 border-black' : '';
     const cssAnim = 'transition-all duration-200 ease-in-out';
+    const colorDiff = 
+        data.isDiffAdd === undefined ? 'black' :
+        data.isDiffAdd ? '[#228B22]' : '[#DC143C]';
     return (
-        <div className={`relative flex flex-col items-center rounded-md ${cssBorder} ${cssBgColor(depth)} ${cssAnim}`}>
-            <div className="w-full ml-1 flex justify-begin items-center">
+        <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-${colorDiff} ${cssBgColor(depth)} ${cssAnim}`}>
+            <div className="w-full ml-2 flex justify-begin items-center">
                 <button 
-                    className="w-4 h-4 mr-1 flex items-center justify-center border border-black rounded"
+                    className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-${colorDiff} text-${colorDiff}`}
                     onClick={() => {
                         if (data.notifier) data.notifier(id);
                     }}
                 >
                     {data.collapsed ? '+' : '-'}
                 </button>
-                <p className="h-6 text-base">{data.label}</p>
+                <p className={`h-6 text-base text-${colorDiff}`}>{data.label}</p>
             </div>
             <div className={`w-full overflow-hidden ${cssAnim} ${data.collapsed ? 'max-h-0' : ''}`}>
                 <div className="border-y border-black">
                     {members}
                 </div>
                 <div className="w-full flex justify-end">
-                    <p className="text-sm mr-1">{data.addr}</p>
+                    <p className={`mr-1 text-sm text-${colorDiff}`}>{data.addr}</p>
                 </div>
             </div>
             <Handle 

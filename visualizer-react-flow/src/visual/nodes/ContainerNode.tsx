@@ -1,10 +1,14 @@
 import { type ContainerNode } from "@app/visual/types";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
+const cssBorderColor = (isDiffAdd: boolean | undefined) => 
+    isDiffAdd === undefined ? 'border-black' :
+    isDiffAdd ? 'border-[#32CD32]' : 'border-[#FF6B6B]';
+
 export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
     const cssAnim = 'transition-all duration-200 ease-in-out';
     return (
-        <div className={`${cssAnim}`}>
+        <div className={`container-node h-full rounded-md border-2 border-dashed ${cssBorderColor(data.isDiffAdd)} ${cssAnim}`}>
             <div className="w-full ml-2 flex justify-begin items-center">
                 <button 
                     className="w-4 h-4 mr-1 flex items-center justify-center border border-black rounded"

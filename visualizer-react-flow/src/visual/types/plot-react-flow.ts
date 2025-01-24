@@ -1,4 +1,4 @@
-import { ContainerMember, TextMember, LinkMember } from "@app/visual/types/plot-model";
+import { ShapeDiffInfo, TextMember, LinkMember, ContainerMember } from "@app/visual/types/plot-model";
 import { type Edge, type Node } from "@xyflow/react";
 
 export type ReactFlowPlot = {
@@ -16,17 +16,15 @@ export type BoxNode = Node<BoxNodeData, 'box'>;
 export type ContainerNode = Node<ContainerNodeData, 'container'>;
 
 type NodeMetadata = {
-    // depth: number,
     collapsed: boolean,
     notifier?: (id: string) => void,
-    // heightMembers: {[label: string]: number},
 }
 
-type BoxNodeMember = TextMember | LinkMember | {
+type BoxNodeMember = TextMember | LinkMember | ({
     class:  'box'
     object: string
     data:   BoxNodeData
-}
+} & ShapeDiffInfo)
 
 export type BoxNodeData = {
     key:      string
@@ -35,11 +33,11 @@ export type BoxNodeData = {
     label:    string
     members:  {[label: string]: BoxNodeMember}
     parent:   string | null
-} & NodeMetadata
+} & ShapeDiffInfo & NodeMetadata
 
 export type ContainerNodeData = {
     key:     string
     label:   string
     members: ContainerMember[]
     parent:  string | null
-} & NodeMetadata
+} & ShapeDiffInfo & NodeMetadata

@@ -157,6 +157,7 @@ class ReactFlowConverter {
             type: box.type, addr: box.addr, label: box.label,
             members: this.convertBoxMembers(box, abst),
             parent: box.parent,
+            isDiffAdd: box.isDiffAdd,
             collapsed: attrs.collapsed == 'true',
         };
     }
@@ -171,6 +172,7 @@ class ReactFlowConverter {
             type: '', addr: '', label: container.label,
             members: {},
             parent: container.parent,
+            isDiffAdd: container.isDiffAdd,
             collapsed: attrs.collapsed == 'true',
         };
         for (const member of container.members) {
@@ -181,7 +183,8 @@ class ReactFlowConverter {
                     data: this.convertBoxData(
                         this.getShape(member.key),
                         this.attrs[member.key] || {}
-                    )
+                    ),
+                    isDiffAdd: member.isDiffAdd,
                 };
             }
         }
@@ -218,6 +221,10 @@ class ReactFlowConverter {
                         this.getShape(member.object),
                         this.attrs[member.object] || {}
                     );
+                }
+                // @ts-ignore
+                if (member.diffOldObject !== undefined) {
+                    // TODO: create a diff node for the old nested box
                 }
             }
         }

@@ -14,5 +14,9 @@ const config: Config = {
     },
   },
   plugins: [],
+  safelist: [
+    'border-[#228B22]', 'border-[#DC143C]',
+    'text-[#228B22]',   'text-[#DC143C]',
+  ],
 };
 export default config;
