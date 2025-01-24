@@ -15,7 +15,7 @@ export default function SnapshotList() {
                     return (
                         <li 
                             key={snapshot.key} 
-                            className="px-2 whitespace-nowrap overflow-x-hidden text-ellipsis cursor-pointer hover:bg-gray-200"
+                            className="px-2 whitespace-pre-wrap overflow-x-hidden text-ellipsis cursor-pointer hover:bg-gray-200"
                             onClick={() => stateDispatch({ command: 'USE', snKey: snapshot.key })}
                         >
                             {snapshotTitle(snapshot)}
@@ -29,9 +29,9 @@ export default function SnapshotList() {
 
 function snapshotTitle(snapshot: Snapshot) {
     if (snapshot.timestamp != 0) {
-        return `${snapshot.key} (${timestampToDate(snapshot.timestamp)})`;
+        return snapshot.key + '\n' + timestampToDate(snapshot.timestamp);
     }
-    return snapshot.key;
+    return snapshot.key + '\n' + '---';
 }
 
 function timestampToDate(timestamp: number) {

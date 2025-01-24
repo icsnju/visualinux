@@ -1,24 +1,83 @@
 // ViewQL DSL grammar.
 
 %import common.CNAME
+%import common.HEXDIGIT
+%import common.INT
+%import common.ESCAPED_STRING
+
+// %import .visualinux.grammar.cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
+%import .cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
 
 // entry
 
 viewql: instruction*
 instruction: select | update
 
-variable: CNAME
+// select stmt
 
-// select
+select: object_set "=" "SELECT" selector "FROM" scope ["AS" identifier] ["WHERE" condition]
 
-select: "SELECT" selector "FROM" variable ["WHERE" condition]
+selector: normal_expression | ANY_EXPR
+scope: set_expression | ANY_EXPR
 
-selector:  CNAME
-condition: CNAME
+// update stmt
 
-// update
+update: "UPDATE" set_expression "WITH" attr_name ":" attr_value
 
-update: "UPDATE" variable "WITH" attr ":" value
+attr_name: CNAME
+attr_value: CNAME
 
-attr: CNAME
-value: CNAME
+// common primitives
+
+object_set: CNAME
+identifier: CNAME
+literal: CNAME | INT | ESCAPED_STRING
+ANY_EXPR: "*"
+
+// set expr
+
+set_expression: set_cap
+set_cap: "(" set_cap ")"
+       | set_cup
+       | set_cup "^" set_cap
+
+set_cup: "(" set_cup ")"
+       | set_sub
+       | set_sub "|" set_cup
+
+set_sub: "(" set_sub ")"
+       | set_uni
+       | set_uni "\\" set_sub
+
+set_uni: object_set
+       | "REACHABLE" "(" object_set ")"
+
+// condition expr
+
+condition: condition_and
+condition_and: "(" condition_and ")"
+             | condition_or ("AND" condition_and)*
+condition_or: "(" condition_or ")"
+             | filter ("OR" condition_or)*
+
+filter: expression
+      | expression comp_op expression
+      | expression comp_op literal
+      | expression "IN" expression
+
+expression: normal_expression | object_keys
+
+comp_op: EQUALITY | RELATIONAL
+
+// normal expr
+
+normal_expression: identifier
+                 | normal_expression forward_op identifier
+
+object_keys: object_key_literal
+           | object_key_literal "," object_keys
+
+object_key_literal: OBJECT_ADDR ":" CNAME
+OBJECT_ADDR: /0x[0-9a-fA-F]+/
+
+forward_op: POSTFIX_DOT | POSTFIX_ARROW

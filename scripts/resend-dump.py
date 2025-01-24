@@ -17,24 +17,37 @@ load_dotenv(dir_project / '.env.local')
 
 VISUALIZER_PORT = int(os.getenv('VISUALINUX_VISUALIZER_PORT', 3000))
 
-def send(json_data: dict):
-    server_url = f'http://localhost:{VISUALIZER_PORT}'
-    url = f'{server_url}/vcmd'
-    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    try:
-        response = requests.post(url, headers=headers, json=json_data)
-        print(f'POST to visualizer {response}')
-    except Exception as e:
-        print(f'[ERROR] Failed to POST data to visualizer; please check the connection.')
-        print(f'- {e!s}')
-        print(f'- {url = }')
-
 def main():
 
     if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <dump_file>")
+        print(f"Usage: {sys.argv[0]} <dump_dir>")
         sys.exit(1)
-    relpath = Path(sys.argv[1])
+    dump_dir = Path(sys.argv[1])
+
+    if not dump_dir.is_dir():
+        print(f"Error: {dump_dir} is not a directory")
+        sys.exit(1)
+
+    relpaths = [p for p in dump_dir.iterdir() if p.is_dir()]
+    if not relpaths:
+        print(f"Error: No subdirectories found in {dump_dir}")
+        sys.exit(1)
+
+    for i, relpath in enumerate(relpaths):
+        handle_one(f'$foo_{i}', relpath)
+        if i > 0:
+            send({
+                'command': 'DIFF',
+                'snKeySrc': f'$foo_{i-1}',
+                'snKeyDst': f'$foo_{i}',
+            })
+
+    send({
+        'command': 'USE',
+        'snKey': 'diff-$foo_0-$foo_1',
+    })
+
+def handle_one(sn_key: str, relpath: Path):
 
     if relpath.is_dir():
         files = relpath.glob('**/*.json')
@@ -53,24 +66,26 @@ def main():
 
     send({
         'command': 'NEW',
-        'snKey': '$foo',
+        'snKey': sn_key,
         'snapshot': {
-            'key': '$foo',
+            'key': sn_key,
             'views': state,
             'pc': '0',
             'timestamp': datetime.now().timestamp(),
         }
     })
-    send({
-        'command': 'NEW',
-        'snKey': '$bar',
-        'snapshot': {
-            'key': '$bar',
-            'views': state,
-            'pc': '11',
-            'timestamp': datetime.now().timestamp(),
-        }
-    })
+
+def send(json_data: dict):
+    server_url = f'http://localhost:{VISUALIZER_PORT}'
+    url = f'{server_url}/vcmd'
+    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+    try:
+        response = requests.post(url, headers=headers, json=json_data)
+        print(f'POST to visualizer {response}')
+    except Exception as e:
+        print(f'[ERROR] Failed to POST data to visualizer; please check the connection.')
+        print(f'- {e!s}')
+        print(f'- {url = }')
 
 def time_ms() -> int:
     return int(time.time_ns() / 1000000)

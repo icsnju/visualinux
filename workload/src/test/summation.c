@@ -131,6 +131,11 @@ static void end_evaluation(void) {
     // file mapping
     munmap(faddrs[0], 4096);
     munmap(faddrs[1], 4096 * 2);
+    //
+    // for gdb breakpoint for vdiff
+    printf("main process %d try get sid\n", getpid());
+    int sid = getsid(getpid());
+    printf("main process get sid = %d\n", sid);
     // munmap(faddrs[2], 4096);
     munmap(faddrs[3], 4096 * 3);
     munmap(faddrs[4], 4096);

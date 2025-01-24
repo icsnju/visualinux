@@ -69,24 +69,26 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
         }
         const { view, attrs } = state.getPlotOfPanel(pKey);
         console.log('getplotofpanel', view, attrs);
-        if (view == null) {
-            setNodes([]);
-            setEdges([]);
-        } else {
-            const graph = convertToReactFlow(view, attrs);
-            setNodes(graph.nodes.map(nd => {
-                if (nd.type != 'box' && nd.type != 'container') {
-                    return nd;
-                }
-                return {
-                    ...nd,
-                    data: {
-                        ...nd.data,
-                        notifier: nodeNotifier
+        // clear-then-reset to avoid react-flow render error (root cause of which is unknown)
+        setNodes([]);
+        setEdges([]);
+        if (view != null) {
+            setTimeout(() => {
+                const graph = convertToReactFlow(view, attrs);
+                setNodes(graph.nodes.map(nd => {
+                    if (nd.type != 'box' && nd.type != 'container') {
+                        return nd;
                     }
-                };
-            }));
-            setEdges(graph.edges);
+                    return {
+                        ...nd,
+                        data: {
+                            ...nd.data,
+                            notifier: nodeNotifier
+                        }
+                    };
+                }));
+                setEdges(graph.edges);
+            }, 100);
         }
     }, [pKey, state]);
     useEffect(() => {

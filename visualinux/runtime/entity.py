@@ -86,7 +86,7 @@ class Link(RuntimePrimitive):
 
     def to_json(self) -> dict:
         return {
-            'class': 'link',
+            'class':  'link',
             'type':   self.link_type.name,
             'target': self.target_key,
         }
@@ -101,7 +101,7 @@ class BoxMember(JSONRepr):
 
     def to_json(self) -> dict:
         return {
-            'class': 'box',
+            'class':  'box',
             'object': self.object_key,
         }
 
@@ -116,7 +116,7 @@ class View(JSONRepr):
 
     def to_json(self) -> dict:
         return {
-            'parent': self.parent,
+            'parent':  self.parent,
             'members': OrderedDict((label, member.to_json()) for label, member in self.members.items()),
         }
 
@@ -165,11 +165,11 @@ class Box(RuntimeShape):
 
     def to_json(self) -> dict:
         return {
-            'key' : self.root.json_data_key,
-            'type': self.type,
-            'addr': hex(self.root.address),
-            'label': self.label,
-            'absts': OrderedDict((name, view.to_json()) for name, view in self.views.items()),
+            'key':    self.root.json_data_key,
+            'type':   self.type,
+            'addr':   hex(self.root.address),
+            'label':  self.label,
+            'absts':  OrderedDict((name, view.to_json()) for name, view in self.views.items()),
             'parent': self.parent
         }
 
@@ -177,12 +177,12 @@ class Box(RuntimeShape):
 class ContainerMember(JSONRepr):
 
     key:   str | None
-    links: dict[str, str]
+    links: dict[str, Link]
 
     def to_json(self) -> dict:
         return {
             'key':   self.key,
-            'links': self.links
+            'links': OrderedDict((label, link.to_json()) for label, link in self.links.items())
         }
 
 class Container(RuntimeShape):
@@ -201,28 +201,30 @@ class Container(RuntimeShape):
     def key(self) -> str:
         return f'{self.root.address:#x}:{self.model.name}'
 
-    def add_member(self, key: str | None, **links) -> None:
+    def add_member(self, key: str | None, **links: str | None) -> None:
         if key and key.startswith('0x0:'):
             key = None
         for label, target in links.items():
             if isinstance(target, str) and target.startswith('0x0:'):
                 links[label] = None
-        self.members.append(ContainerMember(key, links))
+        xlinks = {label: Link(LinkType.DIRECT, target, None) for label, target in links.items()}
+        self.members.append(ContainerMember(key, xlinks))
 
-    def add_link_to_member(self, key: str | None, **links) -> None:
+    def add_link_to_member(self, key: str | None, **links: str | None) -> None:
         for label, target in links.items():
             if isinstance(target, str) and target.startswith('0x0:'):
                 links[label] = None
+        xlinks = {label: Link(LinkType.DIRECT, target, None) for label, target in links.items()}
         for member in self.members:
             if member.key == key:
-                member.links |= links
+                member.links |= xlinks
 
     def to_json(self) -> dict:
         return {
-            'key': self.key,
-            'label': self.label,
+            'key':     self.key,
+            'label':   self.label,
             'members': [member.to_json() for member in self.members],
-            'parent': self.parent
+            'parent':  self.parent
         }
 
 class ContainerConv(JSONRepr):
@@ -248,10 +250,10 @@ class ContainerConv(JSONRepr):
 
     def to_json(self) -> dict:
         return {
-            'source': self.source.key,
-            'key': self.key,
+            'source':  self.source.key,
+            'key':     self.key,
             'members': [member.to_json() for member in self.members],
-            'parent': self.parent
+            'parent':  self.parent
         }
 
 NotPrimitive = Box | Container | ContainerConv

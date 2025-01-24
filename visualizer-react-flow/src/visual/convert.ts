@@ -285,26 +285,22 @@ class ReactFlowConverter {
             if (memberNode.type != 'box') {
                 continue;
             }
-            for (const [label, target] of Object.entries(member.links)) {
+            for (const [label, link] of Object.entries(member.links)) {
                 if (!(label in memberNode.data.members)) {
-                    memberNode.data.members[label] = {
-                        class: 'link',
-                        type: 'DIRECT',
-                        target: target,
-                    };
+                    memberNode.data.members[label] = link;
                 }
-                if (target != null) {
+                if (link.target != null) {
                     const edgeId = `${member.key}.${label}`;
                     const edge: Edge = {
                         id: edgeId,
                         source: member.key,
                         sourceHandle: edgeId,
-                        target: target,
-                        targetHandle: target,
+                        target: link.target,
+                        targetHandle: link.target,
                         ...edgeProp
                     };
                     this.graph.edges.push(edge);
-                    this.convertShape(target);
+                    this.convertShape(link.target);
                 }
             }
         }
@@ -369,12 +365,12 @@ class ReactFlowConverter {
             }
             // prepare the subgraph for subflow layout
             memberNodes.push(memberNode);
-            for (const [label, target] of Object.entries(member.links)) {
-                if (target != null) {
+            for (const [label, link] of Object.entries(member.links)) {
+                if (link.target != null) {
                     memberEdges.push({
                         id: `${member.key}.${label}`,
                         source: member.key,
-                        target: target,
+                        target: link.target,
                     });
                 }
             }

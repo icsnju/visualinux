@@ -1,4 +1,4 @@
-import { Abst, Box, Snapshot, StateView } from "./types";
+import { Snapshot, StateView, Box, Abst, Member, LinkMember, Container, ContainerMember } from "./types";
 import { addLogTo, LogEntry, LogType } from "@app/utils";
 
 export function calcSnapshotDiff(diffKey: string, snSrc: Snapshot, snDst: Snapshot): Snapshot {
@@ -19,57 +19,145 @@ class SnapshotDiffSynthesizer {
         this.logs = [];
     }
     synthesize() {
-        for (const [viewName, viewSrc] of Object.entries(this.snSrc.views)) {
-            if (viewName in this.snDst.views) {
-                const viewDst = this.snDst.views[viewName];
-                this.snRes.views[viewName] = this.calcStateViewDiff(viewSrc, viewDst);
+        for (const [viewname, viewDst] of Object.entries(this.snDst.views)) {
+            if (viewname in this.snSrc.views) {
+                const viewSrc = this.snSrc.views[viewname];
+                this.snRes.views[viewname] = this.calcStateViewDiff(viewname, viewSrc, viewDst);
             }
         }
         return this.snRes;
     }
-    private calcStateViewDiff(viewSrc: StateView, viewDst: StateView): StateView {
-        if (viewSrc.name !== viewDst.name) {
-            throw new Error(`calcStateViewDiff viewname mismatch: ${viewSrc.name} != ${viewDst.name}`);
-        }
+    private calcStateViewDiff(viewname: string, viewSrc: StateView, viewDst: StateView): StateView {
         const viewDiff: StateView = {
-            name: viewSrc.name,
+            name: viewname,
             pool: {
                 boxes: {},
                 containers: {},
             },
-            plot: [],
-            init_attrs: {},
+            plot: viewDst.plot,
+            init_attrs: viewDst.init_attrs,
             stat: 0,
         }
-        for (const [key, boxSrc] of Object.entries(viewSrc.pool.boxes)) {
-            if (key in viewDst.pool.boxes) {
-                const boxDst = viewDst.pool.boxes[key];
+        // boxes
+        for (const [key, boxDst] of Object.entries(viewDst.pool.boxes)) {
+            if (key in viewSrc.pool.boxes) {
+                const boxSrc = viewSrc.pool.boxes[key];
                 viewDiff.pool.boxes[key] = this.calcBoxDiff(boxSrc, boxDst);
             } else {
-                ;
+                viewDiff.pool.boxes[key] = { ...boxDst, isDiffAdd: true };
             }
         }
+        for (const [key, boxSrc] of Object.entries(viewSrc.pool.boxes)) {
+            if (!(key in viewDst.pool.boxes)) {
+                viewDiff.pool.boxes[key] = { ...boxSrc, isDiffAdd: false };
+            }
+        }
+        // containers
+        for (const [key, containerDst] of Object.entries(viewDst.pool.containers)) {
+            if (key in viewSrc.pool.containers) {
+                const containerSrc = viewSrc.pool.containers[key];
+                viewDiff.pool.containers[key] = this.calcContainerDiff(containerSrc, containerDst);
+            } else {
+                viewDiff.pool.containers[key] = { ...containerDst, isDiffAdd: true };
+            }
+        }
+        for (const [key, containerSrc] of Object.entries(viewSrc.pool.containers)) {
+            if (!(key in viewDst.pool.containers)) {
+                viewDiff.pool.containers[key] = { ...containerSrc, isDiffAdd: false };
+            }
+        }
+        // return
         return viewDiff;
     }
     private calcBoxDiff(boxSrc: Box, boxDst: Box): Box {
         const boxDiff: Box = {
-            key: boxSrc.key,
-            type: boxSrc.type,
-            addr: boxSrc.addr,
-            label: boxSrc.label,
+            key: boxDst.key,
+            type: boxDst.type,
+            addr: boxDst.addr,
+            label: boxDst.label,
             absts: {},
-            parent: boxSrc.parent,
+            parent: boxDst.parent,
         };
-        for (const [key, viewSrc] of Object.entries(boxSrc.absts)) {
-            ;
+        for (const [viewname, viewDst] of Object.entries(boxDst.absts)) {
+            if (viewname in boxSrc.absts) {
+                const viewSrc = boxSrc.absts[viewname];
+                // since the kernel developer can change view definition,
+                // it is more compatible to handle view inheritance here
+                const membersSrc = this.handleViewInheritance(boxSrc, viewSrc);
+                const membersDst = this.handleViewInheritance(boxDst, viewDst);
+                const membersDiff = this.calcViewDiff(membersSrc, membersDst);
+                boxDiff.absts[viewname] = { parent: null, members: membersDiff };
+            } else {
+                boxDiff.absts[viewname] = { parent: null, members: {} };
+            }
         }
         return boxDiff;
     }
-    private calcViewDiff(viewSrc: Abst, viewDst: Abst): Abst {
-        const viewDiff: Abst = {
-        };
-        return viewDiff;
+    private calcViewDiff(membersSrc: Abst['members'], membersDst: Abst['members']): Abst['members'] {
+        const membersDiff: Abst['members'] = {};
+        for (const [label, memberDst] of Object.entries(membersDst)) {
+            if (label in membersSrc) {
+                const memberSrc = membersSrc[label];
+                membersDiff[label] = this.calcMemberDiff(memberSrc, memberDst);
+            } else {
+                membersDiff[label] = { ...memberDst };
+            }
+        }
+        return membersDiff;
     }
+    private calcMemberDiff(memberSrc: Member, memberDst: Member): Member {
+        if (memberSrc.class === 'text') {
+            return { ...memberDst, diffOldValue: memberSrc.value };
+        } else if (memberSrc.class === 'link') {
+            return { ...memberDst, diffOldTarget: memberSrc.target };
+        } else if (memberSrc.class === 'box') {
+            return { ...memberDst, diffOldObject: memberSrc.object };
+        }
+        return { ...memberDst };
+    }
+    private handleViewInheritance(box: Box, abst: Abst): Abst['members'] {
+        if (abst.parent == null) {
+            return { ...abst.members };
+        }
+        const parentMembers = this.handleViewInheritance(box, box.absts[abst.parent]);
+        return { ...parentMembers, ...abst.members };
+    }
+    private calcContainerDiff(containerSrc: Container, containerDst: Container): Container {
+        const containerDiff: Container = {
+            key: containerDst.key,
+            label: containerDst.label,
+            members: [],
+            parent: containerDst.parent,
+        };
+        for (const memberDst of containerDst.members) {
+            const memberSrc = containerSrc.members.find(m => m.key === memberDst.key);
+            if (memberSrc) {
+                const memberDiff: ContainerMember = {
+                    key: memberDst.key,
+                    links: {},
+                };
+                for (const [label, linkDst] of Object.entries(memberDst.links)) {
+                    if (label in memberSrc.links) {
+                        const linkSrc = memberSrc.links[label];
+                        memberDiff.links[label] = this.calcMemberDiff(linkSrc, linkDst) as LinkMember;
+                    } else {
+                        this.log('warning', `container member ${memberDst.key} has link ${label} not found in source`);
+                    }
+                }
+                containerDiff.members.push(memberDiff);
+            } else {
+                containerDiff.members.push({ ...memberDst, isDiffAdd: true });
+            }
+        }
+        for (const memberSrc of containerSrc.members) {
+            const memberDst = containerDst.members.find(m => m.key === memberSrc.key);
+            if (!memberDst) {
+                containerDiff.members.push({ ...memberSrc, isDiffAdd: false });
+            }
+        }
+        return containerDiff;
+    }
+
     private log(type: LogType, message: string) {
         addLogTo(this.logs, type, message);
     }
