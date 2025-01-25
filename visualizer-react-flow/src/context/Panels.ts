@@ -152,7 +152,7 @@ export default class Panels {
     }
     private isNodeRemovable(node: PrimaryPanel) {
         let parent = node.parent;
-        if (parent.parent == null && parent.children.length == 1) {
+        if (parent.parent === null && parent.children.length == 1) {
             // removing the last node is not allowed
             return false;
         }

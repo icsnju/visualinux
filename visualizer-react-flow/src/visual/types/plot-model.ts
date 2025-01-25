@@ -96,7 +96,7 @@ export function isMemberBox(member: Member): member is BoxMember {
 }
 
 export function shouldCompress(box: Box): boolean {
-    if (box.parent == null || Object.keys(box.absts).length > 1) {
+    if (box.parent === null || Object.keys(box.absts).length > 1) {
         return false;
     }
     const abst = Object.values(box.absts)[0];

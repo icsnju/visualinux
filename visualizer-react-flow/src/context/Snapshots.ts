@@ -30,8 +30,8 @@ export default class Snapshots {
         }
         const snSrc = this.get(snKeySrc);
         const snDst = this.get(snKeyDst);
-        if (snSrc == null) return snDst;
-        if (snDst == null) return snSrc;
+        if (snSrc === null) return snDst;
+        if (snDst === null) return snSrc;
         const snDiff = calcSnapshotDiff(diffKey, snSrc, snDst);
         this.new(diffKey, snDiff);
     }

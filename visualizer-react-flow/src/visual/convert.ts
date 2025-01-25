@@ -82,7 +82,7 @@ class ReactFlowConverter {
         }
         let shape = this.getShape(key);
         // for the outmost shape its root shape is itself
-        if (shape.parent == null) {
+        if (shape.parent === null) {
             this.rootMap[key] = key;
             return;
         }
@@ -98,7 +98,7 @@ class ReactFlowConverter {
         // for several reasons/optimizations, we only convert the outmost shapes to react flow nodes
         key = this.rootMap[key];
         // avoid redundant conversion
-        if (this.nodeMap[key] != null) {
+        if (this.nodeMap[key] !== undefined) {
             return;
         }
         // convert according to the node type
@@ -128,7 +128,7 @@ class ReactFlowConverter {
         }
         console.log('convertBox', box.key, box, attrs);
         // avoid redundant conversion
-        if (this.nodeMap[box.key] != null) {
+        if (this.nodeMap[box.key] !== undefined) {
             return;
         }
         // generate the node
@@ -137,7 +137,7 @@ class ReactFlowConverter {
             data: this.convertBoxData(box, attrs),
             position: { x: 0, y: 0 }
         };
-        if (box.parent != null) {
+        if (box.parent !== null) {
             node.parentId = box.parent;
             node.extent = 'parent';
             node.draggable = false;
@@ -176,7 +176,7 @@ class ReactFlowConverter {
             collapsed: attrs.collapsed == 'true',
         };
         for (const member of container.members) {
-            if (member.key != null) {
+            if (member.key !== null) {
                 nodeData.members[member.key] = {
                     class: 'box',
                     object: member.key,
@@ -191,7 +191,7 @@ class ReactFlowConverter {
         return nodeData;
     }
     private convertBoxMembers(box: Box, abst: Abst): BoxNodeData['members'] {
-        if (abst.parent == null) {
+        if (abst.parent === null) {
             return this.convertAbstMembers(box, abst)
         }
         const parentMembers = this.convertBoxMembers(box, box.absts[abst.parent]);
@@ -201,7 +201,7 @@ class ReactFlowConverter {
         let members = structuredClone(abst.members) as BoxNodeData['members'];
         for (let [label, member] of Object.entries(members)) {
             // generate the edge
-            if (member.class == 'link' && member.target != null) {
+            if (member.class == 'link' && member.target !== null) {
                 const edgeId = `${box.key}.${label}`;
                 console.log(member.target, 'root:', this.rootMap[member.target]);
                 const edge: Edge = {
@@ -216,7 +216,7 @@ class ReactFlowConverter {
                 if (edge.source != edge.target) this.convertShape(edge.target);
             // put data of nested box into the box data
             } else if (member.class == 'box') {
-                if (member.object != null) {
+                if (member.object !== null) {
                     member.data = this.convertBoxData(
                         this.getShape(member.object),
                         this.attrs[member.object] || {}
@@ -237,7 +237,7 @@ class ReactFlowConverter {
         }
         console.log('convertContainer', container.key, container, attrs);
         // avoid redundant conversion
-        if (this.nodeMap[container.key] != null) {
+        if (this.nodeMap[container.key] !== undefined) {
             return;
         }
         // compact array-like containers
@@ -250,7 +250,7 @@ class ReactFlowConverter {
                 absts: {
                     default: {
                         members: Object.fromEntries(container.members
-                            .filter(member => member.key != null)
+                            .filter(member => member.key !== null)
                             .map(member => [
                                 member.key, {
                                     class: 'box',
@@ -273,7 +273,7 @@ class ReactFlowConverter {
             data: {
                 key: container.key,
                 label: container.label,
-                members: Object.values(container.members).filter(member => member.key != null),
+                members: Object.values(container.members).filter(member => member.key !== null),
                 parent: container.parent,
                 collapsed: attrs.collapsed == 'true',
             },
@@ -296,7 +296,7 @@ class ReactFlowConverter {
                 if (!(label in memberNode.data.members)) {
                     memberNode.data.members[label] = link;
                 }
-                if (link.target != null) {
+                if (link.target !== null) {
                     const edgeId = `${member.key}.${label}`;
                     const edge: Edge = {
                         id: edgeId,
@@ -334,8 +334,22 @@ class ReactFlowConverter {
         for (let index = 0; index < members.length; index++) {
             const member = members[index];
             // simple estimation for primitive members
-            if (member.class != 'box') {
-                height += 20;
+            const countTextHeight = (text: string) => {
+                const lines = text.split('\n');
+                return 6 + 16 * lines.length;
+            }
+            if (member.class === "text") {
+                height += countTextHeight(member.value);
+                if (member.diffOldValue !== undefined) {
+                    height += countTextHeight(member.diffOldValue);
+                }
+                continue;
+            }
+            if (member.class === "link") {
+                height += countTextHeight(member.target || "");
+                if (member.diffOldTarget !== undefined) {
+                    height += countTextHeight(member.diffOldTarget || "");
+                }
                 continue;
             }
             // handle non-primitive members
@@ -373,7 +387,7 @@ class ReactFlowConverter {
             // prepare the subgraph for subflow layout
             memberNodes.push(memberNode);
             for (const [label, link] of Object.entries(member.links)) {
-                if (link.target != null) {
+                if (link.target !== null) {
                     memberEdges.push({
                         id: `${member.key}.${label}`,
                         source: member.key,

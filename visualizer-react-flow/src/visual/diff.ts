@@ -106,17 +106,17 @@ class SnapshotDiffSynthesizer {
         return membersDiff;
     }
     private calcMemberDiff(memberSrc: Member, memberDst: Member): Member {
-        if (memberSrc.class === 'text') {
+        if (memberSrc.class === 'text' && (memberDst.class !== 'text' || memberSrc.value != memberDst.value)) {
             return { ...memberDst, diffOldValue: memberSrc.value };
-        } else if (memberSrc.class === 'link') {
+        } else if (memberSrc.class === 'link' && (memberDst.class !== 'link' || memberSrc.target != memberDst.target)) {
             return { ...memberDst, diffOldTarget: memberSrc.target };
-        } else if (memberSrc.class === 'box') {
+        } else if (memberSrc.class === 'box' && (memberDst.class !== 'box' || memberSrc.object != memberDst.object)) {
             return { ...memberDst, diffOldObject: memberSrc.object };
         }
         return { ...memberDst };
     }
     private handleViewInheritance(box: Box, abst: Abst): Abst['members'] {
-        if (abst.parent == null) {
+        if (abst.parent === null) {
             return { ...abst.members };
         }
         const parentMembers = this.handleViewInheritance(box, box.absts[abst.parent]);

@@ -24,10 +24,12 @@ function BoxField({ id, data, depth }: { id: string, data: BoxNodeData, depth: n
                     </div>
                 );
             case 'text':
-                return <PrimitiveField key={label} depth={depth} label={label} value={member.value} isValueEmoji={member.size == -1}/>;
+                return <PrimitiveField key={label} depth={depth} label={label} value={member.value} isValueEmoji={member.size == -1} diffOldValue={member.diffOldValue}/>;
             case 'link':
-                const value = member.target ? member.target.split(':', 1)[0] : 'null';
-                return <PrimitiveField key={label} depth={depth} label={label} value={value} edgeSource={`${id}.${label}`}/>;
+                const targetToValue = (target: string | null) => target ? target.split(':', 1)[0] : "null";
+                const value = targetToValue(member.target);
+                const diffOldValue =  member.diffOldTarget === undefined ? undefined : targetToValue(member.diffOldTarget);
+                return <PrimitiveField key={label} depth={depth} label={label} value={value} edgeSource={`${id}.${label}`} diffOldValue={diffOldValue}/>;
             default:
                 return null;
         }
@@ -71,17 +73,33 @@ function BoxField({ id, data, depth }: { id: string, data: BoxNodeData, depth: n
     );
 }
 
-function PrimitiveField({ depth, label, value, isValueEmoji, edgeSource }: { depth: number, label: string, value: string, isValueEmoji?: boolean, edgeSource?: string }) {
+function PrimitiveField({ depth, label, value, isValueEmoji, edgeSource, diffOldValue }: { depth: number, label: string, value: string, isValueEmoji?: boolean, edgeSource?: string, diffOldValue?: string }) {
     const labelWidth = 96 - 5 * depth;
+    const cssDiffText = diffOldValue === undefined ? "" : "text-[#2b2be6] line-through";
     return (
-        <div className="relative w-full flex items-center border-y border-black h-5">
-            <div className="w-full flex text-sm">
-                <p style={{width: `${labelWidth}px`}} className="px-1 border-r-2 border-black truncate">{label}</p>
-                {isValueEmoji ?
-                    <p className="flex-1 px-1 text-center truncate" dangerouslySetInnerHTML={{__html: value}} />
-                :
-                    <p className="flex-1 px-1 text-center truncate">{value}</p>
-                }
+        <div className={`relative w-full flex flex-col border-y border-black`}>
+            <div className="w-full flex items-stretch leading-none">
+                {/* label */}
+                <div style={{width: `${labelWidth}px`}} className="px-1 flex items-center border-r-2 border-black">
+                    <p className="truncate">{label}</p>
+                </div>
+                {/* value */}
+                <div className="flex-1 px-1 py-0.5 truncate">
+                    {/* handle emoji text */}
+                    {isValueEmoji ?
+                        <p className={`text-center truncate ${cssDiffText}`} dangerouslySetInnerHTML={{__html: value}} />
+                    :
+                        <div>
+                            {value.split('\n').map((line, i) => (
+                                <p key={i} className={`text-center truncate ${cssDiffText}`}>{line}</p>
+                            ))}
+                        </div>
+                    }
+                    {/* handle diff */}
+                    {diffOldValue !== undefined &&
+                        <p className="text-center truncate leading-none text-[#2b2be6]">{diffOldValue}</p>
+                    }
+                </div>
             </div>
             {edgeSource ? <Handle 
                 key={`handle#${edgeSource}`}
