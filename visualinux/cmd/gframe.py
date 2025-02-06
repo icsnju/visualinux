@@ -1,5 +1,5 @@
 from visualinux import *
-
+import gdb
 import subprocess
 
 class GetCurrentFrameFilename(gdb.Command):

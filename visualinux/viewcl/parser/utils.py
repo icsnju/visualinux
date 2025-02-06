@@ -1,5 +1,5 @@
 from visualinux import *
-from visualinux.viewcl.parser import *
+from lark import Lark, ParseTree, Token, Tree
 
 class UnexpectedTokenError(Exception):
     def __init__(self, token: Tree[Token], *args) -> None:
@@ -42,7 +42,9 @@ def child_as_tree(node: Tree[Token], index: int) -> Tree[Token]:
     except Exception as e:
         raise fuck_exc(e.__class__, f'raise {e!s} in child_as_tree[{index = }] for {node = }')
 
-def child_as_tree_safe(node: Tree[Token], index: int) -> Tree[Token] | None:
+def child_as_tree_safe(node: Tree[Token] | None, index: int) -> Tree[Token] | None:
+    if node is None:
+        return None
     try:
         return node.children[index] # type: ignore
     except IndexError:

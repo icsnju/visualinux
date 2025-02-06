@@ -1,5 +1,4 @@
 from visualinux.term import *
-from visualinux.viewcl.parser import *
 from visualinux.viewcl.parser.utils import *
 from visualinux.viewcl.model.decorators import *
 
@@ -406,7 +405,7 @@ class DiagramDef:
 
     name: str
     plots: list['PlotTargetDef']
-    init_vql: str
+    init_viewql: str
 
     def __str__(self) -> str:
         return self.format_string()
@@ -416,9 +415,9 @@ class DiagramDef:
         for plot in self.plots:
             lines.append(plot.format_string(depth + 1))
         lines.append(padding(depth) + '}')
-        if self.init_vql:
+        if self.init_viewql:
             lines[-1] += ' with {'
-            lines.append(self.init_vql)
+            lines.append(self.init_viewql)
             lines.append(padding(depth) + '}')
         return '\n'.join(lines)
 

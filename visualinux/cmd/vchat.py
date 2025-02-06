@@ -2,6 +2,7 @@ from visualinux import *
 from visualinux.cmd.vplot import VPlotHandler
 from visualinux.cmd.vctrl import VCtrlHandler
 from visualinux.cmd.askllm import askllm
+import gdb
 
 VCHAT_PROMPT = (PROMPT_DIR / 'vchat.md').read_text()
 

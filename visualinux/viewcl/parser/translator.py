@@ -1,4 +1,3 @@
-from visualinux.viewcl.parser import *
 from visualinux.viewcl.parser.units import *
 from visualinux.viewcl.parser.utils import *
 from visualinux.viewcl.model import *
@@ -43,7 +42,7 @@ class Translator:
             raise fuck_exc(AssertionError, f'interpret_assign {inst = } illegal rhs')
 
     def interpret_diagdef(self, diagdef: DiagramDef):
-        diagram = Diagram([], diagdef.init_vql)
+        diagram = Diagram([], diagdef.init_viewql)
         for i, target in enumerate(diagdef.plots):
             name = f'{diagdef.name}.plot#{i}'
             diagram.plot_targets.append(self.interpret_plot(name, target))

@@ -1,5 +1,6 @@
 from visualinux import *
 from visualinux.runtime import entity
+from visualinux.viewql.manager import ViewAttrsManager
 
 class Pool:
 
@@ -80,12 +81,18 @@ class Pool:
 
 class StateView:
 
-    def __init__(self, name: str, init_vql: str, error: bool = True) -> None:
+    def __init__(self, name: str, init_viewql: str, error: bool = True) -> None:
         self.name = name
         self.pool = Pool()
         self.plot: list[str] = []
-        self.init_vql: str = init_vql
+        self.init_viewql = init_viewql
         self.error = error
+
+        self.db_attrs = ViewAttrsManager()
+        for key, ent in self.pool.boxes.items():
+            pass
+        for key, ent in self.pool.containers.items():
+            pass
 
     def add_plot(self, key: str) -> None:
         self.plot.append(key)
@@ -123,6 +130,7 @@ class StateView:
             'name': self.name,
             'pool': self.pool.to_json(),
             'plot': self.plot,
-            'init_vql': self.init_vql,
+            'init_viewql': self.init_viewql,
+            # 'init_attrs': ,
             'stat': int(self.error),
         }

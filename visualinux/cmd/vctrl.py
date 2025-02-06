@@ -2,6 +2,7 @@ from visualinux import *
 from visualinux.core import core
 from visualinux.cmd.askllm import askllm
 
+import gdb
 import argparse
 import re
 

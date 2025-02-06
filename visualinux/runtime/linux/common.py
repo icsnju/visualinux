@@ -1,4 +1,5 @@
 from visualinux import *
+from visualinux.runtime.gdb import gdb
 from visualinux.runtime.kvalue import *
 
 ### basic

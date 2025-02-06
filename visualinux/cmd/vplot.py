@@ -7,6 +7,7 @@ from visualinux.core import core
 from visualinux.cmd.vdiff import VDiffHandler
 from visualinux.cmd.askllm import askllm
 
+import gdb
 import argparse
 import re
 from lark import Lark, ParseTree, Token, Tree
@@ -113,14 +114,14 @@ class VPlotHandler:
         core.sync_file(convar, VIEWCL_SRC_DIR / filename, if_export)
 
     @classmethod
-    def handle_plot(cls, convar: str | None, viewname: str, entries_text: str, init_vql: str = '', if_export: bool = False) -> bool:
+    def handle_plot(cls, convar: str | None, viewname: str, entries_text: str, init_viewql: str = '', if_export: bool = False) -> bool:
         print(f'+ vplot {viewname = } {entries_text = }')
         parsetree = cls.parser.parse(entries_text)
         entries: list[VPlotHandler.Entry] = []
         for entry in cls.scan_arguments(child_as_tree(parsetree, 0)):
             entries.append(entry)
         try:
-            code = cls.synthesize_viewcl(viewname, entries, init_vql)
+            code = cls.synthesize_viewcl(viewname, entries, init_viewql)
         except:
             raise cls.ViewCLSynthesisError()
         print(f'  > ViewCL code:\n{code}')
@@ -145,8 +146,8 @@ class VPlotHandler:
             descs = model.typemap_for_llm[gval.gtype.tag]
             prompt = VPLOT_FIND_PROMPT.replace('!!!TYPEMAP!!!', '\n'.join([desc.to_prompt() for desc in descs]))
             shapename, viewname = re.split(r',\s*', askllm(prompt, message), maxsplit=1)
-            init_vql = f'UPDATE {gval.json_data_key} WITH view: {viewname}\n'
-            VPlotHandler.handle_plot(convar, '__anon__ ', f'{shapename}({symbol})', init_vql, if_export)
+            init_viewql = f'UPDATE {gval.json_data_key} WITH view: {viewname}\n'
+            VPlotHandler.handle_plot(convar, '__anon__ ', f'{shapename}({symbol})', init_viewql, if_export)
         # try to reconstruct the type info of a container
         elif type == 'C':
             print(f'[VPLOT CHAT] feature CONTAINER not implemented yet')
@@ -160,7 +161,7 @@ class VPlotHandler:
             print(f'{sn_key}: {snapshot.pc!s} ({snapshot.timestamp!s})')
 
     @classmethod
-    def synthesize_viewcl(cls, diagname: str, entries: list[Entry], init_vql: str = '') -> str:
+    def synthesize_viewcl(cls, diagname: str, entries: list[Entry], init_viewql: str = '') -> str:
         print(f'  + synthesize_viewcl {diagname = } {entries = }')
         shape_decl_list: list[str] = []
         plot_list: list[str] = []
@@ -179,8 +180,8 @@ class VPlotHandler:
                 plot_inst = f'    plot {entry.shape}(${{{entry.symbol}}})'
                 plot_list.append(plot_inst)
         code_diagdef = f'diag {diagname} {{\n' + '\n'.join(plot_list) + f'\n}}'
-        if init_vql:
-            code_diagdef += f' with {{\n' + init_vql + f'}}'
+        if init_viewql:
+            code_diagdef += f' with {{\n' + init_viewql + f'}}'
         code = 'import stdlib\n' + '\n'.join(shape_decl_list) + '\n' + code_diagdef + '\n'
         return code
 

@@ -9,7 +9,7 @@ PlotTarget = Box | Container
 @dataclass
 class Diagram:
     plot_targets: list[PlotTarget]
-    init_vql: str
+    init_viewql: str
 
 class DiagramSet:
 
@@ -25,9 +25,9 @@ class DiagramSet:
             for target in diagram.plot_targets:
                 ss += f'    plot {target!s}\n'
             ss += '  }}'
-            if diagram.init_vql:
+            if diagram.init_viewql:
                 ss += f' with {{\n'
-                ss += diagram.init_vql
+                ss += diagram.init_viewql
                 ss += f'  }}'
         return ss
 
@@ -43,13 +43,13 @@ class DiagramSet:
                 evaluation_result[name] = evaluation_counter.clone()
             except Exception as e:
                 print(f'subdiag {name} sync() error: ' + str(e))
-                snapshot.add_view(StateView(name, diagram.init_vql, error=True))
+                snapshot.add_view(StateView(name, diagram.init_viewql, error=True))
         for name, result in evaluation_result.items():
             pass
         return snapshot
 
     def sync_sub(self, name: str, diagram: Diagram):
-        view = StateView(name, diagram.init_vql)
+        view = StateView(name, diagram.init_viewql)
         for shape in diagram.plot_targets:
             if vl_debug_on(): printd(f'diag eval shape = {shape.format_string_head()}')
             ent = shape.evaluate_on(view.pool)

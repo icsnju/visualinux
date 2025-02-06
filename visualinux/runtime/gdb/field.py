@@ -1,5 +1,5 @@
 from visualinux import *
-from visualinux import gdb
+from visualinux.runtime.gdb import gdb
 from visualinux.runtime.gdb.type import GDBType
 
 class GDBField:

@@ -1,4 +1,3 @@
-from visualinux.viewcl.parser import *
 from visualinux.viewcl.parser.utils import *
 from visualinux.viewcl.parser.converter  import Converter
 from visualinux.viewcl.parser.translator import Translator

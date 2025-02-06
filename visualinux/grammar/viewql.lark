@@ -1,12 +1,17 @@
 // ViewQL DSL grammar.
 
+// import general modules
+
 %import common.CNAME
 %import common.HEXDIGIT
 %import common.INT
 %import common.ESCAPED_STRING
 
-// %import .visualinux.grammar.cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
-%import .cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
+%import common.WS
+%ignore WS
+
+%import .visualinux.grammar.cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
+// %import .cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
 
 // entry
 
@@ -35,22 +40,39 @@ literal: CNAME | INT | ESCAPED_STRING
 ANY_EXPR: "*"
 
 // set expr
+// (a ^ b) | c
 
-set_expression: set_cap
-set_cap: "(" set_cap ")"
-       | set_cup
-       | set_cup "^" set_cap
+// expression : subtraction ;
+// subtraction : union ( SET_OP_SUB union )* ;
+// union : intersection ( SET_OP_CUP intersection )* ;
+// intersection : set_uni ( SET_OP_CAP set_uni )* ;
+// set_uni : "(" expression ")" | object_set ;
 
-set_cup: "(" set_cup ")"
-       | set_sub
-       | set_sub "|" set_cup
+// set_expression: set_cap
+// set_cap: set_cup (SET_OP_CAP set_cup)*
+// set_cup: set_sub (SET_OP_CUP set_sub)*
+// set_sub: set_uni (SET_OP_SUB set_uni)*
+// set_uni: object_set
+//        | "REACHABLE" "(" object_set ")"
 
-set_sub: "(" set_sub ")"
-       | set_uni
-       | set_uni "\\" set_sub
+set_expression: set_sub
+
+set_sub: set_cup
+       | set_cup SET_OP_SUB set_sub
+
+set_cup: set_cap
+       | set_cap SET_OP_CUP set_cup
+
+set_cap: set_uni
+       | set_uni SET_OP_CAP set_cap
 
 set_uni: object_set
+       | "(" set_expression ")"
        | "REACHABLE" "(" object_set ")"
+
+SET_OP_CAP: "^"
+SET_OP_CUP: "|"
+SET_OP_SUB: "\\"
 
 // condition expr
 

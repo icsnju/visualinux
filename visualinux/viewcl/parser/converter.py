@@ -1,6 +1,7 @@
-from visualinux.viewcl.parser import *
-from visualinux.viewcl.parser.units import *
+from visualinux import *
 from visualinux.viewcl.parser.utils import *
+from visualinux.viewcl.parser.units import *
+from visualinux.viewcl.parser.viewql_converter import ViewQLConverter
 
 class Converter:
 
@@ -196,9 +197,10 @@ class Converter:
     def parse_diagdef(self, inst: Tree[Token]) -> DiagramDef:
         assert inst.data == 'diagdef'
         node_body = child_as_tree(inst, 0)
-        vql = serialize(child_as_tree(inst, 1))
+        node_viewql = child_as_tree_safe(child_as_tree_safe(inst, 1), 0)
+        init_viewql = ViewQLConverter.convert(node_viewql) if node_viewql else ''
         name = serialize(node_body.children[0])
-        diagdef = DiagramDef(name, [], vql)
+        diagdef = DiagramDef(name, [], serialize(node_viewql))
         for item in scan_children_as_tree(node_body, skip=1):
             match item.data:
                 case 'plot': diagdef.plots.append(self.parse_plot(item))

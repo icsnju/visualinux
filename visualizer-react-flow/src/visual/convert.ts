@@ -260,7 +260,8 @@ class ReactFlowConverter {
                         ),
                         parent: null
                     }
-                }
+                },
+                isDiffAdd: container.isDiffAdd,
             }
             this.convertBox(compacted, attrs);
             // this._convertArrayDataToContainer(container, attrs);
@@ -275,6 +276,7 @@ class ReactFlowConverter {
                 label: container.label,
                 members: Object.values(container.members).filter(member => member.key !== null),
                 parent: container.parent,
+                isDiffAdd: container.isDiffAdd,
                 collapsed: attrs.collapsed == 'true',
             },
             position: { x: 0, y: 0 }
@@ -443,7 +445,7 @@ class ReactFlowConverter {
     private layoutOutmostNodes() {
         let nodes = this.graph.nodes.filter(node => node.parentId === undefined);
         let edges = this.graph.edges;
-        layoutGraphByDagre(nodes, edges, { rankdir: this.layoutDirection, marginx: 16, marginy: 16 });
+        layoutGraphByDagre(nodes, edges, { rankdir: this.layoutDirection, marginx: 16, marginy: 16, ranksep: 96 });
     }
 }
 

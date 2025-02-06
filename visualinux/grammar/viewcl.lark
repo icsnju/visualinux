@@ -85,7 +85,7 @@ typedef: "define" shapename "as" (box_declaration | container_declaration)
 
 //// diagdef
 
-diagdef: diag_body [diag_init_vql]
+diagdef: diag_body [diag_init_viewql]
 
 diag_body: "diag" diagname "{" (plot | comment)* "}"
 
@@ -94,7 +94,7 @@ plot_target: access_variable_as_shape
            | assignment_rhs
            | assignment_swc
 
-diag_init_vql: "with" "{" viewql "}"
+diag_init_viewql: "with" "{" viewql "}"
 
 //// comment
 comment: "//" /.+/
