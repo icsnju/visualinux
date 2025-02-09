@@ -1,9 +1,9 @@
-from visualinux.viewcl.model.containers.array import *
-from visualinux.viewcl.model.containers.linkedlist import *
-from visualinux.viewcl.model.containers.hlist import *
-from visualinux.viewcl.model.containers.rbtree import *
-from visualinux.viewcl.model.containers.xarray import *
-from visualinux.viewcl.model.containers.unordered_set import *
+from visualinux.dsl.model.containers.array import *
+from visualinux.dsl.model.containers.linkedlist import *
+from visualinux.dsl.model.containers.hlist import *
+from visualinux.dsl.model.containers.rbtree import *
+from visualinux.dsl.model.containers.xarray import *
+from visualinux.dsl.model.containers.unordered_set import *
 
 def get_basic_container_shape(name: str) -> Type[Container]:
     match name:

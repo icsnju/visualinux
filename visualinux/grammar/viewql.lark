@@ -10,8 +10,8 @@
 %import common.WS
 %ignore WS
 
-%import .visualinux.grammar.cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
-// %import .cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
+// %import .visualinux.grammar.cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
+%import .cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
 
 // entry
 
@@ -40,20 +40,6 @@ literal: CNAME | INT | ESCAPED_STRING
 ANY_EXPR: "*"
 
 // set expr
-// (a ^ b) | c
-
-// expression : subtraction ;
-// subtraction : union ( SET_OP_SUB union )* ;
-// union : intersection ( SET_OP_CUP intersection )* ;
-// intersection : set_uni ( SET_OP_CAP set_uni )* ;
-// set_uni : "(" expression ")" | object_set ;
-
-// set_expression: set_cap
-// set_cap: set_cup (SET_OP_CAP set_cup)*
-// set_cup: set_sub (SET_OP_CUP set_sub)*
-// set_sub: set_uni (SET_OP_SUB set_uni)*
-// set_uni: object_set
-//        | "REACHABLE" "(" object_set ")"
 
 set_expression: set_sub
 
@@ -76,14 +62,21 @@ SET_OP_SUB: "\\"
 
 // condition expr
 
-condition: condition_and
-condition_and: "(" condition_and ")"
-             | condition_or ("AND" condition_and)*
-condition_or: "(" condition_or ")"
-             | filter ("OR" condition_or)*
+condition: condition_or
+
+condition_or: condition_and
+            | condition_and COND_OP_OR condition_or
+
+condition_and: condition_uni
+             | condition_uni COND_OP_AND condition_and
+
+condition_uni: filter
+             | "(" condition ")"
+
+COND_OP_AND: "AND"
+COND_OP_OR:  "OR"
 
 filter: expression
-      | expression comp_op expression
       | expression comp_op literal
       | expression "IN" expression
 
@@ -93,8 +86,7 @@ comp_op: EQUALITY | RELATIONAL
 
 // normal expr
 
-normal_expression: identifier
-                 | normal_expression forward_op identifier
+normal_expression: identifier (forward_op identifier)*
 
 object_keys: object_key_literal
            | object_key_literal "," object_keys

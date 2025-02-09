@@ -1,6 +1,7 @@
 from visualinux import *
 from visualinux.runtime import entity
-from visualinux.viewql.manager import ViewAttrsManager
+from visualinux.dsl.parser.viewql_units import ViewQLCode
+from visualinux.snapshot.attrs_manager import ViewAttrsManager
 
 class Pool:
 
@@ -81,23 +82,21 @@ class Pool:
 
 class StateView:
 
-    def __init__(self, name: str, init_viewql: str, error: bool = True) -> None:
+    def __init__(self, name: str, error: bool = True) -> None:
         self.name = name
         self.pool = Pool()
         self.plot: list[str] = []
-        self.init_viewql = init_viewql
         self.error = error
-
         self.db_attrs = ViewAttrsManager()
-        for key, ent in self.pool.boxes.items():
-            pass
-        for key, ent in self.pool.containers.items():
-            pass
 
     def add_plot(self, key: str) -> None:
         self.plot.append(key)
 
     def do_postprocess(self) -> None:
+        self.__set_parent()
+        self.__init_attr_manager()
+    
+    def __set_parent(self) -> None:
         for key, ent in self.pool.boxes.items():
             ent.parent = None
         for key, ent in self.pool.containers.items():
@@ -125,12 +124,20 @@ class StateView:
                 ent_child.parent = key
                 if vl_debug_on(): printd(f'container set_parent {ent_child.key=} .parent= {key=}')
 
+    def __init_attr_manager(self) -> None:
+        for box in self.pool.boxes.values():
+            self.db_attrs.insert_box(box)
+        for container in self.pool.containers.values():
+            self.db_attrs.insert_container(container)
+
+    def intp_viewql(self, viewql: ViewQLCode) -> None:
+        self.db_attrs.intp_viewql(viewql)
+
     def to_json(self) -> dict:
         return {
             'name': self.name,
             'pool': self.pool.to_json(),
             'plot': self.plot,
-            'init_viewql': self.init_viewql,
-            # 'init_attrs': ,
+            'init_attrs': self.db_attrs.to_json(),
             'stat': int(self.error),
         }

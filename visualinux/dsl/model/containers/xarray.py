@@ -1,6 +1,6 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.viewcl.model.shape import *
+from visualinux.dsl.model.shape import *
 from visualinux.runtime import utils
 
 class XArray(Container):

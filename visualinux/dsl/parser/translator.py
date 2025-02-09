@@ -1,6 +1,6 @@
-from visualinux.viewcl.parser.units import *
-from visualinux.viewcl.parser.utils import *
-from visualinux.viewcl.model import *
+from visualinux.dsl.parser.units import *
+from visualinux.dsl.parser.utils import *
+from visualinux.dsl.model import *
 
 class Translator:
 

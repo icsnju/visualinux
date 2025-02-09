@@ -1,6 +1,7 @@
 from visualinux.term import *
-from visualinux.viewcl.parser.utils import *
-from visualinux.viewcl.model.decorators import *
+from visualinux.dsl.parser.utils import *
+from visualinux.dsl.parser.viewql_units import *
+from visualinux.dsl.model.decorators import *
 
 # ======================================================================
 # View classes to eliminate common fields/methods.
@@ -405,7 +406,7 @@ class DiagramDef:
 
     name: str
     plots: list['PlotTargetDef']
-    init_viewql: str
+    init_viewql: ViewQLCode
 
     def __str__(self) -> str:
         return self.format_string()
@@ -417,7 +418,7 @@ class DiagramDef:
         lines.append(padding(depth) + '}')
         if self.init_viewql:
             lines[-1] += ' with {'
-            lines.append(self.init_viewql)
+            lines.append(self.init_viewql.format_string(depth + 1))
             lines.append(padding(depth) + '}')
         return '\n'.join(lines)
 

@@ -1,11 +1,11 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.viewcl.model.decorators import *
+from visualinux.dsl.model.decorators import *
 from visualinux.runtime.kvalue import *
 from visualinux.runtime.text import *
 
 if TYPE_CHECKING:
-    from visualinux.viewcl.model import shape
+    from visualinux.dsl.model import shape
 
 class JSONRepr(metaclass=ABCMeta):
 
@@ -84,6 +84,10 @@ class Link(RuntimePrimitive):
         else:
             self.target_key = target_key
 
+    @property
+    def target_type(self) -> str:
+        return self.target_key.split(':')[1] if self.target_key else ''
+
     def to_json(self) -> dict:
         return {
             'class':  'link',
@@ -98,6 +102,10 @@ class BoxMember(JSONRepr):
             self.object_key = None
         else:
             self.object_key = object_key
+
+    @property
+    def object_type(self) -> str:
+        return self.object_key.split(':')[1] if self.object_key else ''
 
     def to_json(self) -> dict:
         return {
@@ -135,6 +143,10 @@ class Box(RuntimeShape):
         return self.root.json_data_key
 
     @property
+    def addr(self) -> int:
+        return self.root.address
+
+    @property
     def type(self) -> str:
         return self.root.gtype.tag
 
@@ -165,9 +177,9 @@ class Box(RuntimeShape):
 
     def to_json(self) -> dict:
         return {
-            'key':    self.root.json_data_key,
+            'key':    self.key,
             'type':   self.type,
-            'addr':   hex(self.root.address),
+            'addr':   hex(self.addr),
             'label':  self.label,
             'absts':  OrderedDict((name, view.to_json()) for name, view in self.views.items()),
             'parent': self.parent
@@ -199,7 +211,15 @@ class Container(RuntimeShape):
 
     @property
     def key(self) -> str:
-        return f'{self.root.address:#x}:{self.model.name}'
+        return f'{self.addr:#x}:{self.type}'
+
+    @property
+    def addr(self) -> int:
+        return self.root.address
+
+    @property
+    def type(self) -> str:
+        return self.model.name
 
     def add_member(self, key: str | None, **links: str | None) -> None:
         if key and key.startswith('0x0:'):
@@ -237,7 +257,15 @@ class ContainerConv(JSONRepr):
 
     @property
     def key(self) -> str:
-        return f'{self.source.root.address:#x}:{self.model.name}'
+        return f'{self.addr:#x}:{self.type}'
+
+    @property
+    def addr(self) -> int:
+        return self.source.root.address
+
+    @property
+    def type(self) -> str:
+        return self.model.name
 
     def add_member(self, key: str | None, **links) -> None:
         if key and key.startswith('0x0:'):

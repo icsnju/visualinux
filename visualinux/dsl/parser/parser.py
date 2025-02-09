@@ -1,8 +1,8 @@
-from visualinux.viewcl.parser.utils import *
-from visualinux.viewcl.parser.converter  import Converter
-from visualinux.viewcl.parser.translator import Translator
+from visualinux.dsl.parser.utils import *
+from visualinux.dsl.parser.converter  import Converter
+from visualinux.dsl.parser.translator import Translator
 
-from visualinux.viewcl.model import *
+from visualinux.dsl.model import *
 
 from pathlib import Path
 

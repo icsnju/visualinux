@@ -20,11 +20,21 @@ class Expression:
         return self.head + ''.join(f'{suf.opt}{suf.identifier}' for suf in self.suffix)
 
 @dataclass
+class Filter:
+
+    opt: str
+    lhs: Expression
+    rhs: Expression
+
+    def __str__(self) -> str:
+        return f'({self.lhs!s} {self.opt} {self.rhs!s})'
+
+@dataclass
 class CondOpt:
 
     opt: str
-    lhs: Self | str
-    rhs: Self | str
+    lhs: Self | Filter | str
+    rhs: Self | Filter | str
 
     def __str__(self) -> str:
         return f'({self.lhs!s} {self.opt} {self.rhs!s})'
@@ -50,7 +60,7 @@ class Select:
     selector:  Expression
     scope:     str | SetOpt
     alias:     str | None
-    condition: CondOpt
+    condition: CondOpt | Filter | None
 
     def __str__(self) -> str:
         return self.format_string()
@@ -75,3 +85,14 @@ class Update:
         return padding(depth) + f'update {self.set_expr} with {self.attr_name}: {self.attr_value}'
 
 ViewQLStmt = Select | Update
+
+@dataclass
+class ViewQLCode:
+
+    stmts: list[ViewQLStmt]
+
+    def __str__(self) -> str:
+        return self.format_string()
+
+    def format_string(self, depth: int = 0) -> str:
+        return '\n'.join(stmt.format_string(depth) for stmt in self.stmts)

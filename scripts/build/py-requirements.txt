@@ -1,4 +1,5 @@
 typing_extensions
-lark
 python-dotenv
+lark
+tinydb
 openai

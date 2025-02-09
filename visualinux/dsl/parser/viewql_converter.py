@@ -1,17 +1,19 @@
 from visualinux import *
-from visualinux.viewcl.parser.utils import *
-from visualinux.viewcl.parser.viewql_units import *
+from visualinux.dsl.parser.utils import *
+from visualinux.dsl.parser.viewql_units import *
 
 class ViewQLConverter:
 
     @staticmethod
-    def convert(tree: Tree[Token]):
-        return ViewQLConverter().convert_insts(tree)
+    def convert(tree: Tree[Token] | None) -> ViewQLCode:
+        if tree is None:
+            return ViewQLCode([])
+        return ViewQLCode(ViewQLConverter().convert_insts(tree))
 
-    def convert_insts(self, tree: Tree[Token]):
+    def convert_insts(self, tree: Tree[Token]) -> list[ViewQLStmt]:
         self.remove_lark_prefix(tree)
-        insts: list[ViewQLStmt] = []
         try:
+            insts: list[ViewQLStmt] = []
             for inst in self.scan_instructions(tree):
                 print(f'> {inst!s}')
                 insts.append(inst)
@@ -48,28 +50,81 @@ class ViewQLConverter:
     def parse_select(self, tree: Tree[Token]) -> ViewQLStmt:
         object_set = serialize(child_as_tree(tree, 0))
         selector   = self.parse_selector(child_as_tree(tree, 1))
-        scope      = serialize(child_as_tree(tree, 2))
+        scope      = self.parse_scope(child_as_tree(tree, 2))
         alias      = serialize(child_as_tree(tree, 3))
         condition  = self.parse_condition(child_as_tree(tree, 4))
         return Select(object_set, selector, scope, alias, condition)
 
     def parse_selector(self, tree: Tree[Token]) -> Expression:
-        print(f'  selector? {tree!s}')
-        return Expression(serialize(tree))
+        return self.parse_expression(child_as_tree(tree, 0))
 
-    def parse_condition(self, tree: Tree[Token]) -> CondOpt:
-        print(f'  condition? {tree!s}')
-        return CondOpt(serialize(tree))
+    def parse_scope(self, tree: Tree[Token]) -> str | SetOpt:
+        return self.parse_set_expr(child_as_tree(tree, 0))
+
+    def parse_condition(self, tree: Tree[Token] | None) -> CondOpt | Filter | None:
+        if tree is None:
+            return None
+        return self.parse_condition_opt(child_as_tree(tree, 0))
+
+    def parse_condition_opt(self, tree: Tree[Token]) -> CondOpt | Filter:
+
+        if tree.data == 'condition_uni':
+            node = child_as_tree(tree, 0)
+            if node.data == 'filter':
+                return self.parse_filter(node)
+            else:
+                return self.parse_condition_opt(child_as_tree(node, 0))
+
+        if tree.data not in ['condition_and', 'condition_or']:
+            raise AssertionError(f'unknown condition_opt: {tree.data}, {tree!s}')
+
+        if len(tree.children) == 1:
+            return self.parse_condition_opt(child_as_tree(tree, 0))
+
+        opt = serialize(tree.children[1])
+        lhs = self.parse_condition_opt(child_as_tree(tree, 0))
+        rhs = self.parse_condition_opt(child_as_tree(tree, 2))
+        return CondOpt(opt, lhs, rhs)
+
+    def parse_filter(self, tree: Tree[Token]) -> Filter:
+        opt = serialize(tree.children[1])
+        lhs = self.parse_expression(child_as_tree(tree, 0))
+        rhs = self.parse_expression(child_as_tree(tree, 2))
+        return Filter(opt, lhs, rhs)
 
     # ======================================================================
     # handle the core instruction: update
     # ======================================================================
 
     def parse_update(self, tree: Tree[Token]) -> ViewQLStmt:
-        set_expr   = self.parse_set_opt(child_as_tree(child_as_tree(tree, 0), 0))
+        set_expr   = self.parse_set_expr(child_as_tree(tree, 0))
         attr_name  = serialize(child_as_tree(tree, 1))
         attr_value = serialize(child_as_tree(tree, 2))
         return Update(set_expr, attr_name, attr_value)
+
+    # ======================================================================
+    # handle primitives: expression, set expression, ...
+    # ======================================================================
+
+    def parse_expression(self, node: Token | Tree[Token]) -> Expression:
+
+        if isinstance(node, Token):
+            assert node.type == 'ANY_EXPR'
+            return Expression(node.value, [])
+
+        head = serialize(node.children[0])
+        suffix: list[ExprSuffix] = []
+        for i in range(1, len(node.children), 2):
+            suffix.append(ExprSuffix(serialize(node.children[i + 1]), serialize(node.children[i])))
+        return Expression(head, suffix)
+
+    def parse_set_expr(self, node: Token | Tree[Token]) -> SetOpt | str:
+        if isinstance(node, Token):
+            if node.value == '*':
+                return node.value
+            else:
+                raise fuck_exc(UnexpectedTokenError, f'unknown set expr: {node!s}')
+        return self.parse_set_opt(child_as_tree(node, 0))
 
     def parse_set_opt(self, tree: Tree[Token]) -> SetOpt | str:
 

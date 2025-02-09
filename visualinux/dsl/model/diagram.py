@@ -1,6 +1,7 @@
 from visualinux import *
 from visualinux.term import *
-from visualinux.viewcl.model.shape import *
+from visualinux.dsl.model.shape import *
+from visualinux.dsl.parser.viewql_units import *
 from visualinux.snapshot import *
 from visualinux.evaluation import *
 
@@ -9,7 +10,7 @@ PlotTarget = Box | Container
 @dataclass
 class Diagram:
     plot_targets: list[PlotTarget]
-    init_viewql: str
+    init_viewql: ViewQLCode
 
 class DiagramSet:
 
@@ -27,7 +28,7 @@ class DiagramSet:
             ss += '  }}'
             if diagram.init_viewql:
                 ss += f' with {{\n'
-                ss += diagram.init_viewql
+                ss += diagram.init_viewql.format_string(2)
                 ss += f'  }}'
         return ss
 
@@ -43,13 +44,13 @@ class DiagramSet:
                 evaluation_result[name] = evaluation_counter.clone()
             except Exception as e:
                 print(f'subdiag {name} sync() error: ' + str(e))
-                snapshot.add_view(StateView(name, diagram.init_viewql, error=True))
+                snapshot.add_view(StateView(name, error=True))
         for name, result in evaluation_result.items():
             pass
         return snapshot
 
     def sync_sub(self, name: str, diagram: Diagram):
-        view = StateView(name, diagram.init_viewql)
+        view = StateView(name)
         for shape in diagram.plot_targets:
             if vl_debug_on(): printd(f'diag eval shape = {shape.format_string_head()}')
             ent = shape.evaluate_on(view.pool)
@@ -57,4 +58,5 @@ class DiagramSet:
                 continue
             view.add_plot(ent.key)
         view.do_postprocess()
+        view.intp_viewql(diagram.init_viewql)
         return view

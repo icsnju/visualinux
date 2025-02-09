@@ -8,7 +8,7 @@ from pprint import pprint
 DIR_VL = Path(__file__).parents[2]
 sys.path.insert(0, str(DIR_VL))
 
-from visualinux.viewcl.parser.parser import Parser
+from visualinux.dsl.parser.parser import Parser
 
 DIR_GRAMMAR = DIR_VL / 'visualinux' / 'lang'
 DIR_PROGRAM = DIR_VL / 'viewcl'

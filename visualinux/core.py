@@ -1,6 +1,6 @@
 from visualinux import *
-from visualinux.viewcl.parser.parser import Parser
-from visualinux.viewcl.model.symtable import *
+from visualinux.dsl.parser.parser import Parser
+from visualinux.dsl.model.symtable import *
 from visualinux.runtime.gdb.adaptor import gdb_adaptor
 from visualinux.snapshot import *
 

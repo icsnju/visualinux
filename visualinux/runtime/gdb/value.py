@@ -1,7 +1,7 @@
 from visualinux import *
 from visualinux.runtime.gdb import gdb
 from visualinux.runtime.gdb.type import GDBType
-from visualinux.viewcl.model.decorators import *
+from visualinux.dsl.model.decorators import *
 
 import re
 import math
