@@ -39,8 +39,7 @@ class ViewAttrsManager:
                 else:
                     raise fuck_exc(TypeError, f'unknown member type {member!s}')
         entry = {
-            '$key': box.key, '$addr': box.addr, '$type': box.type, '$parent': box.parent,
-            '^view': 'default'
+            '$key': box.key, '$addr': box.addr, '$type': box.type, '$parent': box.parent
         } | members
         entry['$reachable'] = reachable
         self.memdb.insert(entry)
@@ -48,9 +47,8 @@ class ViewAttrsManager:
 
     def insert_container(self, container: Container | ContainerConv) -> None:
         entry = {
-            '$key': container.key, '$addr': container.addr, '$type': '$' + container.type, '$parent': container.parent,
-            '$members': [member.key for member in container.members if member.key is not None],
-            '^direction': 'horizontal',
+            '$key': container.key, '$addr': container.addr, '$type': container.type, '$parent': container.parent,
+            '$members': [member.key for member in container.members if member.key is not None]
         }
         entry['$reachable'] = entry['$members']
         self.memdb.insert(entry)
@@ -71,7 +69,7 @@ class ViewAttrsManager:
         # find the table of the specified object type
         if stmt.selector.head == '*':
             table = self.memdb
-            scope_query = Query()
+            scope_query = Query().noop()
         else:
             table = self.memdb.table(stmt.selector.head)
             # start from the specified object set
@@ -93,15 +91,13 @@ class ViewAttrsManager:
                 print(f'~~ {suffix.identifier}: {object_keys!s}')
                 table = self.memdb.table(field_type)
             #
-            scope_query = where('$key').one_of(list(object_keys)) if object_keys else Query()
+            scope_query = where('$key').one_of(list(object_keys)) if object_keys else Query().noop()
 
-        print(f'~~ {table.name=!s} {scope_query=!s}')
-        cond_query = self.__eval_cond_expr(scope, stmt.condition, stmt.alias) if stmt.condition else Query()
-        try:
-            result = table.search(scope_query & cond_query)
-        except:
-            result = table.all()
-        result_keys = {obj['$key'] for obj in result}
+        cond_query = self.__eval_cond_expr(scope, stmt.condition, stmt.alias) if stmt.condition else Query().noop()
+
+        print(f'~~ {table.name=!s} {scope_query=!s} {cond_query=!s}')
+        result = table.search(scope_query & cond_query)
+        result_keys = set(obj['$key'] for obj in result)
         scope[stmt.object_set] = result_keys
         print(f'! scope[{stmt.object_set}] = {result_keys!s}')
 
@@ -109,9 +105,7 @@ class ViewAttrsManager:
         print(f'--intp {stmt!s}')
         object_keys = self.__eval_set_expr(scope, stmt.set_expr)
         print(f'--intp on {object_keys=!s}')
-        print('1',self.memdb.search(where('$key').one_of(list(object_keys))))
         self.memdb.update({f'^{stmt.attr_name}': stmt.attr_value, '^?': True}, where('$key').one_of(list(object_keys)))
-        print('2',self.memdb.search(where('^?').exists()))
 
     def __get_field_type_of(self, object_type: str, field_name: str) -> str | None:
         if typemap := self.typemaps.get(object_type):
@@ -167,8 +161,7 @@ class ViewAttrsManager:
         raise fuck_exc(ValueError, f'unknown cond opt {cond.opt!s}')
 
     def to_json(self) -> dict:
-        objects_with_attrs = self.memdb.search(where('^?').exists())
-        print(f'{objects_with_attrs=!s}')
+        objects = self.memdb.all()
         return {obj['$key']: {
-            attr[1:]: obj[attr] for attr in obj.keys() if attr.startswith('^') and attr != '^?'
-        } for obj in objects_with_attrs}
+            attr[1:]: obj[attr] for attr in obj.keys() if attr.startswith('^')
+        } for obj in objects}

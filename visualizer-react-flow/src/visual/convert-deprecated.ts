@@ -298,7 +298,7 @@ class ReactFlowConverter {
         let layoutOptions: Dagre.GraphLabel = {
             rankdir: this.layoutDirection
         };
-        if (node.id.split(':')[1].endsWith('Array')) {
+        if (node.id.split(':')[1].endsWith('[Array]')) {
             layoutOptions.marginx = 4;
             layoutOptions.marginy = 4;
             layoutOptions.nodesep = 4;

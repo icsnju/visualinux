@@ -165,7 +165,7 @@ class ReactFlowConverter {
         // this is a temp solution
         // TODO: semantics of array-like containers HOWTO?
         if (!shouldCompactContainer(container)) {
-            throw new Error(`container.type should be Array here: ${container.key}`);
+            throw new Error(`container.type should be [Array] here: ${container.key}`);
         }
         let nodeData: BoxNodeData = {
             key: container.key,
@@ -402,7 +402,7 @@ class ReactFlowConverter {
         let layoutOptions: Dagre.GraphLabel = {
             rankdir: this.layoutDirection
         };
-        if (node.id.split(':')[1].endsWith('Array')) {
+        if (node.id.split(':')[1].endsWith('[Array]')) {
             layoutOptions.marginx = 4;
             layoutOptions.marginy = 4;
             layoutOptions.nodesep = 4;
@@ -451,5 +451,5 @@ class ReactFlowConverter {
 
 function shouldCompactContainer(container: Container) {
     const typo = container.key.split(':')[1];
-    return ['Array', 'XArray'].includes(typo);
+    return ['[Array]', '[XArray]'].includes(typo);
 }

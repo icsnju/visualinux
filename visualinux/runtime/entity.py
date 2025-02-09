@@ -219,7 +219,7 @@ class Container(RuntimeShape):
 
     @property
     def type(self) -> str:
-        return self.model.name
+        return '[' + self.model.name + ']'
 
     def add_member(self, key: str | None, **links: str | None) -> None:
         if key and key.startswith('0x0:'):
@@ -242,6 +242,7 @@ class Container(RuntimeShape):
     def to_json(self) -> dict:
         return {
             'key':     self.key,
+            'type':    self.type,
             'label':   self.label,
             'members': [member.to_json() for member in self.members],
             'parent':  self.parent
