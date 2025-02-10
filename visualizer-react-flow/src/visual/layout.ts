@@ -214,8 +214,6 @@ function layoutGraphByDagre(nodes: Node[], edges: Edge[], options: Dagre.GraphLa
     g.setGraph(options);
     edges.forEach((edge) => g.setEdge(edge.source, edge.target));
     nodes.forEach((node) => g.setNode(node.id, { width: node.width, height: node.height }));
-    console.log('nodes', g.nodes().map(node => g.node(node)));
-    console.log('edges', g.edges().map(edge => g.edge(edge)));
     Dagre.layout(g);
 
     // convert positions from dagre to react flow

@@ -15,8 +15,11 @@ const config: Config = {
   },
   plugins: [],
   safelist: [
+    'bg-[#FFFFFF]', 'bg-[#ECECEC]', 'bg-[#DCDCDC]', 'bg-[#B7B7B7]',
+    'bg-[#FCFFFC]', 'bg-[#FBFFFB]', 'bg-[#F0FFF0]', 'bg-[#ECFFEC]', 
+    'bg-[#FFFCFC]', 'bg-[#FFFBFB]', 'bg-[#FFF0F0]', 'bg-[#FFECEC]',
     'border-[#228B22]', 'border-[#DC143C]',
-    'text-[#228B22]',   'text-[#DC143C]',
+    'text-[#228B22]', 'text-[#DC143C]',
   ],
 };
 export default config;

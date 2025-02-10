@@ -2,11 +2,16 @@ import { useMemo } from "react";
 import { BoxNodeData, type BoxNode } from "@app/visual/types";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
-const cssBgColor = (depth: number) => 
-    depth == 0 ? 'bg-[#FFFFFF]' :
-    depth == 1 ? 'bg-[#ECECEC]' :
-    depth == 2 ? 'bg-[#D5D5D5]' :
-    'bg-[#B7B7B7]';
+const cssBgColor = (depth: number, isDiffAdd: boolean | undefined) => {
+    if (isDiffAdd === undefined) {
+        return depth <= 2 ? ['bg-[#FFFFFF]', 'bg-[#ECECEC]', 'bg-[#DCDCDC]'][depth] : 'bg-[#B7B7B7]';
+    }
+    if (isDiffAdd) {
+        return depth <= 2 ? ['bg-[#FBFFFB]', 'bg-[#F0FFF0]', 'bg-[#ECFFEC]'][depth] : 'bg-[#ECFFEC]';
+    } else {
+        return depth <= 2 ? ['bg-[#FFFBFB]', 'bg-[#FFF0F0]', 'bg-[#FFECEC]'][depth] : 'bg-[#FFECEC]';
+    }
+};
 
 export default function BoxNode({ id, data }: NodeProps<BoxNode>) {
     return (
@@ -52,7 +57,7 @@ function BoxField({ id, data, depth, collapsed }: { id: string, data: BoxNodeDat
         data.isDiffAdd === undefined ? 'black' :
         data.isDiffAdd ? '[#228B22]' : '[#DC143C]';
     return (
-        <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-${colorDiff} ${cssBgColor(depth)} ${cssAnim}`}>
+        <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-${colorDiff} ${cssBgColor(depth, data.isDiffAdd)} ${cssAnim}`}>
             <div className="w-full ml-2 flex justify-begin items-center z-10">
                 <button 
                     className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-${colorDiff} text-${colorDiff}`}
