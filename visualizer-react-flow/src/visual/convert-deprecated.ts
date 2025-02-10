@@ -84,7 +84,7 @@ class ReactFlowConverter {
         // get the depth from its parent
         const parent = box.parent != null ? this.nodeMap[box.parent] : null;
         let depth;
-        if (parent == null) {
+        if (parent === null) {
             depth = 0;
         } else if (parent.type == 'box') {
             depth = parent.data.depth + 1;
@@ -140,7 +140,7 @@ class ReactFlowConverter {
         }
     }
     private getMembersOfBox(box: Box, abst: Abst): typeof abst.members {
-        if (abst.parent == null) {
+        if (abst.parent === null) {
             return { ...abst.members };
         }
         const parentMembers = this.getMembersOfBox(box, box.absts[abst.parent]);

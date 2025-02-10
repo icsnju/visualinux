@@ -34,6 +34,6 @@ diag textbook_01_task_children {
     UPDATE kthreads WITH shrinked: true
 
     task_children_list = SELECT task_struct->children
-        FROM all_tasks \ kthreads
+        FROM all_tasks
     UPDATE task_children_list WITH direction: vertical
 }

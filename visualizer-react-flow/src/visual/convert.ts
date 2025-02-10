@@ -4,14 +4,7 @@ import {
     ReactFlowGraph, BoxNode, ContainerNode,
     BoxNodeData,
 } from "@app/visual/types";
-import { layoutGraphByDagre } from "@app/visual/layout";
 import { type Edge, MarkerType } from "@xyflow/react";
-import Dagre from "@dagrejs/dagre";
-
-export function convertToReactFlow(view: StateView, attrs: ViewAttrs): ReactFlowGraph {
-    const converter = new ReactFlowConverter(view, attrs);
-    return converter.convert();
-}
 
 const edgeProp = {
     // type: 'bezier',
@@ -24,13 +17,16 @@ const edgeProp = {
     },
 }
 
-class ReactFlowConverter {
+export class ReactFlowConverter {
+    public static convert(view: StateView, attrs: ViewAttrs): ReactFlowGraph {
+        const converter = new ReactFlowConverter(view, attrs);
+        return converter.convert();
+    }
     private view: StateView;
     private attrs: ViewAttrs;
     private rootMap:   { [key: string]: string };
     private nodeMap: { [key: string]: BoxNode | ContainerNode };
     private graph: ReactFlowGraph;
-    private layoutDirection: 'LR' | 'TB' = 'LR';
     constructor(view: StateView, attrs: ViewAttrs) {
         this.view      = view;
         this.attrs     = attrs;
@@ -38,7 +34,7 @@ class ReactFlowConverter {
         this.nodeMap   = {};
         this.graph     = { nodes: [], edges: [] };
     }
-    public convert(): ReactFlowGraph {
+    private convert(): ReactFlowGraph {
         // calculate the root box of each shape for further node compaction
         for (const key of Object.keys(this.view.pool.boxes)) {
             this.calcRootShapeOf(key);
@@ -51,17 +47,8 @@ class ReactFlowConverter {
         for (const key of this.view.plot) {
             this.convertShape(key);
         }
-        // post process
-        this.estimateNodeSize();
-        this.layoutOutmostNodes();
-        // eliminate estimation errors
-        for (const node of this.graph.nodes) {
-            if (node.type == 'box') {
-                node.height = undefined;
-            }
-        }
         // return
-        console.log('final graph', this.graph);
+        console.log('converted graph', this.graph);
         return this.graph;
     }
     private getShape(key: string): Box | Container {
@@ -108,19 +95,6 @@ class ReactFlowConverter {
             this.convertContainer(this.view.pool.containers[key], this.attrs[key] || {});
         }
     }
-    private estimateNodeSize() {
-        // estimate the node size for layout
-        for (const node of this.graph.nodes) {
-            if (node.type == 'box') {
-                this.estimateBoxNodeSize(node);
-            } else if (node.type == 'container') {
-                this.estimateContainerNodeSize(node);
-            }
-        }
-    }
-    //
-    // convert functions (only for outmost shapes)
-    //
     private convertBox(box: Box, attrs: NodeAttrs) {
         // only convert the outmost shapes
         if (!this.isShapeOutmost(box.key)) {
@@ -135,12 +109,12 @@ class ReactFlowConverter {
         let node: BoxNode = {
             id: box.key, type: 'box',
             data: this.convertBoxData(box, attrs),
-            position: { x: 0, y: 0 }
+            position: { x: 0, y: 0 },
+            draggable: false,
         };
         if (box.parent !== null) {
             node.parentId = box.parent;
             node.extent = 'parent';
-            node.draggable = false;
         }
         this.nodeMap[node.id] = node;
         this.graph.nodes.push(node);
@@ -200,8 +174,14 @@ class ReactFlowConverter {
     private convertAbstMembers(box: Box, abst: Abst) {
         let members = structuredClone(abst.members) as BoxNodeData['members'];
         for (let [label, member] of Object.entries(members)) {
-            // generate the edge
+            // for links generate the edge and the target node
             if (member.class == 'link' && member.target !== null) {
+                // for empty containers eliminate the visualization
+                if (member.target in this.view.pool.containers && this.view.pool.containers[member.target].members.length == 0) {
+                    member.target = '(empty)';
+                    continue;
+                }
+                // normal handling
                 const edgeId = `${box.key}.${label}`;
                 console.log(member.target, 'root:', this.rootMap[member.target]);
                 const edge: Edge = {
@@ -273,13 +253,16 @@ class ReactFlowConverter {
             type: 'container',
             data: {
                 key: container.key,
+                type: container.type,
                 label: container.label,
                 members: Object.values(container.members).filter(member => member.key !== null),
                 parent: container.parent,
                 isDiffAdd: container.isDiffAdd,
                 collapsed: attrs.collapsed == 'true',
+                direction: attrs.direction || 'horizontal',
             },
-            position: { x: 0, y: 0 }
+            position: { x: 0, y: 0 },
+            draggable: false,
         };
         this.nodeMap[node.id] = node;
         this.graph.nodes.push(node);
@@ -313,139 +296,6 @@ class ReactFlowConverter {
                 }
             }
         }
-    }
-    //
-    // post process functions
-    //
-    private estimateBoxNodeSize(node: BoxNode) {
-        // avoid redundant estimation
-        if (node.width !== undefined) {
-            return;
-        }
-        // estimate the width
-        let width = 256;
-        // estimate the height according to the height of its members
-        let height = this._estimateBoxNodeHeight(node.data);
-        // return
-        node.width  = width;
-        node.height = height;
-    }
-    private _estimateBoxNodeHeight(nodeData: BoxNodeData) {
-        let height = 26;
-        let members = Object.values(nodeData.members);
-        for (let index = 0; index < members.length; index++) {
-            const member = members[index];
-            // simple estimation for primitive members
-            const countTextHeight = (text: string) => {
-                const lines = text.split('\n');
-                return 6 + 16 * lines.length;
-            }
-            if (member.class === "text") {
-                height += countTextHeight(member.value);
-                if (member.diffOldValue !== undefined) {
-                    height += countTextHeight(member.diffOldValue);
-                }
-                continue;
-            }
-            if (member.class === "link") {
-                height += countTextHeight(member.target || "");
-                if (member.diffOldTarget !== undefined) {
-                    height += countTextHeight(member.diffOldTarget || "");
-                }
-                continue;
-            }
-            // handle non-primitive members
-            if (member.data === undefined) {
-                console.error(`memberNode is undefined: ${member.object}`);
-                continue;
-            }
-            // estimate the member node size first
-            let memberHeight = this._estimateBoxNodeHeight(member.data);
-            // add necessary spaces to estimate the node size
-            let space = memberHeight + 8;
-            if (index > 0 && members[index - 1].class === 'box') {
-                space -= 3;
-            }
-            // finally estimated
-            height += space;
-        }
-        // add spaces for the object address displayed at the bottom
-        height += 24;
-        // return
-        return height;
-    }
-    private estimateContainerNodeSize(node: ContainerNode) {
-        // handle members one by one
-        let memberNodes: (BoxNode | ContainerNode)[] = [];
-        let memberEdges: Edge[] = [];
-        for (const member of node.data.members) {
-            const memberNode = this.nodeMap[member.key];
-            // estimate the member size first
-            if (memberNode.type == 'box') {
-                this.estimateBoxNodeSize(memberNode);
-            } else if (memberNode.type == 'container') {
-                this.estimateContainerNodeSize(memberNode);
-            }
-            // prepare the subgraph for subflow layout
-            memberNodes.push(memberNode);
-            for (const [label, link] of Object.entries(member.links)) {
-                if (link.target !== null) {
-                    memberEdges.push({
-                        id: `${member.key}.${label}`,
-                        source: member.key,
-                        target: link.target,
-                    });
-                }
-            }
-        }
-        // perform the subflow layout
-        let layoutOptions: Dagre.GraphLabel = {
-            rankdir: this.layoutDirection
-        };
-        if (node.id.split(':')[1].endsWith('[Array]')) {
-            layoutOptions.marginx = 4;
-            layoutOptions.marginy = 4;
-            layoutOptions.nodesep = 4;
-            memberNodes.forEach(memberNode => memberNode.draggable = false);
-        } else {
-            layoutOptions.marginx = 16;
-            layoutOptions.marginy = 16;
-        }
-        let hdrOffsetY = 32 - layoutOptions.marginy;
-        layoutGraphByDagre(memberNodes, memberEdges, layoutOptions);
-        // left spaces for the node header
-        memberNodes.forEach(memberNode => memberNode.position.y += hdrOffsetY);
-        // estimate the container size according to the layouted subflow graph
-        let minX = Infinity, maxX = -Infinity;
-        let minY = Infinity, maxY = -Infinity;
-        for (const memberNode of memberNodes) {
-            if (memberNode.width === undefined || memberNode.height === undefined) {
-                throw new Error(`memberNode.width/height should not be undefined here: ${memberNode.id}`);
-            }
-            const x = memberNode.position.x;
-            const y = memberNode.position.y;
-            const w = memberNode.width;
-            const h = memberNode.height;
-            minX = Math.min(minX, x);
-            maxX = Math.max(maxX, x + w);
-            minY = Math.min(minY, y);
-            maxY = Math.max(maxY, y + h);
-        }
-        if (memberNodes.length == 0) {
-            minX = 0; maxX = 0;
-            minY = 0; maxY = 0;
-        }
-        const width  = maxX - minX + 2 * layoutOptions.marginx;
-        const height = maxY - minY + 2 * layoutOptions.marginy + hdrOffsetY;
-        // return
-        node.width  = width;
-        node.height = height;
-    }
-    // layout the rest, i.e., outmost nodes
-    private layoutOutmostNodes() {
-        let nodes = this.graph.nodes.filter(node => node.parentId === undefined);
-        let edges = this.graph.edges;
-        layoutGraphByDagre(nodes, edges, { rankdir: this.layoutDirection, marginx: 16, marginy: 16, ranksep: 96 });
     }
 }
 

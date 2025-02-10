@@ -105,7 +105,7 @@ class ViewAttrsManager:
         print(f'--intp {stmt!s}')
         object_keys = self.__eval_set_expr(scope, stmt.set_expr)
         print(f'--intp on {object_keys=!s}')
-        self.memdb.update({f'^{stmt.attr_name}': stmt.attr_value, '^?': True}, where('$key').one_of(list(object_keys)))
+        self.memdb.update({f'^{stmt.attr_name}': stmt.attr_value}, where('$key').one_of(list(object_keys)))
 
     def __get_field_type_of(self, object_type: str, field_name: str) -> str | None:
         if typemap := self.typemaps.get(object_type):

@@ -14,33 +14,46 @@ export default function BoxNode({ id, data }: NodeProps<BoxNode>) {
     )
 }
 
-function BoxField({ id, data, depth }: { id: string, data: BoxNodeData, depth: number }) {
+function BoxField({ id, data, depth, collapsed }: { id: string, data: BoxNodeData, depth: number, collapsed?: boolean }) {
     const members = useMemo(() => Object.entries(data.members).map(([label, member]) => {
         switch (member.class) {
             case 'box':
                 return (
                     <div key={label} className="w-full p-1">
-                        <BoxField id={member.object} data={member.data} depth={depth + 1}/>
+                        <BoxField id={member.object} data={member.data} depth={depth + 1} collapsed={collapsed || data.collapsed}/>
                     </div>
                 );
             case 'text':
-                return <PrimitiveField key={label} depth={depth} label={label} value={member.value} isValueEmoji={member.size == -1} diffOldValue={member.diffOldValue}/>;
+                return <PrimitiveField
+                    key={label} depth={depth} label={label} value={member.value} isValueEmoji={member.size == -1}
+                    collapsed={collapsed || data.collapsed} diffOldValue={member.diffOldValue}
+                />;
             case 'link':
                 const targetToValue = (target: string | null) => target ? target.split(':', 1)[0] : "null";
                 const value = targetToValue(member.target);
                 const diffOldValue =  member.diffOldTarget === undefined ? undefined : targetToValue(member.diffOldTarget);
-                return <PrimitiveField key={label} depth={depth} label={label} value={value} edgeSource={`${id}.${label}`} diffOldValue={diffOldValue}/>;
+                return <PrimitiveField
+                    key={label} depth={depth} label={label} value={value} edgeSource={`${id}.${label}`}
+                    collapsed={collapsed || data.collapsed} diffOldValue={diffOldValue}
+                />;
             default:
                 return null;
         }
-    }), [data.members]);
+    }), [data.members, collapsed, data.collapsed]);
+    if (collapsed) {
+        return (
+            <div className="absolute top-0 left-0 w-full h-6 opacity-0">
+                {members}
+            </div>
+        )
+    }
     const cssAnim = 'transition-all duration-200 ease-in-out';
     const colorDiff = 
         data.isDiffAdd === undefined ? 'black' :
         data.isDiffAdd ? '[#228B22]' : '[#DC143C]';
     return (
         <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-${colorDiff} ${cssBgColor(depth)} ${cssAnim}`}>
-            <div className="w-full ml-2 flex justify-begin items-center">
+            <div className="w-full ml-2 flex justify-begin items-center z-10">
                 <button 
                     className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-${colorDiff} text-${colorDiff}`}
                     onClick={() => {
@@ -51,14 +64,20 @@ function BoxField({ id, data, depth }: { id: string, data: BoxNodeData, depth: n
                 </button>
                 <p className={`h-6 text-base text-${colorDiff}`}>{data.label}</p>
             </div>
-            <div className={`w-full overflow-hidden ${cssAnim} ${data.collapsed ? 'max-h-0' : ''}`}>
-                <div className="border-y border-black">
+            {data.collapsed ? (
+                <div className="absolute top-0 left-0 w-full h-6 opacity-0">
                     {members}
                 </div>
-                <div className="w-full flex justify-end">
-                    <p className={`mr-1 text-sm text-${colorDiff}`}>{data.addr}</p>
+            ) : (
+                <div className={`w-full overflow-hidden ${cssAnim} ${data.collapsed ? 'max-h-0' : ''}`}>
+                    <div className="border-y border-black">
+                        {members}
+                    </div>
+                    <div className="w-full flex justify-end">
+                        <p className={`mr-1 text-sm text-${colorDiff}`}>{data.addr}</p>
+                    </div>
                 </div>
-            </div>
+            )}
             <Handle 
                 key={`handle#${id}`}
                 id={id}
@@ -73,9 +92,23 @@ function BoxField({ id, data, depth }: { id: string, data: BoxNodeData, depth: n
     );
 }
 
-function PrimitiveField({ depth, label, value, isValueEmoji, edgeSource, diffOldValue }: { depth: number, label: string, value: string, isValueEmoji?: boolean, edgeSource?: string, diffOldValue?: string }) {
+function PrimitiveField({
+    depth, label, value, isValueEmoji, edgeSource,
+    collapsed, diffOldValue
+}: {
+    depth: number, label: string, value: string, isValueEmoji?: boolean, edgeSource?: string,
+    collapsed?: boolean, diffOldValue?: string
+}) {
     const labelWidth = 96 - 5 * depth;
-    const cssDiffText = diffOldValue === undefined ? "" : "text-[#2b2be6] line-through";
+    const cssTextDiff = diffOldValue === undefined ? "" : "text-[#2b2be6]";
+    const labelHandle = edgeSource ? <LinkFieldHandle edgeSource={edgeSource} /> : <></>;
+    if (collapsed) {
+        return (
+            <div className="absolute top-0 left-0 w-full h-6 opacity-0">
+                {labelHandle}
+            </div>
+        );
+    }
     return (
         <div className={`relative w-full flex flex-col border-y border-black`}>
             <div className="w-full flex items-stretch leading-none">
@@ -85,32 +118,37 @@ function PrimitiveField({ depth, label, value, isValueEmoji, edgeSource, diffOld
                 </div>
                 {/* value */}
                 <div className="flex-1 px-1 py-0.5 truncate">
+                    {/* handle diff */}
+                    {diffOldValue !== undefined &&
+                        <p className={`text-center truncate ${cssTextDiff} line-through`}>{diffOldValue}</p>
+                    }
                     {/* handle emoji text */}
                     {isValueEmoji ?
-                        <p className={`text-center truncate ${cssDiffText}`} dangerouslySetInnerHTML={{__html: value}} />
+                        <p className={`text-center truncate ${cssTextDiff}`} dangerouslySetInnerHTML={{__html: value}} />
                     :
                         <div>
                             {value.split('\n').map((line, i) => (
-                                <p key={i} className={`text-center truncate ${cssDiffText}`}>{line}</p>
+                                <p key={i} className={`text-center truncate ${cssTextDiff}`}>{line}</p>
                             ))}
                         </div>
                     }
-                    {/* handle diff */}
-                    {diffOldValue !== undefined &&
-                        <p className="text-center truncate leading-none text-[#2b2be6]">{diffOldValue}</p>
-                    }
                 </div>
             </div>
-            {edgeSource ? <Handle 
-                key={`handle#${edgeSource}`}
-                id={edgeSource}
-                type="source" 
-                position={Position.Right} 
-                style={{
-                    width: '5px', height: '5px',
-                    right: '0'
-                }}
-            /> : <></>}
+            {labelHandle}
         </div>
     );
+}
+
+function LinkFieldHandle({ edgeSource }: { edgeSource?: string }) {
+    return (
+        <Handle 
+            id={edgeSource}
+            type="source" 
+            position={Position.Right} 
+            style={{
+                width: '5px', height: '5px',
+                right: '0'
+            }}
+        />
+    )
 }

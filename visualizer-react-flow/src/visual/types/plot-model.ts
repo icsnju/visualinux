@@ -74,10 +74,11 @@ export type BoxMember = {
 } & MemberDiffInfo
 
 export type Container = {
-    key:  ShapeKey
-    label: string
+    key:     ShapeKey
+    type:    string
+    label:   string
     members: ContainerMember[]
-    parent: ShapeKey | null
+    parent:  ShapeKey | null
 } & ShapeDiffInfo
 
 export type ContainerMember = {

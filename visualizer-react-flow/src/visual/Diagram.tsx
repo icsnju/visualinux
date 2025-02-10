@@ -1,6 +1,8 @@
-import { useCallback, useContext, useEffect, useMemo } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { GlobalStateContext } from "@app/context/Context";
-import { convertToReactFlow } from "@app/visual/convert";
+import { ReactFlowGraph, ReactFlowNode } from "@app/visual/types";
+import { ReactFlowConverter } from "@app/visual/convert";
+import { ReactFlowLayouter } from "@app/visual/layout";
 import {
     ReactFlow,
     Background,
@@ -40,36 +42,10 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const nodesInitialized = useNodesInitialized();
+    const [shouldUpdate, setShouldUpdate] = useState<string | undefined>(undefined);
     const { fitView } = useReactFlow();
     // Update nodes and edges when graph changes
     useEffect(() => {
-        const nodeNotifier = (id: string) => {
-            console.log(id, 'notified!');
-            setNodes(nds => nds.map(nd => {
-                if (nd.type != 'box' && nd.type != 'container') {
-                    return nd;
-                }
-                if (nd.id == id) {
-                    // TODO: re-calculate the height of the box for collapsing
-                    return {
-                        ...nd,
-                        data: {
-                            ...nd.data,
-                            collapsed: !nd.data.collapsed
-                        }
-                    }
-                }
-                // assumed that nodes are already sorted by depth
-                if (nd.parentId == id) {
-                    return {
-                        ...nd,
-                        // hidden: nd.parent.data.collapsed
-                        hidden: true,
-                    }
-                }
-                return nd;
-            }));
-        }
         const { view, attrs } = state.getPlotOfPanel(pKey);
         console.log('getplotofpanel', view, attrs);
         // clear-then-reset to avoid react-flow render error (root cause of which is unknown)
@@ -77,7 +53,8 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
         setEdges([]);
         if (view !== null) {
             setTimeout(() => {
-                const graph = convertToReactFlow(view, attrs);
+                let graph = ReactFlowConverter.convert(view, attrs);
+                graph = ReactFlowLayouter.layout(graph);
                 setNodes(graph.nodes.map(nd => {
                     if (nd.type != 'box' && nd.type != 'container') {
                         return nd;
@@ -86,7 +63,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                         ...nd,
                         data: {
                             ...nd.data,
-                            notifier: nodeNotifier
+                            notifier: (id: string) => setShouldUpdate(id)
                         }
                     };
                 }));
@@ -94,6 +71,29 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             }, 100);
         }
     }, [pKey, state]);
+    useEffect(() => {
+        if (shouldUpdate) {
+            let updatedNodes = nodes.map(nd => {
+                if (nd.type != 'box' && nd.type != 'container') {
+                    return nd;
+                }
+                if (nd.id == shouldUpdate) {
+                    return {
+                        ...nd,
+                        data: {
+                            ...nd.data,
+                            collapsed: !nd.data.collapsed
+                        }
+                    } as ReactFlowNode;
+                }
+                return { ...nd };
+            });
+            let graph = ReactFlowLayouter.layout({nodes: updatedNodes, edges} as ReactFlowGraph);
+            setNodes(graph.nodes);
+            setEdges(graph.edges);
+            setShouldUpdate(undefined);
+        }
+    }, [shouldUpdate]);
     useEffect(() => {
         if (nodesInitialized) {
             window.requestAnimationFrame(() => {
@@ -148,6 +148,7 @@ function DownloadButton() {
             1,
             2,
         );
+        // @ts-ignore
         toPng(document.querySelector('.react-flow__viewport'), {
             backgroundColor: '#ffffff',
             width: imageWidth,

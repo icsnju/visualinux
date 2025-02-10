@@ -125,6 +125,7 @@ class SnapshotDiffSynthesizer {
     private calcContainerDiff(containerSrc: Container, containerDst: Container): Container {
         const containerDiff: Container = {
             key: containerDst.key,
+            type: containerDst.type,
             label: containerDst.label,
             members: [],
             parent: containerDst.parent,

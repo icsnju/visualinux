@@ -1,16 +1,11 @@
 import { type ContainerNode } from "@app/visual/types";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
-const cssBorderColor = (isDiffAdd: boolean | undefined) => 
-    isDiffAdd === undefined ? 'border-black' :
-    isDiffAdd ? 'border-[#228B22]' : 'border-[#DC143C]';
-
 export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
     const cssAnim = 'transition-all duration-200 ease-in-out';
     const colorDiff = 
         data.isDiffAdd === undefined ? 'black' :
         data.isDiffAdd ? '[#228B22]' : '[#DC143C]';
-    console.log(id, data.key, data.isDiffAdd)
     return (
         <div className={`container-node h-full rounded-md border-2 border-dashed border-${colorDiff} ${cssAnim}`}>
             <div className="w-full ml-2 flex justify-begin items-center">
@@ -24,9 +19,9 @@ export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
                 </button>
                 <p className="h-8 text-lg">{data.label}</p>
             </div>
-            <div className="w-full flex justify-end absolute bottom-0 right-0">
+            {/* <div className="w-full flex justify-end absolute bottom-0 right-0">
                 <p className={`mr-1 text-sm text-${colorDiff}`}>{data.key.split(':', 1)[0]}</p>
-            </div>
+            </div> */}
             <Handle 
                 key={`handle#${id}`}
                 id={id}

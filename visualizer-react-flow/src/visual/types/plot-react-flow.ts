@@ -16,9 +16,15 @@ export type BoxNode = Node<BoxNodeData, 'box'>;
 export type ContainerNode = Node<ContainerNodeData, 'container'>;
 
 type NodeMetadata = {
-    collapsed: boolean,
     notifier?: (id: string) => void,
 }
+type BoxNodeMetadata = {
+    collapsed: boolean,
+} & NodeMetadata
+type ContainerNodeMetadata = {
+    collapsed: boolean,
+    direction: string,
+} & NodeMetadata
 
 type BoxNodeMember = TextMember | LinkMember | ({
     class:  'box'
@@ -33,11 +39,12 @@ export type BoxNodeData = {
     label:    string
     members:  {[label: string]: BoxNodeMember}
     parent:   string | null
-} & ShapeDiffInfo & NodeMetadata
+} & ShapeDiffInfo & BoxNodeMetadata
 
 export type ContainerNodeData = {
     key:     string
+    type:    string
     label:   string
     members: ContainerMember[]
     parent:  string | null
-} & ShapeDiffInfo & NodeMetadata
+} & ShapeDiffInfo & ContainerNodeMetadata

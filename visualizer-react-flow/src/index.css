@@ -16,7 +16,7 @@
 }
 
 .react-flow__pane {
-    cursor: default !important;
+    cursor: move !important;
 }
 
 /* .react-flow__node {
@@ -24,13 +24,13 @@
     border: 2px solid rgb(26, 25, 43) !important;
     border-radius: 6px !important;
 } */
-.box-node {
-    cursor: move !important;
+.box-node, .container-node {
+    cursor: default !important;
 }
-.box-node:hover {
+.box-node:hover, .container-node:hover {
     box-shadow: 0 1px 4px 1px rgba(0, 0, 0, 0.15) !important;
 }
-.box-node:focus {
+.box-node:focus, .container-node:focus {
     box-shadow: 0 0 0 0.5px rgb(26, 25, 43) !important;
 }
 .react-flow__node.selected > .box-node,
