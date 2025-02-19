@@ -49,7 +49,7 @@ export class ReactFlowLayouter {
     //
     // post process functions
     //
-    private estimateBoxNodeSize(node: BoxNode) {
+    private estimateBoxNodeSize(node: BoxNode, isParentCollapsed: boolean = false) {
         // avoid redundant estimation
         if (node.width !== undefined) {
             return;
@@ -57,15 +57,14 @@ export class ReactFlowLayouter {
         // estimate the width
         let width = 256;
         // estimate the height according to the height of its members
-        let height = this._estimateBoxNodeHeight(node.data);
+        let height = this._estimateBoxNodeHeight(node.data, isParentCollapsed);
         // return
         node.width  = width;
         node.height = height;
     }
-    private _estimateBoxNodeHeight(nodeData: BoxNodeData) {
+    private _estimateBoxNodeHeight(nodeData: BoxNodeData, isParentCollapsed: boolean) {
         // basic height: space for the label at the top and object address at the bottom
-        let basicHeight = 26 + 24;
-        let height = basicHeight;
+        let height = 50;
         // count the height of each member
         let members = Object.values(nodeData.members);
         for (let index = 0; index < members.length; index++) {
@@ -95,7 +94,7 @@ export class ReactFlowLayouter {
                 continue;
             }
             // estimate the member node size first
-            let memberHeight = this._estimateBoxNodeHeight(member.data);
+            let memberHeight = this._estimateBoxNodeHeight(member.data, isParentCollapsed || nodeData.collapsed);
             // add necessary spaces to estimate the node size
             let space = memberHeight + 8;
             if (index > 0 && members[index - 1].class === 'box') {
@@ -105,12 +104,15 @@ export class ReactFlowLayouter {
             height += space;
         }
         // return
+        if (isParentCollapsed) {
+            return 32;
+        }
         if (nodeData.collapsed) {
-            return basicHeight;
+            return 32;
         }
         return height;
     }
-    private estimateContainerNodeSize(node: ContainerNode) {
+    private estimateContainerNodeSize(node: ContainerNode, isParentCollapsed: boolean = false) {
         // handle members one by one
         let memberNodes: (BoxNode | ContainerNode)[] = [];
         let memberEdges: Edge[] = [];
@@ -121,9 +123,9 @@ export class ReactFlowLayouter {
             }
             // estimate the member size first
             if (memberNode.type == 'box') {
-                this.estimateBoxNodeSize(memberNode);
+                this.estimateBoxNodeSize(memberNode, isParentCollapsed || node.data.collapsed);
             } else if (memberNode.type == 'container') {
-                this.estimateContainerNodeSize(memberNode);
+                this.estimateContainerNodeSize(memberNode, isParentCollapsed || node.data.collapsed);
             }
             // prepare the subgraph for subflow layout
             memberNodes.push(memberNode);
@@ -137,20 +139,43 @@ export class ReactFlowLayouter {
                 }
             }
         }
-        // perform the subflow layout
+        // return if parent collapsed
+        if (isParentCollapsed) {
+            node.width  = 0;
+            node.height = 0;
+            return;
+        }
+        // init for the subflow layout
         let layoutOptions: Dagre.GraphLabel = {
             // rankdir: this.layoutDirection
             rankdir: node.data.direction == 'vertical' ? 'TB' : 'LR'
         };
-        if (node.id.split(':')[1].endsWith('[Array]')) {
-            layoutOptions.marginx = 4;
-            layoutOptions.marginy = 4;
-            layoutOptions.nodesep = 4;
-            memberNodes.forEach(memberNode => memberNode.draggable = false);
-        } else {
-            layoutOptions.marginx = 16;
-            layoutOptions.marginy = 16;
+        layoutOptions.marginx = 16;
+        layoutOptions.marginy = 16;
+        // if (node.id.split(':')[1].endsWith('[Array]')) {
+        //     layoutOptions.marginx = 4;
+        //     layoutOptions.marginy = 4;
+        //     layoutOptions.nodesep = 4;
+        //     memberNodes.forEach(memberNode => memberNode.draggable = false);
+        // } else {
+        //     layoutOptions.marginx = 16;
+        //     layoutOptions.marginy = 16;
+        // }
+        // do not need subflow layout if collapsed
+        if (node.data.collapsed) {
+            console.log('haha!', node.id, node.position)
+            node.width  = 256 + layoutOptions.marginx * 2;
+            node.height = 32;
+            for (const memberNode of memberNodes) {
+                if (memberNode.width === undefined || memberNode.height === undefined) {
+                    throw new Error(`memberNode.width/height should not be undefined here: ${memberNode.id}`);
+                }
+                memberNode.position.x = (node.width - memberNode.width);
+                memberNode.position.y = (node.height - memberNode.height) / 2;
+            }
+            return;
         }
+        // perform the subflow layout
         let hdrOffsetY = 32 - layoutOptions.marginy;
         layoutGraphByDagre(memberNodes, memberEdges, layoutOptions);
         // left spaces for the node header
@@ -233,12 +258,19 @@ function layoutGraphByDagre(nodes: Node[], edges: Edge[], options: Dagre.GraphLa
         }
         nodesByRank[rank].push(node);
     }
-    // make nodes with the same rank left-aligned
+    // make nodes with the same rank aligned
     for (let rank in nodesByRank) {
         const rankNodes = nodesByRank[rank];
-        let minX = Math.min(...rankNodes.map(node => node.position.x));
-        for (let node of rankNodes) {
-            node.position.x = minX;
+        if (options.rankdir == 'LR') {
+            let minX = Math.min(...rankNodes.map(node => node.position.x));
+            for (let node of rankNodes) {
+                node.position.x = minX;
+            }
+        } else {
+            let minY = Math.min(...rankNodes.map(node => node.position.y));
+            for (let node of rankNodes) {
+                node.position.y = minY;
+            }
         }
     }
-};
+}

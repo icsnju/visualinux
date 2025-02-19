@@ -17,6 +17,7 @@ export type ContainerNode = Node<ContainerNodeData, 'container'>;
 
 type NodeMetadata = {
     notifier?: (id: string) => void,
+    parentCollapsed?: boolean,
 }
 type BoxNodeMetadata = {
     collapsed: boolean,

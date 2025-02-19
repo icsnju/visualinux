@@ -13,22 +13,23 @@ const cssBgColorDiff = (isDiffAdd: boolean | undefined) => {
 };
 
 export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
-    const cssAnim = 'transition-all duration-200 ease-in-out';
+    const cssHeight = data.collapsed ? 'h-8' : 'h-full';
     const colorDiff = 
         data.isDiffAdd === undefined ? 'black' :
         data.isDiffAdd ? '[#228B22]' : '[#DC143C]';
     return (
-        <div className={`container-node h-full rounded-md border-2 border-dashed border-${colorDiff} ${cssBgColorDiff(data.isDiffAdd)} ${cssAnim}`}>
-            <div className="w-full ml-2 flex justify-begin items-center">
+        <div className={`container-node ${cssHeight} rounded-md border-2 border-dashed border-${colorDiff} ${cssBgColorDiff(data.isDiffAdd)}`}>
+            <div className="w-full h-7 ml-2 flex justify-begin items-center z-10">
                 <button 
                     className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-${colorDiff} text-${colorDiff}`}
                     onClick={() => {
+                        console.log('container node notifier', data.notifier);
                         if (data.notifier) data.notifier(id);
                     }}
                 >
                     {data.collapsed ? '+' : '-'}
                 </button>
-                <p className={`h-8 text-lg text-${colorDiff}`}>{data.label}</p>
+                <p className={`h-6 text-base text-${colorDiff}`}>{data.label}</p>
             </div>
             {/* <div className="w-full flex justify-end absolute bottom-0 right-0">
                 <p className={`mr-1 text-sm text-${colorDiff}`}>{data.key.split(':', 1)[0]}</p>

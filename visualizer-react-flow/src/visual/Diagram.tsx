@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { GlobalStateContext } from "@app/context/Context";
-import { ReactFlowGraph, ReactFlowNode } from "@app/visual/types";
+import { ContainerNode, ReactFlowGraph, ReactFlowNode } from "@app/visual/types";
 import { ReactFlowConverter } from "@app/visual/convert";
 import { ReactFlowLayouter } from "@app/visual/layout";
 import {
@@ -73,6 +73,15 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     }, [pKey, state]);
     useEffect(() => {
         if (shouldUpdate) {
+            let fuckNode = nodes.find(nd => nd.id == shouldUpdate);
+            let parentCollapsed = fuckNode ? !fuckNode.data.collapsed : false;
+            let intraNodes = new Set<string>();
+            if (fuckNode && fuckNode.type == 'container') {
+                (fuckNode as ContainerNode).data.members.forEach(member => {
+                    intraNodes.add(member.key);
+                });
+            }
+            console.log('intraNodes', intraNodes);
             let updatedNodes = nodes.map(nd => {
                 if (nd.type != 'box' && nd.type != 'container') {
                     return nd;
@@ -86,9 +95,25 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                         }
                     } as ReactFlowNode;
                 }
+                if (nd.parentId == shouldUpdate) {
+                    console.log('parent collapsed', nd.id, parentCollapsed);
+                    return {
+                        ...nd,
+                        data: {
+                            ...nd.data,
+                            parentCollapsed: parentCollapsed
+                        }
+                    } as ReactFlowNode;
+                }
                 return { ...nd };
             });
-            let graph = ReactFlowLayouter.layout({nodes: updatedNodes, edges} as ReactFlowGraph);
+            let updatedEdges = edges.map(ed => {
+                if (intraNodes.has(ed.source) && intraNodes.has(ed.target)) {
+                    return { ...ed, hidden: parentCollapsed };
+                }
+                return ed;
+            });
+            let graph = ReactFlowLayouter.layout({nodes: updatedNodes, edges: updatedEdges} as ReactFlowGraph);
             setNodes(graph.nodes);
             setEdges(graph.edges);
             setShouldUpdate(undefined);

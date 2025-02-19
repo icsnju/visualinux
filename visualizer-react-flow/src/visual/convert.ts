@@ -248,6 +248,9 @@ export class ReactFlowConverter {
             return;
         }
         // generate the node
+        if (attrs.collapsed == 'true') {
+            console.log('container collapsed', container.key);
+        }
         let node: ContainerNode = {
             id: container.key,
             type: 'container',
