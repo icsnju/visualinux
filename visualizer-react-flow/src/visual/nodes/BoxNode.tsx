@@ -23,11 +23,20 @@ export default function BoxNode({ id, data }: NodeProps<BoxNode>) {
     //     )
     // }
     return (
-        <BoxField id={id} data={data} depth={0} parentCollapsed={data.parentCollapsed}/>
+        <BoxField
+            id={id} data={data} depth={0}
+            notifier={(_id: string) => data.notifier?.(_id, id)} parentCollapsed={data.parentCollapsed}
+        />
     )
 }
 
-function BoxField({ id, data, depth, parentCollapsed }: { id: string, data: BoxNodeData, depth: number, parentCollapsed?: boolean }) {
+function BoxField({
+    id, data, depth,
+    notifier, parentCollapsed
+}: {
+    id: string, data: BoxNodeData, depth: number,
+    notifier: (id: string) => void, parentCollapsed?: boolean
+}) {
     const members = useMemo(() => Object.entries(data.members).map(([label, member]) => {
         switch (member.class) {
             case 'box':
@@ -35,7 +44,7 @@ function BoxField({ id, data, depth, parentCollapsed }: { id: string, data: BoxN
                     <div key={label} className="w-full p-1">
                         <BoxField
                             id={member.object} data={member.data} depth={depth + 1}
-                            parentCollapsed={parentCollapsed || data.collapsed}
+                            notifier={notifier} parentCollapsed={parentCollapsed || data.collapsed}
                         />
                     </div>
                 );
@@ -85,10 +94,7 @@ function BoxField({ id, data, depth, parentCollapsed }: { id: string, data: BoxN
             <div className="w-full ml-2 flex justify-begin items-center z-10">
                 <button 
                     className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-${colorDiff} text-${colorDiff}`}
-                    onClick={() => {
-                        console.log('box node notifier', data.notifier);
-                        if (data.notifier) data.notifier(id);
-                    }}
+                    onClick={() => notifier(id)}
                 >
                     {data.collapsed ? '+' : '-'}
                 </button>

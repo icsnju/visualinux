@@ -42,7 +42,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const nodesInitialized = useNodesInitialized();
-    const [shouldUpdate, setShouldUpdate] = useState<string | undefined>(undefined);
+    const [shouldUpdate, setShouldUpdate] = useState<[string, string] | undefined>(undefined);
     const { fitView } = useReactFlow();
     // Update nodes and edges when graph changes
     useEffect(() => {
@@ -63,7 +63,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                         ...nd,
                         data: {
                             ...nd.data,
-                            notifier: (id: string) => setShouldUpdate(id)
+                            notifier: (id: string, rootId: string) => setShouldUpdate([id, rootId])
                         }
                     };
                 }));
@@ -73,20 +73,24 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     }, [pKey, state]);
     useEffect(() => {
         if (shouldUpdate) {
-            let fuckNode = nodes.find(nd => nd.id == shouldUpdate);
-            let parentCollapsed = fuckNode ? !fuckNode.data.collapsed : false;
+            // rootId is used to update the updated nested box
+            const [id, rootId] = shouldUpdate;
+            // parentCollapsed is used to update member boxes of the updated container
+            const fuckNode = nodes.find(nd => nd.id == id);
+            const parentId = fuckNode ? id : null;
+            const parentCollapsed = fuckNode ? !fuckNode.data.collapsed : false;
             let intraNodes = new Set<string>();
             if (fuckNode && fuckNode.type == 'container') {
                 (fuckNode as ContainerNode).data.members.forEach(member => {
                     intraNodes.add(member.key);
                 });
             }
-            console.log('intraNodes', intraNodes);
+            // update all related objects/edges of the given shouldUpdate
             let updatedNodes = nodes.map(nd => {
                 if (nd.type != 'box' && nd.type != 'container') {
                     return nd;
                 }
-                if (nd.id == shouldUpdate) {
+                if (nd.id == rootId) {
                     return {
                         ...nd,
                         data: {
@@ -95,8 +99,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                         }
                     } as ReactFlowNode;
                 }
-                if (nd.parentId == shouldUpdate) {
-                    console.log('parent collapsed', nd.id, parentCollapsed);
+                if (nd.parentId == parentId) {
                     return {
                         ...nd,
                         data: {
@@ -131,6 +134,9 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             nodes={nodes} nodeTypes={nodeTypes} onNodesChange={onNodesChange}
             edges={edges} edgeTypes={edgeTypes} onEdgesChange={onEdgesChange}
             nodesConnectable={false} deleteKeyCode={null} // Prevent node deletion on backspace
+            onSelect={() => {
+                console.log('selected');
+            }}
             fitView
         >
             <Background />
