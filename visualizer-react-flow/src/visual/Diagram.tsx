@@ -1,25 +1,17 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalStateContext } from "@app/context/Context";
-import { ContainerNode, ReactFlowGraph, ReactFlowNode } from "@app/visual/types";
+import { ReactFlowGraph, ReactFlowNode, ContainerNode } from "@app/visual/types";
 import { ReactFlowConverter } from "@app/visual/convert";
 import { ReactFlowLayouter } from "@app/visual/layout";
 import {
-    ReactFlow,
-    Background,
-    Controls,
-    MiniMap,
-    addEdge,
-    useNodesState,
-    useEdgesState,
-    type OnConnect,
-    type Node,
-    type Edge,
-    useReactFlow,
-    Panel,
     ReactFlowProvider,
+    ReactFlow,
+    Background, Controls, MiniMap, Panel,
+    type Node, type Edge,
+    useNodesState, useEdgesState,
     useNodesInitialized,
-    getNodesBounds,
-    getViewportForBounds,
+    useReactFlow,
+    getNodesBounds, getViewportForBounds,
 } from "@xyflow/react";
 import { toPng, toSvg } from "html-to-image";
 
