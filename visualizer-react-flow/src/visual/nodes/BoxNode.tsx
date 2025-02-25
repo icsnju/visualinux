@@ -2,26 +2,9 @@ import { useMemo } from "react";
 import { BoxNodeData, type BoxNode } from "@app/visual/types";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
-const cssBgColor = (depth: number, isDiffAdd: boolean | undefined) => {
-    if (isDiffAdd === undefined) {
-        return depth <= 2 ? ['bg-[#FFFFFF]', 'bg-[#ECECEC]', 'bg-[#DCDCDC]'][depth] : 'bg-[#B7B7B7]';
-    }
-    if (isDiffAdd) {
-        return depth <= 2 ? ['bg-[#FBFFFB]', 'bg-[#F0FFF0]', 'bg-[#ECFFEC]'][depth] : 'bg-[#ECFFEC]';
-    } else {
-        return depth <= 2 ? ['bg-[#FFFBFB]', 'bg-[#FFF0F0]', 'bg-[#FFECEC]'][depth] : 'bg-[#FFECEC]';
-    }
-};
+import * as sc from "@app/visual/nodes/styleconf";
 
 export default function BoxNode({ id, data }: NodeProps<BoxNode>) {
-    // if (data.parentCollapsed) {
-    //     console.log('parent collapsed', id);
-    //     return (
-    //         <div className="absolute top-0 left-0 w-full h-6 opacity-0">
-    //             <BoxField id={id} data={data} depth={0} parentCollapsed={data.parentCollapsed}/>
-    //         </div>
-    //     )
-    // }
     return (
         <BoxField
             id={id} data={data} depth={0}
@@ -37,6 +20,7 @@ function BoxField({
     id: string, data: BoxNodeData, depth: number,
     notifier: (id: string) => void, parentCollapsed?: boolean
 }) {
+    // members
     const members = useMemo(() => Object.entries(data.members).map(([label, member]) => {
         switch (member.class) {
             case 'box':
@@ -69,6 +53,7 @@ function BoxField({
                 return null;
         }
     }), [data.members, parentCollapsed, data.collapsed]);
+    // reactflow edge handle
     const handle = (
         <Handle 
             key={`handle#${id}`} id={id} type="target" position={Position.Left}
@@ -78,6 +63,7 @@ function BoxField({
             }}
         />
     );
+    // hide the component when the parent is collapsed
     if (parentCollapsed) {
         return (
             <div className="absolute top-0 left-0 w-full h-6">
@@ -86,30 +72,24 @@ function BoxField({
             </div>
         )
     }
-    const colorDiff = 
-        data.isDiffAdd === undefined ? 'black' :
-        data.isDiffAdd ? '[#228B22]' : '[#DC143C]';
+    // component definition
+    const color = sc.TextColor(data.isDiffAdd);
+    const bgColor = sc.BgColor(depth, data.isDiffAdd);
     return (
-        <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-${colorDiff} ${cssBgColor(depth, data.isDiffAdd)}`}>
+        <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-${color} bg-${bgColor}`}>
             <div className="w-full ml-2 flex justify-begin items-center z-10">
                 <button 
-                    className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-${colorDiff} text-${colorDiff}`}
+                    className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-${color} text-${color}`}
                     onClick={() => notifier(id)}
                 >
                     {data.collapsed ? '+' : '-'}
                 </button>
-                <p className={`h-6 text-base text-${colorDiff}`}>{data.label}</p>
+                <p className={`h-6 text-base text-${color}`}>{data.label}</p>
             </div>
+            {/* even if collapsed, members are required for reactflow edge rendering */}
             {data.collapsed ? (
                 <div className="absolute top-0 left-0 w-full h-6 opacity-0">
                     {members}
-                    {/* <div className="absolute top-0 left-0 w-full h-full">
-                        {members.map((member, i) => (
-                            <div key={i} className="absolute top-0 left-0 w-full">
-                                {member}
-                            </div>
-                        ))}
-                    </div> */}
                 </div>
             ) : (
                 <div className="w-full overflow-hidden">
@@ -117,7 +97,7 @@ function BoxField({
                         {members}
                     </div>
                     <div className="w-full flex justify-end">
-                        <p className={`mr-1 text-sm text-${colorDiff}`}>{data.addr}</p>
+                        <p className={`mr-1 text-sm text-${color}`}>{data.addr}</p>
                     </div>
                 </div>
             )}
@@ -133,8 +113,10 @@ function PrimitiveField({
     depth: number, label: string, value: string, isValueEmoji?: boolean, edgeSource?: string,
     parentCollapsed?: boolean, diffOldValue?: string
 }) {
-    const labelWidth = 96 - 5 * depth;
-    const cssTextDiff = diffOldValue === undefined ? "" : "text-[#2b2be6]";
+    const labelWidth = 100 - 4 * depth;
+    const labelCharPerLine = 11 - depth;
+    const valueCharPerLine = 20 - depth;
+    const color = diffOldValue === undefined ? "black" : sc.TextColorMod();
     const labelHandle = edgeSource ? <LinkFieldHandle edgeSource={edgeSource} /> : <></>;
     if (parentCollapsed) {
         return (
@@ -146,27 +128,37 @@ function PrimitiveField({
             <div className="w-full flex items-stretch leading-none">
                 {/* label */}
                 <div style={{width: `${labelWidth}px`}} className="px-1 flex items-center border-r-2 border-black">
-                    <p className="truncate">{label}</p>
+                    <TextAuto text={label} textClassName={`text-${color}`} maxCharPerLine={labelCharPerLine} />
                 </div>
                 {/* value */}
-                <div className="flex-1 px-1 py-0.5 truncate">
-                    {/* handle diff */}
-                    {diffOldValue !== undefined &&
-                        <p className={`text-center truncate ${cssTextDiff} line-through`}>{diffOldValue}</p>
-                    }
-                    {/* handle emoji text */}
-                    {isValueEmoji ?
-                        <p className={`text-center truncate ${cssTextDiff}`} dangerouslySetInnerHTML={{__html: value}} />
-                    :
-                        <div>
-                            {value.split('\n').map((line, i) => (
-                                <p key={i} className={`text-center truncate ${cssTextDiff}`}>{line}</p>
-                            ))}
-                        </div>
-                    }
+                <div className="flex-1 flex items-center px-1 py-0.5 truncate">
+                    <div className="flex flex-col w-full">
+                        {/* handle diff */}
+                        {diffOldValue !== undefined &&
+                            <TextAuto text={diffOldValue} textClassName={`text-center text-${color} line-through`} maxCharPerLine={valueCharPerLine} />
+                        }
+                        {/* handle emoji text */}
+                        {isValueEmoji ?
+                            <p className={`text-center truncate text-${color}`} dangerouslySetInnerHTML={{__html: value}} />
+                        :
+                            <TextAuto text={value} textClassName={`text-center text-${color}`} maxCharPerLine={valueCharPerLine} />
+                        }
+                    </div>
                 </div>
             </div>
             {labelHandle}
+        </div>
+    );
+}
+
+function TextAuto({ text, textClassName, maxCharPerLine }: {text: string, textClassName?: string, maxCharPerLine: number}) {
+    const lines = text.match(new RegExp(`.{1,${maxCharPerLine}}`, 'g')) || [text];
+    // return <p className={textClassName}>{text}</p>;
+    return (
+        <div className="flex flex-col w-full">
+            {lines.map((line, i) => (
+                <p key={i} className={textClassName}>{line}</p>
+            ))}
         </div>
     );
 }

@@ -5,6 +5,8 @@ import {
 import { type Node, type Edge } from "@xyflow/react";
 import Dagre from "@dagrejs/dagre";
 
+import * as sc from "@app/visual/nodes/styleconf";
+
 export class ReactFlowLayouter {
     public static layout(graph: ReactFlowGraph): ReactFlowGraph {
         const layouter = new ReactFlowLayouter(graph);
@@ -55,7 +57,7 @@ export class ReactFlowLayouter {
             return;
         }
         // estimate the width
-        let width = 256;
+        let width = sc.boxNodeWidth;
         // estimate the height according to the height of its members
         let height = this._estimateBoxNodeHeight(node.data, isParentCollapsed);
         // return
@@ -71,8 +73,10 @@ export class ReactFlowLayouter {
             const member = members[index];
             // simple estimation for primitive members
             const countTextHeight = (text: string) => {
+                // TODO: calc auto-newline in styleconf.ts
                 const lines = text.split('\n');
-                return 6 + 16 * lines.length;
+                return 2 * sc.textPadding + 16;
+                return 2 * sc.textPadding + 16 * lines.length;
             }
             if (member.class === "text") {
                 height += countTextHeight(member.value);
@@ -105,10 +109,10 @@ export class ReactFlowLayouter {
         }
         // return
         if (isParentCollapsed) {
-            return 32;
+            return sc.boxNodeHeightCollapsed;
         }
         if (nodeData.collapsed) {
-            return 32;
+            return sc.boxNodeHeightCollapsed;
         }
         return height;
     }
@@ -164,8 +168,8 @@ export class ReactFlowLayouter {
         // do not need subflow layout if collapsed
         if (node.data.collapsed) {
             console.log('haha!', node.id, node.position)
-            node.width  = 256 + layoutOptions.marginx * 2;
-            node.height = 32;
+            node.width  = sc.boxNodeWidth + layoutOptions.marginx * 2;
+            node.height = sc.boxNodeHeightCollapsed;
             for (const memberNode of memberNodes) {
                 if (memberNode.width === undefined || memberNode.height === undefined) {
                     throw new Error(`memberNode.width/height should not be undefined here: ${memberNode.id}`);
