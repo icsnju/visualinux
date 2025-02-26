@@ -1,4 +1,6 @@
-// Color
+// color
+
+//// text color (also used for border)
 
 const textColorNormal  = 'black';
 const textColorDiffAdd = '[#228B22]';
@@ -12,6 +14,8 @@ export const TextColor = (isDiffAdd: boolean | undefined) => {
     return isDiffAdd ? textColorDiffAdd : textColorDiffDel;
 };
 export const TextColorMod = () => textColorDiffMod;
+
+//// bg color
 
 const bgColorNormal:  string[] = ['[#FFFFFF]', '[#ECECEC]', '[#DCDCDC]', '[#B7B7B7]'];
 const bgColorDiffAdd: string[] = ['[#FBFFFB]', '[#F0FFF0]', '[#ECFFEC]', '[#ECFFEC]'];
@@ -39,7 +43,53 @@ export const BgColorContainer = (isDiffAdd: boolean | undefined) => {
     return isDiffAdd ? bgColorContDiffAdd : bgColorContDiffDel;
 };
 
-// Size
+// size
+
+//// field size (used for auto newline and height estimation)
+
+const labelBaseCPL = 11;
+const valueBaseCPL = 20;
+
+const TextSplit = (text: string, charPerLine: number) => {
+    const lines = text.match(new RegExp(`.{1,${charPerLine}}`, 'g')) || [text];
+    return lines;
+}
+
+// for better visualization effect, try the best to avoid newline in label
+export const TextFieldAdaption = (label: string, value: string, oldvl: string | undefined, depth: number) => {
+    // original lines situ
+    let labelCPL = labelBaseCPL - depth;
+    let valueCPL = valueBaseCPL - depth;
+    let labelLines = TextSplit(label, labelCPL);
+    let valueLines = TextSplit(value, valueCPL);
+    let oldvlLines = oldvl ? TextSplit(oldvl, valueCPL) : [];
+    let valueMaxLen = Math.max(
+        ...valueLines.map(line => line.length),
+        ...oldvlLines.map(line => line.length),
+    );
+    // maximize labelCPL while value line count is not affected
+    let labelDelta = 0;
+    if (labelLines.length > 1 && valueMaxLen < valueCPL) {
+        labelDelta = Math.min(
+            labelLines[1].length,
+            valueCPL - valueMaxLen,
+        );
+        let newLabelLines = TextSplit(label, labelCPL + labelDelta);
+        if (newLabelLines.length < labelLines.length) {
+            labelCPL += labelDelta;
+            valueCPL = valueMaxLen;
+            labelLines = newLabelLines;
+            valueLines = TextSplit(value, valueCPL);
+            oldvlLines = oldvl ? TextSplit(oldvl, valueCPL) : [];
+        } else {
+            labelDelta = 0;
+        }
+    }
+    // return
+    return { labelDelta, labelLines, valueLines, oldvlLines };
+};
+
+//// node size
 
 export const boxNodeWidth = 272;
 export const boxNodeHeightCollapsed = 32;

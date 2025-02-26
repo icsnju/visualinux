@@ -42,16 +42,16 @@ export class ReactFlowLayouter {
         // estimate the node size for layout
         for (const node of this.graph.nodes) {
             if (node.type == 'box') {
-                this.estimateBoxNodeSize(node);
+                this.estimateBoxNodeSize(node, 0);
             } else if (node.type == 'container') {
-                this.estimateContainerNodeSize(node);
+                this.estimateContainerNodeSize(node, 0);
             }
         }
     }
     //
     // post process functions
     //
-    private estimateBoxNodeSize(node: BoxNode, isParentCollapsed: boolean = false) {
+    private estimateBoxNodeSize(node: BoxNode, depth: number, isParentCollapsed: boolean = false) {
         // avoid redundant estimation
         if (node.width !== undefined) {
             return;
@@ -59,37 +59,36 @@ export class ReactFlowLayouter {
         // estimate the width
         let width = sc.boxNodeWidth;
         // estimate the height according to the height of its members
-        let height = this._estimateBoxNodeHeight(node.data, isParentCollapsed);
+        let height = this._estimateBoxNodeHeight(node.data, depth, isParentCollapsed);
         // return
         node.width  = width;
         node.height = height;
     }
-    private _estimateBoxNodeHeight(nodeData: BoxNodeData, isParentCollapsed: boolean) {
+    private _estimateBoxNodeHeight(nodeData: BoxNodeData, depth: number, isParentCollapsed: boolean) {
         // basic height: space for the label at the top and object address at the bottom
         let height = 50;
         // count the height of each member
-        let members = Object.values(nodeData.members);
+        let members = Object.entries(nodeData.members);
         for (let index = 0; index < members.length; index++) {
-            const member = members[index];
-            // simple estimation for primitive members
-            const countTextHeight = (text: string) => {
-                // TODO: calc auto-newline in styleconf.ts
-                const lines = text.split('\n');
-                return 2 * sc.textPadding + 16;
-                return 2 * sc.textPadding + 16 * lines.length;
-            }
-            if (member.class === "text") {
-                height += countTextHeight(member.value);
-                if (member.diffOldValue !== undefined) {
-                    height += countTextHeight(member.diffOldValue);
+            const [label, member] = members[index];
+            // estimation for primitive members
+            if (member.class === "text" || member.class === "link") {
+                let value, oldvl;
+                if (member.class === "text") {
+                    value = member.value;
+                    if (member.diffOldValue !== undefined) {
+                        oldvl = member.diffOldValue;
+                    }
+                } else {
+                    value = member.target?.split(':')[0] || "null";
+                    if (member.diffOldTarget !== undefined) {
+                        oldvl = member.diffOldTarget?.split(':')[0] || "null";
+                    }
                 }
-                continue;
-            }
-            if (member.class === "link") {
-                height += countTextHeight(member.target || "");
-                if (member.diffOldTarget !== undefined) {
-                    height += countTextHeight(member.diffOldTarget || "");
-                }
+                const { labelLines, valueLines, oldvlLines } = sc.TextFieldAdaption(label, value, oldvl, depth);
+                height += 2 * sc.textPadding;
+                height += 16 * Math.max(labelLines.length, valueLines.length + oldvlLines.length);
+                console.log('esti', nodeData.key, label, Math.max(labelLines.length, valueLines.length, oldvlLines.length), labelLines, valueLines, oldvlLines, depth)
                 continue;
             }
             // handle non-primitive members
@@ -98,10 +97,10 @@ export class ReactFlowLayouter {
                 continue;
             }
             // estimate the member node size first
-            let memberHeight = this._estimateBoxNodeHeight(member.data, isParentCollapsed || nodeData.collapsed);
+            let memberHeight = this._estimateBoxNodeHeight(member.data, depth + 1, isParentCollapsed || nodeData.collapsed);
             // add necessary spaces to estimate the node size
             let space = memberHeight + 8;
-            if (index > 0 && members[index - 1].class === 'box') {
+            if (index > 0 && members[index - 1][1].class === 'box') {
                 space -= 3;
             }
             // finally estimated
@@ -116,7 +115,7 @@ export class ReactFlowLayouter {
         }
         return height;
     }
-    private estimateContainerNodeSize(node: ContainerNode, isParentCollapsed: boolean = false) {
+    private estimateContainerNodeSize(node: ContainerNode, depth: number, isParentCollapsed: boolean = false) {
         // handle members one by one
         let memberNodes: (BoxNode | ContainerNode)[] = [];
         let memberEdges: Edge[] = [];
@@ -127,9 +126,9 @@ export class ReactFlowLayouter {
             }
             // estimate the member size first
             if (memberNode.type == 'box') {
-                this.estimateBoxNodeSize(memberNode, isParentCollapsed || node.data.collapsed);
+                this.estimateBoxNodeSize(memberNode, depth, isParentCollapsed || node.data.collapsed);
             } else if (memberNode.type == 'container') {
-                this.estimateContainerNodeSize(memberNode, isParentCollapsed || node.data.collapsed);
+                this.estimateContainerNodeSize(memberNode, depth + 1, isParentCollapsed || node.data.collapsed);
             }
             // prepare the subgraph for subflow layout
             memberNodes.push(memberNode);
@@ -154,7 +153,7 @@ export class ReactFlowLayouter {
             // rankdir: this.layoutDirection
             rankdir: node.data.direction == 'vertical' ? 'TB' : 'LR'
         };
-        layoutOptions.marginx = 16;
+        layoutOptions.marginx = 24;
         layoutOptions.marginy = 16;
         // if (node.id.split(':')[1].endsWith('[Array]')) {
         //     layoutOptions.marginx = 4;

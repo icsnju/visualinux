@@ -113,9 +113,6 @@ function PrimitiveField({
     depth: number, label: string, value: string, isValueEmoji?: boolean, edgeSource?: string,
     parentCollapsed?: boolean, diffOldValue?: string
 }) {
-    const labelWidth = 100 - 4 * depth;
-    const labelCharPerLine = 11 - depth;
-    const valueCharPerLine = 20 - depth;
     const color = diffOldValue === undefined ? "black" : sc.TextColorMod();
     const labelHandle = edgeSource ? <LinkFieldHandle edgeSource={edgeSource} /> : <></>;
     if (parentCollapsed) {
@@ -123,25 +120,29 @@ function PrimitiveField({
             <>{labelHandle}</>
         );
     }
+    const {
+        labelDelta, labelLines, valueLines, oldvlLines
+    } = sc.TextFieldAdaption(label, value, diffOldValue, depth);
+    const labelWidth = 100 - 4 * depth + 16 * Math.ceil(labelDelta / 2);
     return (
         <div className={`relative w-full flex flex-col border-y border-black`}>
             <div className="w-full flex items-stretch leading-none">
                 {/* label */}
                 <div style={{width: `${labelWidth}px`}} className="px-1 flex items-center border-r-2 border-black">
-                    <TextAuto text={label} textClassName={`text-${color}`} maxCharPerLine={labelCharPerLine} />
+                    <TextLine lines={labelLines} textClassName={`text-${color}`} />
                 </div>
                 {/* value */}
                 <div className="flex-1 flex items-center px-1 py-0.5 truncate">
                     <div className="flex flex-col w-full">
                         {/* handle diff */}
                         {diffOldValue !== undefined &&
-                            <TextAuto text={diffOldValue} textClassName={`text-center text-${color} line-through`} maxCharPerLine={valueCharPerLine} />
+                            <TextLine lines={oldvlLines} textClassName={`text-center text-${color} line-through`} />
                         }
                         {/* handle emoji text */}
                         {isValueEmoji ?
                             <p className={`text-center truncate text-${color}`} dangerouslySetInnerHTML={{__html: value}} />
                         :
-                            <TextAuto text={value} textClassName={`text-center text-${color}`} maxCharPerLine={valueCharPerLine} />
+                            <TextLine lines={valueLines} textClassName={`text-center text-${color}`} />
                         }
                     </div>
                 </div>
@@ -151,9 +152,7 @@ function PrimitiveField({
     );
 }
 
-function TextAuto({ text, textClassName, maxCharPerLine }: {text: string, textClassName?: string, maxCharPerLine: number}) {
-    const lines = text.match(new RegExp(`.{1,${maxCharPerLine}}`, 'g')) || [text];
-    // return <p className={textClassName}>{text}</p>;
+function TextLine({ lines, textClassName }: {lines: string[], textClassName?: string}) {
     return (
         <div className="flex flex-col w-full">
             {lines.map((line, i) => (
