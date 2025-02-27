@@ -2,10 +2,10 @@
 
 //// text color (also used for border)
 
-const textColorNormal  = 'black';
-const textColorDiffAdd = '[#228B22]';
-const textColorDiffDel = '[#DC143C]';
-const textColorDiffMod = '[#2B2BE6]';
+const textColorNormal  = '#000000';
+const textColorDiffAdd = '#228B22';
+const textColorDiffDel = '#DC143C';
+const textColorDiffMod = '#2B2BE6';
 
 export const TextColor = (isDiffAdd: boolean | undefined) => {
     if (isDiffAdd === undefined) {
@@ -17,9 +17,9 @@ export const TextColorMod = () => textColorDiffMod;
 
 //// bg color
 
-const bgColorNormal:  string[] = ['[#FFFFFF]', '[#ECECEC]', '[#DCDCDC]', '[#B7B7B7]'];
-const bgColorDiffAdd: string[] = ['[#FBFFFB]', '[#F0FFF0]', '[#ECFFEC]', '[#ECFFEC]'];
-const bgColorDiffDel: string[] = ['[#FFFBFB]', '[#FFF0F0]', '[#FFECEC]', '[#FFECEC]'];
+const bgColorNormal:  string[] = ['#FFFFFF', '#ECECEC', '#DCDCDC', '#B7B7B7'];
+const bgColorDiffAdd: string[] = ['#FBFFFB', '#F0FFF0', '#ECFFEC', '#ECFFEC'];
+const bgColorDiffDel: string[] = ['#FFFBFB', '#FFF0F0', '#FFECEC', '#FFECEC'];
 
 const getItemSafe = (list: string[], depth: number) => {
     return depth < list.length ? list[depth] : list[list.length - 1];
@@ -32,9 +32,9 @@ export const BgColor = (depth: number, isDiffAdd: boolean | undefined) => {
     return isDiffAdd ? getItemSafe(bgColorDiffAdd, depth) : getItemSafe(bgColorDiffDel, depth);
 };
 
-const bgColorContNormal  = '[#FFFFFF]';
-const bgColorContDiffAdd = '[#FCFFFC]';
-const bgColorContDiffDel = '[#FFFCFC]';
+const bgColorContNormal  = '#FFFFFF';
+const bgColorContDiffAdd = '#FCFFFC';
+const bgColorContDiffDel = '#FFFCFC';
 
 export const BgColorContainer = (isDiffAdd: boolean | undefined) => {
     if (isDiffAdd === undefined) {

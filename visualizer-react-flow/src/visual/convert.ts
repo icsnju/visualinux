@@ -6,15 +6,19 @@ import {
 } from "@app/visual/types";
 import { type Edge, MarkerType } from "@xyflow/react";
 
-const edgeProp = {
-    // type: 'bezier',
-    zIndex: 10,
-    style: { stroke: 'black' },
-    markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 20, height: 20,
-        color: 'black',
-    },
+import * as sc from "@app/visual/nodes/styleconf";
+
+const getEdgeProp = (isDiffAdd: boolean | undefined) => {
+    return {
+        // type: 'bezier',
+        zIndex: 10,
+        style: { stroke: sc.TextColor(isDiffAdd) },
+        markerEnd: {
+            type: MarkerType.ArrowClosed,
+            width: 20, height: 20,
+            color: sc.TextColor(isDiffAdd),
+        },
+    }
 }
 
 export class ReactFlowConverter {
@@ -175,25 +179,40 @@ export class ReactFlowConverter {
         let members = structuredClone(abst.members) as BoxNodeData['members'];
         for (let [label, member] of Object.entries(members)) {
             // for links generate the edge and the target node
-            if (member.class == 'link' && member.target !== null) {
-                // for empty containers eliminate the visualization
-                if (member.target in this.view.pool.containers && this.view.pool.containers[member.target].members.length == 0) {
-                    member.target = '(empty)';
-                    continue;
+            if (member.class == 'link') {
+                const edgeHandle = `${box.key}.${label}`;
+                const convertLinkTarget = (target: string, isDiffAdd: boolean | undefined) => {
+                    // for empty containers eliminate the visualization
+                    if (target in this.view.pool.containers && this.view.pool.containers[target].members.length == 0) {
+                        // target = '(empty)';
+                        return;
+                    }
+                    // normal handling
+                    console.log(target, 'root:', this.rootMap[target]);
+                    const edge: Edge = {
+                        id: edgeHandle + (isDiffAdd !== undefined ? '.diff' : ''),
+                        source: this.rootMap[box.key],
+                        sourceHandle: edgeHandle,
+                        target: this.rootMap[target],
+                        targetHandle: target,
+                        ...getEdgeProp(isDiffAdd),
+                    };
+                    this.graph.edges.push(edge);
+                    if (edge.source != edge.target) this.convertShape(edge.target);
                 }
-                // normal handling
-                const edgeId = `${box.key}.${label}`;
-                console.log(member.target, 'root:', this.rootMap[member.target]);
-                const edge: Edge = {
-                    id: edgeId,
-                    source: this.rootMap[box.key],
-                    sourceHandle: edgeId,
-                    target: this.rootMap[member.target],
-                    targetHandle: member.target,
-                    ...edgeProp
-                };
-                this.graph.edges.push(edge);
-                if (edge.source != edge.target) this.convertShape(edge.target);
+                if (member.diffOldTarget !== undefined && member.diffOldTarget !== null) {
+                    convertLinkTarget(member.diffOldTarget, false);
+                }
+                if (member.target !== null) {
+                    let isEdgeDiffAdd = undefined;
+                    if (member.diffOldTarget !== undefined) {
+                        isEdgeDiffAdd = true;
+                    }
+                    if (box.isDiffAdd !== undefined) {
+                        isEdgeDiffAdd = box.isDiffAdd;
+                    }
+                    convertLinkTarget(member.target, isEdgeDiffAdd);
+                }
             // put data of nested box into the box data
             } else if (member.class == 'box') {
                 if (member.object !== null) {
@@ -292,7 +311,7 @@ export class ReactFlowConverter {
                         sourceHandle: edgeId,
                         target: link.target,
                         targetHandle: link.target,
-                        ...edgeProp
+                        ...getEdgeProp(container.isDiffAdd)
                     };
                     this.graph.edges.push(edge);
                     this.convertShape(link.target);

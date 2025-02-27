@@ -35,7 +35,7 @@ class SnapshotDiffSynthesizer {
                 containers: {},
             },
             plot: viewDst.plot,
-            init_attrs: viewDst.init_attrs,
+            init_attrs: { ...viewSrc.init_attrs, ...viewDst.init_attrs },
             stat: 0,
         }
         // boxes

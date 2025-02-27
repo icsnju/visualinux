@@ -20,14 +20,14 @@ const config: Config = {
   plugins: [],
   safelist: [
     ...(diffChoices.flatMap(v => [
-      `text-${sc.TextColor(v)}`, `border-${sc.TextColor(v)}`,
+      `text-[${sc.TextColor(v)}]`, `border-[${sc.TextColor(v)}]`,
     ])),
-    `text-${sc.TextColorMod()}`, `border-${sc.TextColorMod()}`,
+    `text-[${sc.TextColorMod()}]`, `border-[${sc.TextColorMod()}]`,
     ...(depthChoices.flatMap(d => diffChoices.map(v => 
-      `bg-${sc.BgColor(d, v)}`
+      `bg-[${sc.BgColor(d, v)}]`
     ))),
     ...(diffChoices.map(v => 
-      `bg-${sc.BgColorContainer(v)}`,
+      `bg-[${sc.BgColorContainer(v)}]`,
     )),
     // 'bg-[#FCFFFC]', 'bg-[#FBFFFB]', 'bg-[#F0FFF0]', 'bg-[#ECFFEC]', 
     // 'bg-[#FFFCFC]', 'bg-[#FFFBFB]', 'bg-[#FFF0F0]', 'bg-[#FFECEC]',

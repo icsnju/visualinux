@@ -76,15 +76,15 @@ function BoxField({
     const color = sc.TextColor(data.isDiffAdd);
     const bgColor = sc.BgColor(depth, data.isDiffAdd);
     return (
-        <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-${color} bg-${bgColor}`}>
+        <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-[${color}] bg-[${bgColor}]`}>
             <div className="w-full ml-2 flex justify-begin items-center z-10">
                 <button 
-                    className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-${color} text-${color}`}
+                    className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-[${color}] text-[${color}]`}
                     onClick={() => notifier(id)}
                 >
                     {data.collapsed ? '+' : '-'}
                 </button>
-                <p className={`h-6 text-base text-${color}`}>{data.label}</p>
+                <p className={`h-6 text-base text-[${color}]`}>{data.label}</p>
             </div>
             {/* even if collapsed, members are required for reactflow edge rendering */}
             {data.collapsed ? (
@@ -97,7 +97,7 @@ function BoxField({
                         {members}
                     </div>
                     <div className="w-full flex justify-end">
-                        <p className={`mr-1 text-sm text-${color}`}>{data.addr}</p>
+                        <p className={`mr-1 text-sm text-[${color}]`}>{data.addr}</p>
                     </div>
                 </div>
             )}
@@ -129,20 +129,20 @@ function PrimitiveField({
             <div className="w-full flex items-stretch leading-none">
                 {/* label */}
                 <div style={{width: `${labelWidth}px`}} className="px-1 flex items-center border-r-2 border-black">
-                    <TextLine lines={labelLines} textClassName={`text-${color}`} />
+                    <TextLine lines={labelLines} textClassName={`text-[${color}]`} />
                 </div>
                 {/* value */}
                 <div className="flex-1 flex items-center px-1 py-0.5 truncate">
                     <div className="flex flex-col w-full">
                         {/* handle diff */}
                         {diffOldValue !== undefined &&
-                            <TextLine lines={oldvlLines} textClassName={`text-center text-${color} line-through`} />
+                            <TextLine lines={oldvlLines} textClassName={`text-center text-[${color}] line-through`} />
                         }
                         {/* handle emoji text */}
                         {isValueEmoji ?
-                            <p className={`text-center truncate text-${color}`} dangerouslySetInnerHTML={{__html: value}} />
+                            <p className={`text-center truncate text-[${color}]`} dangerouslySetInnerHTML={{__html: value}} />
                         :
-                            <TextLine lines={valueLines} textClassName={`text-center text-${color}`} />
+                            <TextLine lines={valueLines} textClassName={`text-center text-[${color}]`} />
                         }
                     </div>
                 </div>
