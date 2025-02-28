@@ -30,13 +30,15 @@ export class ReactFlowConverter {
     private attrs: ViewAttrs;
     private rootMap:   { [key: string]: string };
     private nodeMap: { [key: string]: BoxNode | ContainerNode };
+    private isInternal: Set<string>;
     private graph: ReactFlowGraph;
     constructor(view: StateView, attrs: ViewAttrs) {
-        this.view      = view;
-        this.attrs     = attrs;
-        this.rootMap   = {};
-        this.nodeMap   = {};
-        this.graph     = { nodes: [], edges: [] };
+        this.view       = view;
+        this.attrs      = attrs;
+        this.rootMap    = {};
+        this.nodeMap    = {};
+        this.isInternal = new Set<string>();
+        this.graph      = { nodes: [], edges: [] };
     }
     private convert(): ReactFlowGraph {
         // calculate the root box of each shape for further node compaction
@@ -46,7 +48,6 @@ export class ReactFlowConverter {
         for (const key of Object.keys(this.view.pool.containers)) {
             this.calcRootShapeOf(key);
         }
-        console.log('rootmap', this.rootMap);
         // convert viewcl shapes to react flow nodes
         for (const key of this.view.plot) {
             this.convertShape(key);
@@ -119,6 +120,7 @@ export class ReactFlowConverter {
         if (box.parent !== null) {
             node.parentId = box.parent;
             node.extent = 'parent';
+            this.isInternal.add(box.parent);
         }
         this.nodeMap[node.id] = node;
         this.graph.nodes.push(node);
