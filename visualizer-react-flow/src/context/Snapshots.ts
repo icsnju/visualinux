@@ -1,5 +1,5 @@
 import { calcSnapshotDiff } from "@app/visual/diff";
-import { Snapshot } from "@app/visual/types";
+import { preprocess, Snapshot } from "@app/visual/types";
 
 export default class Snapshots {
     data: Snapshot[]
@@ -14,14 +14,20 @@ export default class Snapshots {
     // context APIs
     //
     new(snKey: string, snapshot: Snapshot) {
+        console.log('new snapshot', snKey, snapshot);
+        // preprocess
+        preprocess(snapshot);
+        // reorder views
         let orderedViews = Object.keys(snapshot.views).sort().reduce((obj: any, key) => { 
             obj[key] = snapshot.views[key]; 
             return obj;
         }, {});
         snapshot.views = orderedViews;
+        // store
         this.data.push(snapshot);
         this.dataIndex.set(snKey, this.data.length - 1);
         this.currIndex = this.data.length - 1;
+        console.log('new snapshot OK', snKey, snapshot);
     }
     diff(snKeySrc: string, snKeyDst: string) {
         const diffKey = `diff-${snKeySrc}-${snKeyDst}`;

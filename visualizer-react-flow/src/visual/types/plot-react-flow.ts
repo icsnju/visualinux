@@ -45,6 +45,7 @@ export type BoxNodeData = {
 export type ContainerNodeData = {
     key:     string
     type:    string
+    addr:    string
     label:   string
     members: ContainerMember[]
     parent:  string | null

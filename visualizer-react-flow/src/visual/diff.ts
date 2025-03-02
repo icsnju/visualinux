@@ -13,18 +13,21 @@ class SnapshotDiffSynthesizer {
     logs: LogEntry[];
     constructor(key: string, snSrc: Snapshot, snDst: Snapshot) {
         this.key = key;
-        this.snSrc = snSrc;
-        this.snDst = snDst;
+        this.snSrc = JSON.parse(JSON.stringify(snSrc));
+        this.snDst = JSON.parse(JSON.stringify(snDst));
         this.snRes = { key: key, views: {}, pc: '', timestamp: 0 };
         this.logs = [];
     }
     synthesize() {
+        console.log('synthesize diff', this.snSrc, this.snDst);
+        // synthesize diff for each view
         for (const [viewname, viewDst] of Object.entries(this.snDst.views)) {
             if (viewname in this.snSrc.views) {
                 const viewSrc = this.snSrc.views[viewname];
                 this.snRes.views[viewname] = this.calcStateViewDiff(viewname, viewSrc, viewDst);
             }
         }
+        console.log('synthesize diff OK', this.snRes);
         return this.snRes;
     }
     private calcStateViewDiff(viewname: string, viewSrc: StateView, viewDst: StateView): StateView {
@@ -125,6 +128,7 @@ class SnapshotDiffSynthesizer {
     private calcContainerDiff(containerSrc: Container, containerDst: Container): Container {
         const containerDiff: Container = {
             key: containerDst.key,
+            addr: containerDst.addr,
             type: containerDst.type,
             label: containerDst.label,
             members: [],

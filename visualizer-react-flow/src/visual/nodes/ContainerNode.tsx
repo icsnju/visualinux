@@ -21,9 +21,6 @@ export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
                 </button>
                 <p className={`h-6 text-base text-[${color}]`}>{data.label}</p>
             </div>
-            {/* <div className="w-full flex justify-end absolute bottom-0 right-0">
-                <p className={`mr-1 text-sm text-${colorDiff}`}>{data.key.split(':', 1)[0]}</p>
-            </div> */}
             <Handle 
                 key={`handle#${id}`}
                 id={id}

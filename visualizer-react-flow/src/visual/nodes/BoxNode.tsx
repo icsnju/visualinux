@@ -35,7 +35,7 @@ function BoxField({
             case 'text':
                 return (
                     <PrimitiveField
-                        key={label} depth={depth} label={label} value={member.value} isValueEmoji={member.size == -1}
+                        key={label} depth={depth} label={label} value={member.value}
                         parentCollapsed={parentCollapsed || data.collapsed} diffOldValue={member.diffOldValue}
                     />
                 );
@@ -107,10 +107,10 @@ function BoxField({
 }
 
 function PrimitiveField({
-    depth, label, value, isValueEmoji, edgeSource,
+    depth, label, value, edgeSource,
     parentCollapsed, diffOldValue
 }: {
-    depth: number, label: string, value: string, isValueEmoji?: boolean, edgeSource?: string,
+    depth: number, label: string, value: string, edgeSource?: string,
     parentCollapsed?: boolean, diffOldValue?: string
 }) {
     const color = diffOldValue === undefined ? "black" : sc.TextColorMod();
@@ -124,6 +124,7 @@ function PrimitiveField({
         labelDelta, labelLines, valueLines, oldvlLines
     } = sc.TextFieldAdaption(label, value, diffOldValue, depth);
     const labelWidth = 100 - 4 * depth + 16 * Math.ceil(labelDelta / 2);
+    const isValueEmoji = (value: string) => value.startsWith('&#') && value.endsWith(';');
     return (
         <div className={`relative w-full flex flex-col border-y border-black`}>
             <div className="w-full flex items-stretch leading-none">
@@ -139,7 +140,7 @@ function PrimitiveField({
                             <TextLine lines={oldvlLines} textClassName={`text-center text-[${color}] line-through`} />
                         }
                         {/* handle emoji text */}
-                        {isValueEmoji ?
+                        {isValueEmoji(value) ?
                             <p className={`text-center truncate text-[${color}]`} dangerouslySetInnerHTML={{__html: value}} />
                         :
                             <TextLine lines={valueLines} textClassName={`text-center text-[${color}]`} />

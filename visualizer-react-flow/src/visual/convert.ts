@@ -28,7 +28,7 @@ export class ReactFlowConverter {
     }
     private view: StateView;
     private attrs: ViewAttrs;
-    private rootMap:   { [key: string]: string };
+    private rootMap: { [key: string]: string };
     private nodeMap: { [key: string]: BoxNode | ContainerNode };
     private isInternal: Set<string>;
     private graph: ReactFlowGraph;
@@ -62,6 +62,7 @@ export class ReactFlowConverter {
         } else if (key in this.view.pool.containers) {
             return this.view.pool.containers[key];
         }
+        console.log(this.view.pool);
         throw new Error(`getShape: shape not found: ${key}`);
     }
     private isShapeOutmost(key: string) {
@@ -113,7 +114,7 @@ export class ReactFlowConverter {
         // generate the node
         let node: BoxNode = {
             id: box.key, type: 'box',
-            data: this.convertBoxData(box, attrs),
+            data: {} as BoxNodeData,
             position: { x: 0, y: 0 },
             draggable: false,
         };
@@ -123,6 +124,9 @@ export class ReactFlowConverter {
             this.isInternal.add(box.parent);
         }
         this.nodeMap[node.id] = node;
+        // convert data after recorded in nodeMap to avoid circular reference
+        node.data = this.convertBoxData(box, attrs);
+        // store
         this.graph.nodes.push(node);
     }
     private convertBoxData(box: Box | Container, attrs: NodeAttrs): BoxNodeData {
@@ -178,7 +182,7 @@ export class ReactFlowConverter {
         return { ...parentMembers, ...this.convertAbstMembers(box, abst) };
     }
     private convertAbstMembers(box: Box, abst: Abst) {
-        let members = structuredClone(abst.members) as BoxNodeData['members'];
+        let members = JSON.parse(JSON.stringify(abst.members)) as BoxNodeData['members'];
         for (let [label, member] of Object.entries(members)) {
             // for links generate the edge and the target node
             if (member.class == 'link') {
@@ -192,7 +196,7 @@ export class ReactFlowConverter {
                     // normal handling
                     console.log(target, 'root:', this.rootMap[target]);
                     const edge: Edge = {
-                        id: edgeHandle + (isDiffAdd !== undefined ? '.diff' : ''),
+                        id: edgeHandle + (isDiffAdd === undefined ? '' : (isDiffAdd ? '.add' : '.del')),
                         source: this.rootMap[box.key],
                         sourceHandle: edgeHandle,
                         target: this.rootMap[target],
@@ -200,8 +204,9 @@ export class ReactFlowConverter {
                         ...getEdgeProp(isDiffAdd),
                     };
                     this.graph.edges.push(edge);
-                    if (edge.source != edge.target) this.convertShape(edge.target);
+                    this.convertShape(edge.target);
                 }
+                console.log('convert', label, member.target, edgeHandle);
                 if (member.diffOldTarget !== undefined && member.diffOldTarget !== null) {
                     convertLinkTarget(member.diffOldTarget, false);
                 }
@@ -243,10 +248,9 @@ export class ReactFlowConverter {
         }
         // compact array-like containers
         if (shouldCompactContainer(container)) {
-            const [addr, type] = container.key.split(':', 2);
             const compacted: Box = {
                 key: container.key,
-                type: type, label: container.label, addr: addr,
+                type: container.type, addr: container.addr, label: container.label, 
                 parent: container.parent,
                 absts: {
                     default: {
@@ -265,7 +269,6 @@ export class ReactFlowConverter {
                 isDiffAdd: container.isDiffAdd,
             }
             this.convertBox(compacted, attrs);
-            // this._convertArrayDataToContainer(container, attrs);
             return;
         }
         // generate the node
@@ -278,6 +281,7 @@ export class ReactFlowConverter {
             data: {
                 key: container.key,
                 type: container.type,
+                addr: container.addr,
                 label: container.label,
                 members: Object.values(container.members).filter(member => member.key !== null),
                 parent: container.parent,
@@ -292,6 +296,9 @@ export class ReactFlowConverter {
         this.graph.nodes.push(node);
         // convert its members
         for (const member of node.data.members) {
+            if (member.key === null) {
+                continue;
+            }
             this.convertShape(member.key);
             const memberNode = this.nodeMap[member.key];
             if (memberNode === undefined) {
@@ -324,6 +331,5 @@ export class ReactFlowConverter {
 }
 
 function shouldCompactContainer(container: Container) {
-    const typo = container.key.split(':')[1];
-    return ['[Array]', '[XArray]'].includes(typo);
+    return ['[Array]', '[XArray]'].includes(container.type);
 }

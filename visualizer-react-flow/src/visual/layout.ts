@@ -88,7 +88,6 @@ export class ReactFlowLayouter {
                 const { labelLines, valueLines, oldvlLines } = sc.TextFieldAdaption(label, value, oldvl, depth);
                 height += 2 * sc.textPadding;
                 height += 16 * Math.max(labelLines.length, valueLines.length + oldvlLines.length);
-                console.log('esti', nodeData.key, label, Math.max(labelLines.length, valueLines.length, oldvlLines.length), labelLines, valueLines, oldvlLines, depth)
                 continue;
             }
             // handle non-primitive members
@@ -133,7 +132,7 @@ export class ReactFlowLayouter {
             // prepare the subgraph for subflow layout
             memberNodes.push(memberNode);
             for (const [label, link] of Object.entries(member.links)) {
-                if (link.target !== null) {
+                if (link.target !== null && member.key !== null) {
                     memberEdges.push({
                         id: `${member.key}.${label}`,
                         source: member.key,
