@@ -23,17 +23,17 @@ define FileFDA as Box<file> [
     i_mode = @this.f_inode.i_mode
     priv_data = @this.private_data
     priv_node = switch ${true} {
-        case ${S_ISCHR(@i_mode)}: Box [ Text<raw_ptr> chardev: @priv_data ]
-        case ${S_ISBLK(@i_mode)}: Box [ Text<raw_ptr> blockdev: @priv_data ]
+        case ${S_ISCHR(@i_mode)}: [ Text<raw_ptr> chardev: @priv_data ]
+        case ${S_ISBLK(@i_mode)}: [ Text<raw_ptr> blockdev: @priv_data ]
         case ${S_ISFIFO(@i_mode)}:
-            Box [ Link pipe -> @pipe ] where {
+            [ Link pipe -> @pipe ] where {
                 pipe = PipeFDA("pipe": @priv_data)
             }
         case ${S_ISSOCK(@i_mode)}:
-            Box [ Link socket -> @socket ] where {
+            [ Link socket -> @socket ] where {
                 socket = SocketFDA("socket": @priv_data)
             }
-        otherwise: Box [ Text<raw_ptr> priv_data: @priv_data ]
+        otherwise: [ Text<raw_ptr> priv_data: @priv_data ]
     }
 }
 
@@ -43,10 +43,10 @@ define TaskFDA as Box<task_struct> [
 ] where {
     files = Array(@this.files.fd_array).forEach |item| {
         member = switch @item {
-            case ${NULL}: NULL
-            otherwise: Box [
-                Link "file #{@index}" -> @file
-            ] where {
+        case ${NULL}:
+            NULL
+        otherwise: 
+            [ Link "file #{@index}" -> @file ] where {
                 file = FileFDA(@item)
             }
         }

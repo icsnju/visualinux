@@ -30,15 +30,6 @@ class GDBValue:
             return self.inner == other
         return False
 
-    # def __getitem__(self, field: int | str | GDBField) -> 'GDBValue':
-    #     # TODO: how to handle anonymous fields
-    #     if isinstance(field, GDBField):
-    #         field = field.name or ''
-    #     try:
-    #         return GDBValue(self.inner[field])
-    #     except Exception as e:
-    #         raise fuck_exc(e.__class__,  f'kvalue = {self!s}, {field = !s}, ' + str(e))
-
     def __int__(self) -> int:
         return int(self.inner)
 
@@ -132,20 +123,6 @@ class GDBValue:
         pchar = self.inner.cast(gdb.lookup_type('char').pointer())
         return pchar.format_string(raw=True, symbols=False, address=False, format='s')
 
-    def value_size(self, typo: TextFormat | None = None) -> int:
-        if typo:
-            match typo.type:
-                case TFType.BOOL: return 3
-                case TFType.ENUM | TFType.STR: return self.value_size_str(typo)
-                case TFType.FLAG: return min(self.sizeof() * 2, 16)
-                case TFType.EMOJI: return -1
-        if self.type_stat_name.startswith('char ['):
-            return self.value_size_str()
-        return self.sizeof()
-    
-    def value_size_str(self, typo: TextFormat | None = None) -> int:
-        return min(math.floor(len(self.value_string(typo)) / 2) + 1, 16)
-
     # below are fast entries for useful KType methods
 
     def sizeof(self) -> int:
@@ -168,26 +145,3 @@ class GDBValue:
 
     def array_length(self) -> int:
         return self.type.array_length()
-
-# # wrappers for special values
-
-# class GDBValueUndefined(GDBValue):
-#     def value_string(self) -> str:
-#         return '<undefined>'
-
-# gdb_type_pvoid = gdb.lookup_type('void').pointer()
-
-# GDBValue_Undefined = GDBValueUndefined(gdb.Value(0))
-# GDBValue_NULL = GDBValue(gdb.Value(0xffffffffffffffff).cast(gdb_type_pvoid))
-
-# class GDBValueXBox(GDBValue):
-
-#     FAKE_ROOT = gdb.Value(0xffffffffffffffff).cast(gdb_type_pvoid)
-
-#     def __init__(self, xkey: str) -> None:
-#         super().__init__(GDBValueXBox.FAKE_ROOT)
-#         self.__xkey = xkey
-
-#     @property
-#     def json_data_key(self) -> str:
-#         return self.__xkey

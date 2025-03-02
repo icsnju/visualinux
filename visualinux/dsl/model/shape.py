@@ -232,12 +232,9 @@ class Box(Shape):
         '''
         evaluation_counter.objects += 1
 
-        papa = self.parent.format_string_head() if self.parent else 'NONE'
-        if vl_debug_on(): printd(f'Box evaluate_on {self.root = !s}, {self.type = !s}, {item_value = !s}, {papa = }')
-
         # evaluate the root value
         if not self.root:
-            root = KValueXBox(pool.gen_key_for_xbox())
+            root = KValueVBox(pool.gen_vbox_addr())
         elif self.root.is_item_variable():
             if not item_value:
                 raise fuck_exc(AssertionError, f'Box evaluate_on itemVar but item_value not provided')
@@ -273,8 +270,8 @@ class Box(Shape):
         pool.add_box(ent)
 
         if vl_debug_on(): printd(f'Box evaluate_on {root=!s} {self.views=!s}')
-        if isinstance(root, KValueXBox):
-            if vl_debug_on(): printd(f'!!XBOX {self=!s}')
+        if isinstance(root, KValueVBox):
+            if vl_debug_on(): printd(f' --is VBox {self=!s}')
         for view in self.views.values():
             ent.views[view.name] = view.evaluate_on(pool, item_value)
 

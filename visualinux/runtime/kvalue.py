@@ -239,30 +239,16 @@ class KValue:
                 case _: raise fuck_exc(AssertionError, f'unhandled {typo = }')
         return str(self.value)
 
-    def value_size(self, typo: TextFormat | None = None) -> int:
-        if typo:
-            match typo.type:
-                case TFType.BOOL: return 3
-                case TFType.ENUM | TFType.STR: return self.value_size_str(typo)
-                case TFType.FLAG: return 16#min(self.type.size * 2, 16)#TODO
-                case TFType.EMOJI: return -1
-        return 16
-
-    def value_size_str(self, typo: TextFormat | None = None) -> int:
-        return min(math.floor(len(self.value_string(typo)) / 2) + 1, 16)
-
 # wrappers for special values
 
 KValue_Undefined = KValue(GDBType.basic('void').pointer(), 0)
 KValue_NULL = KValue(GDBType.basic('void').pointer(), 0)
-KValue_XBox_FakeRoot = KValue(GDBType.basic('void').pointer(), 0xffffffffffffffff)
 
-class KValueXBox(KValue):
+class KValueVBox(KValue):
 
-    def __init__(self, xkey: int) -> None:
-        super().__init__(GDBType.basic('void').pointer(), xkey)
-        self.__xkey = xkey
+    def __init__(self, addr: int) -> None:
+        super().__init__(GDBType.basic('void').pointer(), addr)
 
     @property
     def json_data_key(self) -> str:
-        return f'xbox#{self.__xkey}'
+        return f'VBox#{self.value}'

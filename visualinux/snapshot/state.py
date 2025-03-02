@@ -8,7 +8,7 @@ class Pool:
     def __init__(self) -> None:
         self.boxes: dict[str, entity.Box] = {}
         self.containers: dict[str, entity.Container | entity.ContainerConv] = {}
-        self.__xkey: int = 0
+        self.__next_vbox_addr: int = 0
 
     def add_box(self, ent: entity.Box) -> None:
         self.__add_check(ent)
@@ -66,11 +66,11 @@ class Pool:
             return ent
         return None
 
-    def gen_key_for_xbox(self) -> int:
-        '''Generate a unique key for Box with root=None.
+    def gen_vbox_addr(self) -> int:
+        '''Generate a fake, unique root address for VBox whose root is None.
         '''
-        self.__xkey += 1
-        return self.__xkey
+        self.__next_vbox_addr -= 1
+        return self.__next_vbox_addr
 
     def to_json(self) -> dict[str, dict]:
         return {

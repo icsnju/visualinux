@@ -39,8 +39,8 @@ define File as Box<file> [
     i_mode = @this.f_inode.i_mode
     priv_data = @this.private_data
     priv_node = switch ${true} {
-        case ${S_ISSOCK(@i_mode)}: Box [ Text<raw_ptr> priv_is_socket: @priv_data ]
-        otherwise: Box [ Text<raw_ptr> priv_data: @priv_data ]
+        case ${S_ISSOCK(@i_mode)}: [ Text<raw_ptr> priv_is_socket: @priv_data ]
+        otherwise: [ Text<raw_ptr> priv_data: @priv_data ]
     }
 }
 
@@ -54,9 +54,7 @@ define FDTable as Box<fdtable> [
         case ${NULL}:
             NULL
         otherwise:
-            Box [
-                Link "file #{@index}" -> @file
-            ] where {
+            [ Link "file #{@index}" -> @file ] where {
                 file = File(@item)
             }
         }
@@ -77,9 +75,7 @@ define FilesStruct as Box<files_struct> [
         case ${NULL}:
             NULL
         otherwise:
-            Box [
-                Link "file #{@index}" -> @file
-            ] where {
+            [ Link "file #{@index}" -> @file ] where {
                 file = File(@item)
             }
         }

@@ -36,7 +36,7 @@ define TimerBase as Box<timer_base> [
         yield @member
     }
     pending_map = Array(@this.pending_map).forEach |item| {
-        yield Box [ Text<u64:x> item: @item ]
+        yield [ Text<u64:x> item: @item ]
     }
 }
 

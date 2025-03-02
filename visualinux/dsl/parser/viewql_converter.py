@@ -87,6 +87,7 @@ class ViewQLConverter:
         return CondOpt(opt, lhs, rhs)
 
     def parse_filter(self, tree: Tree[Token]) -> Filter:
+        print(f'parse_filter: {tree!s}')
         opt = serialize(tree.children[1])
         lhs = self.parse_expression(child_as_tree(tree, 0))
         rhs = self.parse_expression(child_as_tree(tree, 2))

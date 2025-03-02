@@ -53,7 +53,6 @@ class Text(RuntimePrimitive):
         return {
             'class': 'text',
             'type':  self.value.gtype.tag,
-            'size':  self.value.value_size(self.typo),
             'value': self.real_value
         }
 
@@ -86,7 +85,7 @@ class Link(RuntimePrimitive):
 
     @property
     def target_type(self) -> str:
-        return self.target_key.split(':')[1] if self.target_key else ''
+        return key2type(self.target_key)
 
     def to_json(self) -> dict:
         return {
@@ -105,7 +104,7 @@ class BoxMember(JSONRepr):
 
     @property
     def object_type(self) -> str:
-        return self.object_key.split(':')[1] if self.object_key else ''
+        return key2type(self.object_key)
 
     def to_json(self) -> dict:
         return {
@@ -243,6 +242,7 @@ class Container(RuntimeShape):
         return {
             'key':     self.key,
             'type':    self.type,
+            'addr':    hex(self.addr),
             'label':   self.label,
             'members': [member.to_json() for member in self.members],
             'parent':  self.parent
@@ -286,3 +286,10 @@ class ContainerConv(JSONRepr):
         }
 
 NotPrimitive = Box | Container | ContainerConv
+
+def key2type(key: str | None) -> str:
+    if key is None or key.startswith('VBox#'):
+        return ''
+    if ':' not in key:
+        raise fuck_exc(AssertionError, f'key2type: invalid entity key {key!s}')
+    return key.split(':')[1]

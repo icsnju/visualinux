@@ -65,7 +65,7 @@ define FileSS as Box<file> [
     priv_data = @this.private_data
     priv_node = switch ${true} {
         case ${S_ISSOCK(@i_mode)}: Socket(@this.private_data)
-        otherwise: Box [ Text<raw_ptr> priv_data: @this.private_data ]
+        otherwise: [ Text<raw_ptr> priv_data: @this.private_data ]
     }
 }
 
@@ -81,12 +81,11 @@ define TaskSS as Box<task_struct> [
         otherwise:
             switch ${true} {
                 case ${S_ISSOCK(@item.f_inode.i_mode)}:
-                    Box [
-                        Link "socket #{@index}" -> @socket
-                    ] where {
+                    [ Link "socket #{@index}" -> @socket ] where {
                         socket = Socket(@item.private_data)
                     }
-                otherwise: NULL
+                otherwise:
+                    NULL
             }
         }
         yield @member

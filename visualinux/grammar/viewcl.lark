@@ -73,6 +73,8 @@ assignment: variable "=" expr
 
 assignment_rhs: shape_definition
               | box_definition
+              | vbox_definition
+              | vbox_definition_prim
               | container_definition
               | container_conversion
 
@@ -175,18 +177,21 @@ shape_definition_inner: "Shape" label ":" expr
 
 box_identifier: "Box" ["<" type_term ">"]
 
-box_declaration     : box_identifier                           view_decl_body [where_block]
-box_definition      : box_identifier [box_instantiation]       view_def_body  [where_block]
+box_declaration     : box_identifier                         view_decl_body [where_block]
+box_definition      : box_identifier box_instantiation       view_def_body  [where_block]
                     | box_null
-box_definition_field: box_identifier [box_instantiation_field] view_def_body  [where_block]
+box_definition_field: box_identifier box_instantiation_field view_def_body  [where_block]
 
 box_instantiation      : "(" [label ":"] expr ")"
                        | "("  label ":"       ")"
 box_instantiation_field: "(" [label ":"] (field_term | expr) ")"
                        |     [label ":"] (field_term | expr)
-                      //  | "("  label ":"             ")"
 
 box_null: "NULL" // a.k.a. Box(${NULL}) []
+
+vbox_definition: "VBox" "(" label ")" view_def_body [where_block]
+
+vbox_definition_prim: "[" prim_definition "]" [where_block]
 
 //// view of box
 
@@ -242,6 +247,8 @@ container_def_inst: assignment
 yield_target: access_variable_as_shape
             | shape_definition
             | box_definition
+            | vbox_definition
+            | vbox_definition_prim
             | container_definition
 
 yield_node_on: access_this field_prefix*

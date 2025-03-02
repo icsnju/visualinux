@@ -3,7 +3,7 @@ define SigSet as Box<sigset_t> [
     Text<flag> sig: @sig0
 ] where {
     // sig = Array(@this.sig).forEach |item| {
-    //     yield Box [ Text<flag> sig: @item ]
+    //     yield [ Text<flag> sig: @item ]
     // }
     sig0 = @this.sig[0]
 }

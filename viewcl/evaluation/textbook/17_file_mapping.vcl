@@ -27,9 +27,7 @@ define TaskFM as Box<task_struct> [
         case ${NULL}:
             NULL
         otherwise:
-            Box [
-                Link "file #{@index}" -> @file
-            ] where {
+            [ Link "file #{@index}" -> @file ] where {
                 file = FileFM(@item)
             }
         }
@@ -40,9 +38,7 @@ define TaskFM as Box<task_struct> [
         case ${NULL}:
             NULL
         otherwise:
-            Box [
-                Link "file #{@index}" -> @file
-            ] where {
+            [ Link "file #{@index}" -> @file ] where {
                 file = FileFM(@item)
             }
         }

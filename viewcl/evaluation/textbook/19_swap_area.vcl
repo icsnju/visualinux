@@ -12,7 +12,7 @@ define SwapInfoStruct as Box<swap_info_struct> [
 }
 
 swap_info = Array(${&swap_info}).forEach |node| {
-    yield Box [ Link swapinfo -> @si ] where { si = SwapInfoStruct(@node) }
+    yield [ Link swapinfo -> @si ] where { si = SwapInfoStruct(@node) }
 }
 diag textbook_19_swap_area {
     plot @swap_info

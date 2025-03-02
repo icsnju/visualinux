@@ -21,17 +21,17 @@ define MapleNode as Box<maple_node> [
     last_ma_max = @ma_max
     slots = switch @type {
     case ${maple_dense}:
-        Array("slots": @node.slot).forEach |item| {
+        Array(slots: @node.slot).forEach |item| {
             ma_min = ${@last_ma_min + @index}
             ma_max = @ma_min
-            yield Box [ Link "slot #{@index}" -> @slot ] where {
+            yield [ Link "slot #{@index}" -> @slot ] where {
                 slot = VMArea("vm_area_struct #{@index}": @item)
             }
         }
     case ${maple_leaf_64}, ${maple_range_64}:
-        Array("slots": @node.mr64.slot).forEach |item| {
+        Array(slots: @node.mr64.slot).forEach |item| {
             pivots = @node.mr64.pivot
-            yield Box [ Link "slot #{@index}" -> @slot_safe ] where {
+            yield [ Link "slot #{@index}" -> @slot_safe ] where {
                 slot_entry = @item
                 ma_min = ${ma_calc_min(@pivots, @index, @last_ma_min)}
                 ma_max = ${ma_calc_max(@pivots, @index, @last_ma_max)}
@@ -48,9 +48,9 @@ define MapleNode as Box<maple_node> [
             }
         }
     case ${maple_arange_64}:
-        Array("slots": @node.ma64.slot).forEach |item| {
+        Array(slots: @node.ma64.slot).forEach |item| {
             pivots = @node.ma64.pivot
-            yield Box [ Link "slot #{@index}" -> @slot_safe ] where {
+            yield [ Link "slot #{@index}" -> @slot_safe ] where {
                 slot_entry = @item
                 ma_min = ${ma_calc_min(@pivots, @index, @last_ma_min)}
                 ma_max = ${ma_calc_max(@pivots, @index, @last_ma_max)}
@@ -67,17 +67,17 @@ define MapleNode as Box<maple_node> [
             }
         }
     otherwise:
-        Box [ Text unkown_type: @type ]
+        VBox(slots) [ Text unkown_type: @type ]
     }
     pivots = switch @type {
     case ${maple_dense}: NULL
     case ${maple_leaf_64}, ${maple_range_64}:
-        Array("pivots": @node.mr64.pivot).forEach |item| {
-            yield Box [ Text<u64:x> "pivot #{@index}": @item ]
+        Array(pivots: @node.mr64.pivot).forEach |item| {
+            yield [ Text<u64:x> "pivot #{@index}": @item ]
         }
     case ${maple_arange_64}:
-        Array("pivots": @node.ma64.pivot).forEach |item| {
-            yield Box [ Text<u64:x> "pivot #{@index}": @item ]
+        Array(pivots: @node.ma64.pivot).forEach |item| {
+            yield [ Text<u64:x> "pivot #{@index}": @item ]
         }
     }
 }
@@ -98,7 +98,7 @@ define MapleTree as Box<maple_tree> [
     case ${true}:
         MapleNode(maple_root: @this.ma_root)
     case ${false}:
-        Box [ Text ma_root: @ma_root_entry ]
+        VBox(maple_root) [ Text ma_root: @ma_root_entry ]
     }
 }
 

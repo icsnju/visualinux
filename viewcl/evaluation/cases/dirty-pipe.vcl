@@ -26,7 +26,7 @@ define PipeINodeInfo as Box<pipe_inode_info> [
 ] where {
     // bufs = PipeBuffer(@this.bufs)
     bufs = Array("pipe_bufs": ${cast_to_array(@this.bufs, "pipe_buffer", @this.ring_size)}).forEach |item| {
-        yield Box [ Link "pipe_buf #{@index}" -> @pipe_buf ] where {
+        yield [ Link "pipe_buf #{@index}" -> @pipe_buf ] where {
             pipe_buf = PipeBuffer(@item)
         }
     }
@@ -44,8 +44,8 @@ define FileToPipe as Box<file> [
         otherwise: NULL
     }
     pagecache = XArray(@this.f_inode.i_mapping.i_pages).forEach |item| {
-        // yield Box [ Text<raw_ptr> page: @item ]
-        yield Box [ Link page -> @page ] where {
+        // yield [ Text<raw_ptr> page: @item ]
+        yield [ Link page -> @page ] where {
             page = Page_simple(@item)
         }
     }
@@ -58,7 +58,7 @@ define TaskDP as Box<task_struct> [
     files = Array(fds: ${cast_to_parray(@this.files.fdt.fd, file, NR_OPEN_DEFAULT)}).forEach |item| {
         member = switch @item {
             case ${NULL}: NULL
-            otherwise: Box [
+            otherwise: [
                 Link "file #{@index}" -> @file
             ] where {
                 file = FileToPipe(@item)

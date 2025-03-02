@@ -37,11 +37,14 @@ class DiagramSet:
         evaluation_result: OrderedDict[str, EvaluationCounter] = OrderedDict()
         for name, diagram in self.diagrams.items():
             try:
-                evaluation_counter.reset()
-                # state.substates[name] = show_time_usage(name, lambda: self.sync_sub(name, targets))
-                snapshot.add_view(self.sync_sub(name, diagram))
-                # evaluation_show(name)
-                evaluation_result[name] = evaluation_counter.clone()
+                try:
+                    evaluation_counter.reset()
+                    # state.substates[name] = show_time_usage(name, lambda: self.sync_sub(name, targets))
+                    snapshot.add_view(self.sync_sub(name, diagram))
+                    # evaluation_show(name)
+                    evaluation_result[name] = evaluation_counter.clone()
+                except Exception as e:
+                    raise fuck_exc(Exception, 'vl_sync() unhandled exception')
             except Exception as e:
                 print(f'subdiag {name} sync() error: ' + str(e))
                 snapshot.add_view(StateView(name, error=True))

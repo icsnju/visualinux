@@ -10,7 +10,7 @@ define IDR_IPCS as Box<idr> {
     ]
 } where {
     idr_rt = XArray(@this.idr_rt).forEach |item| {
-        yield Box [ Link perm -> @perm ] where {
+        yield [ Link perm -> @perm ] where {
             perm = IPCPerm(@item)
         }
     }
@@ -33,17 +33,17 @@ define IPCNamespace as Box<ipc_namespace> [
     //     yield IPCIDs(@item)
     // }
     idrs_sem = XArray(@this.ids[0].ipcs_idr.idr_rt).forEach |item| {
-        yield Box [ Link perm -> @perm ] where {
+        yield [ Link perm -> @perm ] where {
             perm = SemArray(@item)
         }
     }
     idrs_msg = XArray(@this.ids[1].ipcs_idr.idr_rt).forEach |item| {
-        yield Box [ Link perm -> @perm ] where {
+        yield [ Link perm -> @perm ] where {
             perm = MsgQueue(@item)
         }
     }
     idrs_shm = XArray(@this.ids[2].ipcs_idr.idr_rt).forEach |item| {
-        yield Box [ Link perm -> @perm ] where {
+        yield [ Link perm -> @perm ] where {
             perm = Shmid(@item)
         }
     }

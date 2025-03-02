@@ -55,7 +55,7 @@ define IRQDesc as Box<irq_desc> [
 }
 
 idt = XArray(${&irq_desc_tree}).forEach |item| {
-    yield Box [ Link irq_desc -> @desc ] where {
+    yield [ Link "irq_desc #{@index}" -> @desc ] where {
         desc = IRQDesc(@item)
     }
 }

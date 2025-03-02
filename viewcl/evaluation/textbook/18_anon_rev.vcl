@@ -46,17 +46,17 @@ define MapleTreeARNode as Box [
     last_ma_max = @ma_max
     slots = switch @type {
     case ${maple_dense}:
-        Array(@node.slot).forEach |item| {
+        Array(slots: @node.slot).forEach |item| {
             ma_min = ${@last_ma_min + @index}
             ma_max = @ma_min
-            yield Box [ Link slot -> @slot ] where {
+            yield [ Link slot -> @slot ] where {
                 slot = VMAreaAR(@item)
             }
         }
     case ${maple_leaf_64}, ${maple_range_64}:
-        Array(@node.mr64.slot).forEach |item| {
+        Array(slots: @node.mr64.slot).forEach |item| {
             pivots = @node.mr64.pivot
-            yield Box [ Link slot -> @slot_safe ] where {
+            yield [ Link slot -> @slot_safe ] where {
                 slot_entry = @item
                 slot_length = ${sizeof((*@pivots)) / sizeof(void *)}
                 ma_min = ${@index > 0 ? (*@pivots)[@index - 1] + 1 : @last_ma_min}
@@ -74,9 +74,9 @@ define MapleTreeARNode as Box [
             }
         }
     case ${maple_arange_64}:
-        Array(@node.ma64.slot).forEach |item| {
+        Array(slots: @node.ma64.slot).forEach |item| {
             pivots = @node.ma64.pivot
-            yield Box [ Link slot -> @slot_safe ] where {
+            yield [ Link slot -> @slot_safe ] where {
                 slot_entry = @item
                 slot_length = ${sizeof((*@pivots)) / sizeof(void *)}
                 ma_min = ${@index > 0 ? (*@pivots)[@index - 1] + 1 : @last_ma_min}
@@ -94,17 +94,17 @@ define MapleTreeARNode as Box [
             }
         }
     otherwise:
-        Box [ Text unkown_type: @type ]
+        VBox(slots) [ Text unkown_type: @type ]
     }
     pivots = switch @type {
     case ${maple_dense}: NULL
     case ${maple_leaf_64}, ${maple_range_64}:
         Array(@node.mr64.pivot).forEach |item| {
-            yield Box [ Text<u64:x> pivot: @item ]
+            yield [ Text<u64:x> pivot: @item ]
         }
     case ${maple_arange_64}:
         Array(@node.ma64.pivot).forEach |item| {
-            yield Box [ Text<u64:x> pivot: @item ]
+            yield [ Text<u64:x> pivot: @item ]
         }
     }
 }
@@ -125,7 +125,7 @@ define MapleTreeAR as Box<maple_tree> [
     case ${true}:
         MapleTreeARNode(maple_root: @this.ma_root)
     case ${false}:
-        Box [ Text ma_root: @ma_root_entry ]
+        VBox(maple_root) [ Text ma_root: @ma_root_entry ]
     }
 }
 

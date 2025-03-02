@@ -80,7 +80,7 @@ define KMemCache as Box<kmem_cache> [
 ] where {
     cpu_slab = KMemCacheCPU(${per_cpu_ptr(@this.cpu_slab, 0)})
     // node = Array(@this.node).forEach |node| {
-    //     yield Box [ Link node -> @kmem_cache_node ] where { kmem_cache_node = KMemCacheNode(@node) }
+    //     yield [ Link node -> @kmem_cache_node ] where { kmem_cache_node = KMemCacheNode(@node) }
     // }
     node = KMemCacheNode(@this.node[0])
 }

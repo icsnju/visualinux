@@ -55,7 +55,7 @@ define PGListData as Box<pglist_data> [
     Text node_id
 ] where {
     node_zones = Array(@this.node_zones).forEach |item| {
-        yield Box [ Link zone -> @zone ] where { zone = Zone(@item) }
+        yield [ Link zone -> @zone ] where { zone = Zone(@item) }
     }
 }
 

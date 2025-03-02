@@ -86,6 +86,10 @@ class Converter:
                 rhs = self.parse_shape_def(rnode)
             case 'box_definition':
                 rhs = self.parse_box_def(rnode)
+            case 'vbox_definition':
+                rhs = self.parse_vbox_def(rnode)
+            case 'vbox_definition_prim':
+                rhs = self.parse_vbox_definition_prim(rnode)
             case 'container_definition':
                 rhs = self.parse_container_def(rnode)
             case 'container_conversion':
@@ -198,7 +202,11 @@ class Converter:
         assert inst.data == 'diagdef'
         node_body = child_as_tree(inst, 0)
         node_viewql = child_as_tree_safe(child_as_tree_safe(inst, 1), 0)
-        init_viewql = ViewQLConverter.convert(node_viewql)
+        try:
+            init_viewql = ViewQLConverter.convert(node_viewql)
+        except Exception as e:
+            print(f'init viewql parse error: {e}')
+            init_viewql = ViewQLCode([])
         name = serialize(node_body.children[0])
         diagdef = DiagramDef(name, [], init_viewql)
         for item in scan_children_as_tree(node_body, skip=1):
@@ -324,7 +332,7 @@ class Converter:
         node_typo = child_as_tree(node_id, 0)
         typo  = self.get_term_from(node_typo) if node_typo else None
         node_root = child_as_tree(node, 1)
-        root, label = self.parse_box_instantiation(node_root) if node_root else (None, '')
+        root, label = self.parse_box_instantiation(node_root)
         view  = self.parse_view_def_body(child_as_tree(node, 2))
         node_where = child_as_tree(node, 3)
         where = self.parse_where_block(node_where) if node_where else None
@@ -341,6 +349,24 @@ class Converter:
         root = self.get_term_from(child_as_tree(node, 1))
         label = serialize(child_as_tree(node, 0))
         return (root, label)
+
+    def parse_vbox_def(self, node: Tree[Token]) -> BoxDef:
+        assert node.data == 'vbox_definition'
+        label = serialize(child_as_tree(node, 0))
+        view  = self.parse_view_def_body(child_as_tree(node, 1))
+        node_where = child_as_tree(node, 2)
+        where = self.parse_where_block(node_where) if node_where else None
+        return BoxDef.creat_in_place(None, None, label, [view], where)
+
+    def parse_vbox_definition_prim(self, node: Tree[Token]) -> BoxDef:
+        assert node.data == 'vbox_definition_prim'
+        insts = list(self.scan_prim_def(child_as_tree(node, 0)))
+        if len(insts) != 1:
+            raise fuck_exc(AssertionError, f'vbox_definition_prim must be a single primitive definition')
+        node_where = child_as_tree(node, 1)
+        where = self.parse_where_block(node_where) if node_where else None
+        if vl_debug_on(): printd(f'vbox_definition_prim: {insts[0]!s}')
+        return BoxDef.creat_in_place(None, None, insts[0].label, [ViewDef('default', None, [insts[0]], '')], where)
 
     # ======================================================================
     # handle the view inside box
@@ -496,6 +522,10 @@ class Converter:
                 return YieldOpt(self.parse_shape_def(item))
             case 'box_definition':
                 return YieldOpt(self.parse_box_def(item))
+            case 'vbox_definition':
+                return YieldOpt(self.parse_vbox_def(item))
+            case 'vbox_definition_prim':
+                return YieldOpt(self.parse_vbox_definition_prim(item))
             case 'container_definition':
                 return YieldOpt(self.parse_container_def(item))
             case _:

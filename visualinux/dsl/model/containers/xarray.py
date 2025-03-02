@@ -56,7 +56,7 @@ class XArray(Container):
             return
 
         if vl_debug_on(): printd(f'{self.name} __evaluate_dfs {entry!s}, {index = }, {shift = }')
-        ent_spec = entity.Box(None, KValueXBox(pool.gen_key_for_xbox()), '', OrderedDict({'default': entity.View('default', None, OrderedDict())}))
+        ent_spec = entity.Box(None, KValueVBox(pool.gen_vbox_addr()), '', OrderedDict({'default': entity.View('default', None, OrderedDict())}))
         ent_spec.parent = ent_container.key
         use_spec = True
         if self.xa_check('xa_is_node', entry):
@@ -77,7 +77,7 @@ class XArray(Container):
             ent_spec.add_member('default', 
                 'entry_value',    entity.Text(self.xa_convert('xa_to_value',    entry), TextFormat.gen_default()))
         elif not self.xa_check('xa_is_internal', entry):
-            ent_curr = self.evaluate_member(pool, entry)
+            ent_curr = self.evaluate_member(pool, entry, index)
             ent_container.add_member(ent_curr.key)
             use_spec = False
         elif self.xa_check('xa_is_retry', entry):
@@ -109,7 +109,7 @@ class XArray(Container):
         shift = node.eval_field('shift').cast(Term.Type('uint8_t'), as_pointer=True).dereference()
         return shift.value
 
-    def evaluate_member(self, pool: Pool, member: KValue) -> entity.NotPrimitive:
+    def evaluate_member(self, pool: Pool, member: KValue, index: int) -> entity.NotPrimitive:
 
         if isinstance(self.member_shape, SwitchCase):
             member_shape = self.member_shape.evaluate_on(pool, member)
@@ -120,5 +120,10 @@ class XArray(Container):
 
         if not isinstance(member_shape, Box | Container):
             raise fuck_exc(AssertionError, f'{self.name} member_shape must be Box or Container but {member_shape = !s}')
+
+        if 'index' in member_shape.scope:
+            print(str(member_shape.scope))
+            raise fuck_exc(AssertionError, 'Array temp_patch variable "index" conflicted')
+        member_shape.scope['index'] = Term.CExpr(str(index))
 
         return member_shape.evaluate_on(pool, member)

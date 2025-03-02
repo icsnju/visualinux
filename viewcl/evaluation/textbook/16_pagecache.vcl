@@ -13,8 +13,8 @@ define AddressSpace as Box<address_space> [
     Link a_ops -> @a_ops
 ] where {
     i_pages = XArray(@this.i_pages).forEach |item| {
-        yield Box [ Text<raw_ptr> page: @item ]
-        // yield Box [ Link page -> @page ] where {
+        yield [ Text<raw_ptr> page: @item ]
+        // yield [ Link page -> @page ] where {
         //     page = Box(@item) [ Text<raw_ptr> entry: @this ]
         // }
     }
@@ -45,9 +45,7 @@ define TaskPGCC as Box<task_struct> [
         case ${NULL}:
             NULL
         otherwise:
-            Box [
-                Link "file #{@index}" -> @file
-            ] where {
+            [ Link "file #{@index}" -> @file ] where {
                 file = FilePGCC(@item)
             }
         }
@@ -58,9 +56,7 @@ define TaskPGCC as Box<task_struct> [
         case ${NULL}:
             NULL
         otherwise:
-            Box [
-                Link "file #{@index}" -> @file
-            ] where {
+            [ Link "file #{@index}" -> @file ] where {
                 file = FilePGCC(@item)
             }
         }

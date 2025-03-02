@@ -79,8 +79,6 @@ class Translator:
             label = label or shapedef.decl.term.head
         elif root:
             label = label or str(root)
-        else:
-            label = ''
 
         if shapedef.recursion:
             if vl_debug_on(): printd(f'[DEBUG] interpret_box: recursion detected')
