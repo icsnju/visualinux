@@ -19,6 +19,7 @@ function BoxField({
     id: string, data: BoxNodeData, depth: number,
     notifier: (id: string) => void, parentCollapsed?: boolean
 }) {
+    console.log('BoxField', id, data.parent, parentCollapsed);
     // members
     const members = Object.entries(data.members).map(([label, member]) => {
         switch (member.class) {

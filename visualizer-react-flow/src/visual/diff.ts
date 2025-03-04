@@ -145,7 +145,6 @@ class SnapshotDiffSynthesizer {
                     if (label in memberSrc.links) {
                         const linkSrc = memberSrc.links[label];
                         memberDiff.links[label] = this.calcMemberDiff(linkSrc, linkDst) as LinkMember;
-                        console.log('linkdiff', memberSrc.key, linkSrc.target, linkDst.target, memberDiff.links[label]);
                     } else {
                         this.log('warning', `container member ${memberDst.key} has link ${label} not found in source`);
                     }

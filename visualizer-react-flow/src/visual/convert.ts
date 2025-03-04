@@ -105,7 +105,7 @@ export class ReactFlowConverter {
         }
     }
     private convertBox(box: Box, attrs: NodeAttrs) {
-        console.log('convertBox', box.key, 'p?', box.parent);
+        // console.log('convertBox', box.key, 'p?', box.parent);
         // only convert the outmost shapes
         if (!this.isShapeOutmost(box.key)) {
             return;
@@ -197,7 +197,6 @@ export class ReactFlowConverter {
                         return;
                     }
                     // normal handling
-                    console.log(target, 'root:', this.rootMap[target]);
                     const edge: Edge = {
                         id: edgeHandle + (isDiffAdd === undefined ? '' : (isDiffAdd ? '.add' : '.del')),
                         source: this.rootMap[box.key],

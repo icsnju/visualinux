@@ -189,7 +189,6 @@ export class ReactFlowLayouter {
         }
         // perform the subflow layout
         let hdrOffsetY = 32 - layoutOptions.marginy;
-        console.log('layout', memberNodes, memberEdges);
         layoutGraphByDagre(memberNodes, memberEdges, layoutOptions);
         // left spaces for the node header
         memberNodes.forEach(memberNode => memberNode.position.y += hdrOffsetY);

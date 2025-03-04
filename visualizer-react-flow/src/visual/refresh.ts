@@ -1,4 +1,4 @@
-import { ReactFlowGraph, ReactFlowNode, BoxNodeData, ContainerNodeData } from "@app/visual/types";
+import { ReactFlowGraph, ReactFlowNode, BoxNodeData, ContainerNodeData, ContainerNode } from "@app/visual/types";
 import { ReactFlowLayouter } from "@app/visual/layout";
 import { type Edge } from "@xyflow/react";
 
@@ -16,12 +16,25 @@ export class ReactFlowRefresher {
     private graph: ReactFlowGraph;
     private updId: string;
     private updRootId: string;
-    // private updNode: ReactFlowNode | undefined;
+    private intraNodes: Set<string>;
+    private intraNodeCollapsed: boolean;
     constructor(graph: ReactFlowGraph, id: string, rootId: string) {
         this.graph = graph;
         this.updId = id;
         this.updRootId = rootId;
-        // this.updNode = this.graph.nodes.find(nd => nd.id == this.updRootId);
+        // handle intra-container nodes
+        this.intraNodes = new Set<string>();
+        let containerNode = this.graph.nodes.find(
+            nd => nd.id == this.updId && nd.type == 'container'
+        ) as ContainerNode | undefined;
+        if (containerNode) {
+            for (const member of containerNode.data.members) {
+                if (member.key !== null) {
+                    this.intraNodes.add(member.key);
+                }
+            }
+        }
+        this.intraNodeCollapsed = containerNode ? !containerNode.data.collapsed : false;
     }
     private refresh(): ReactFlowGraph {
         let updatedNodes = this.graph.nodes.map(nd => this.refreshNode(nd));
@@ -33,12 +46,20 @@ export class ReactFlowRefresher {
         if (node.type != 'box' && node.type != 'container') {
             return node;
         }
+        if (this.intraNodes.has(node.id)) {
+            return {
+                ...node,
+                data: {
+                    ...node.data,
+                    parentCollapsed: this.intraNodeCollapsed
+                }
+            } as ReactFlowNode;
+        }
         if (node.id == this.updRootId) {
-            const updatedNode = {
+            return {
                 ...node,
                 data: this.refreshNodeData(node.data)
             } as ReactFlowNode;
-            return updatedNode;
         }
         return { ...node };
     }
@@ -73,6 +94,9 @@ export class ReactFlowRefresher {
         return updatedData;
     }
     private refreshEdge(edge: Edge): Edge {
+        if (this.intraNodes.has(edge.source) && this.intraNodes.has(edge.target)) {
+            return { ...edge, hidden: this.intraNodeCollapsed };
+        }
         return edge;
     }
 }
