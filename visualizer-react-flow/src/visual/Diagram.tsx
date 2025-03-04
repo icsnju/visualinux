@@ -20,6 +20,7 @@ import "../index.css";
 
 import { nodeTypes } from "@app/visual/nodes";
 import { edgeTypes } from "@app/visual/edges";
+import { ReactFlowRefresher } from "@app/visual/refresh";
 
 export default function Diagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     return (
@@ -65,50 +66,10 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     }, [pKey, state]);
     useEffect(() => {
         if (shouldUpdate) {
-            // rootId is used to update the updated nested box
             const [id, rootId] = shouldUpdate;
-            // parentCollapsed is used to update member boxes of the updated container
-            const fuckNode = nodes.find(nd => nd.id == id);
-            const parentId = fuckNode ? id : null;
-            const parentCollapsed = fuckNode ? !fuckNode.data.collapsed : false;
-            let intraNodes = new Set<string>();
-            if (fuckNode && fuckNode.type == 'container') {
-                (fuckNode as ContainerNode).data.members.forEach(member => {
-                    intraNodes.add(member.key);
-                });
-            }
-            // update all related objects/edges of the given shouldUpdate
-            let updatedNodes = nodes.map(nd => {
-                if (nd.type != 'box' && nd.type != 'container') {
-                    return nd;
-                }
-                if (nd.id == rootId) {
-                    return {
-                        ...nd,
-                        data: {
-                            ...nd.data,
-                            collapsed: !nd.data.collapsed
-                        }
-                    } as ReactFlowNode;
-                }
-                if (nd.parentId == parentId) {
-                    return {
-                        ...nd,
-                        data: {
-                            ...nd.data,
-                            parentCollapsed: parentCollapsed
-                        }
-                    } as ReactFlowNode;
-                }
-                return { ...nd };
-            });
-            let updatedEdges = edges.map(ed => {
-                if (intraNodes.has(ed.source) && intraNodes.has(ed.target)) {
-                    return { ...ed, hidden: parentCollapsed };
-                }
-                return ed;
-            });
-            let graph = ReactFlowLayouter.layout({nodes: updatedNodes, edges: updatedEdges} as ReactFlowGraph);
+            let graph = ReactFlowRefresher.refresh(
+                {nodes, edges} as ReactFlowGraph, id, rootId
+            );
             setNodes(graph.nodes);
             setEdges(graph.edges);
             setShouldUpdate(undefined);

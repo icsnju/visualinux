@@ -66,7 +66,7 @@ export class ReactFlowLayouter {
     }
     private _estimateBoxNodeHeight(nodeData: BoxNodeData, depth: number, isParentCollapsed: boolean) {
         // basic height: space for the label at the top and object address at the bottom
-        let height = 50;
+        let height = 52;
         // count the height of each member
         let members = Object.entries(nodeData.members);
         for (let index = 0; index < members.length; index++) {
@@ -152,7 +152,7 @@ export class ReactFlowLayouter {
             // rankdir: this.layoutDirection
             rankdir: node.data.direction == 'vertical' ? 'TB' : 'LR'
         };
-        layoutOptions.marginx = 24;
+        layoutOptions.marginx = 16;
         layoutOptions.marginy = 16;
         // if (node.id.split(':')[1].endsWith('[Array]')) {
         //     layoutOptions.marginx = 4;
@@ -231,7 +231,7 @@ export class ReactFlowLayouter {
             source: getRoot(edge.source),
             target: getRoot(edge.target),
         }));
-        layoutGraphByDagre(nodes, edges, { rankdir: this.layoutDirection, marginx: 16, marginy: 16, ranksep: 96 });
+        layoutGraphByDagre(nodes, edges, { rankdir: this.layoutDirection, marginx: 16, marginy: 16, ranksep: 128 });
     }
 }
 

@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { BoxNodeData, type BoxNode } from "@app/visual/types";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 
@@ -8,7 +7,7 @@ export default function BoxNode({ id, data }: NodeProps<BoxNode>) {
     return (
         <BoxField
             id={id} data={data} depth={0}
-            notifier={(_id: string) => data.notifier?.(_id, id)} parentCollapsed={data.parentCollapsed}
+            notifier={(innerId: string) => data.notifier?.(innerId, id)} parentCollapsed={data.parentCollapsed}
         />
     )
 }
@@ -21,7 +20,7 @@ function BoxField({
     notifier: (id: string) => void, parentCollapsed?: boolean
 }) {
     // members
-    const members = useMemo(() => Object.entries(data.members).map(([label, member]) => {
+    const members = Object.entries(data.members).map(([label, member]) => {
         switch (member.class) {
             case 'box':
                 return (
@@ -52,7 +51,7 @@ function BoxField({
             default:
                 return null;
         }
-    }), [data.members, parentCollapsed, data.collapsed]);
+    });
     // reactflow edge handle
     const handle = (
         <Handle 

@@ -12,10 +12,13 @@ const getEdgeProp = (isDiffAdd: boolean | undefined) => {
     return {
         // type: 'bezier',
         zIndex: 10,
-        style: { stroke: sc.TextColor(isDiffAdd) },
+        style: {
+            stroke: sc.TextColor(isDiffAdd),
+            strokeWidth: 1.5,
+        },
         markerEnd: {
             type: MarkerType.ArrowClosed,
-            width: 20, height: 20,
+            width: 18, height: 18,
             color: sc.TextColor(isDiffAdd),
         },
     }
@@ -102,6 +105,7 @@ export class ReactFlowConverter {
         }
     }
     private convertBox(box: Box, attrs: NodeAttrs) {
+        // console.log('convertBox', box.key, 'p?', box.parent);
         // only convert the outmost shapes
         if (!this.isShapeOutmost(box.key)) {
             return;
@@ -153,7 +157,7 @@ export class ReactFlowConverter {
         }
         let nodeData: BoxNodeData = {
             key: container.key,
-            type: '', addr: '', label: container.label,
+            type: container.type, addr: container.addr, label: container.label,
             members: {},
             parent: container.parent,
             isDiffAdd: container.isDiffAdd,
@@ -237,6 +241,7 @@ export class ReactFlowConverter {
         return members;
     }
     private convertContainer(container: Container, attrs: NodeAttrs) {
+        // console.log('convertContainer', container.key, 'p?', container.parent);
         // only convert the outmost shapes
         if (!this.isShapeOutmost(container.key)) {
             return;

@@ -165,10 +165,8 @@ function genVBoxKeyFor(view: StateView, box: Box) {
         let oldparent = parent;
         chain.push(parent);
         if (parent in view.pool.boxes) {
-            console.log('--box', view.pool.boxes[parent]);
             parent = view.pool.boxes[parent].parent;
         } else if (parent in view.pool.containers) {
-            console.log('--cont', view.pool.containers[parent]);
             parent = view.pool.containers[parent].parent;
         } else {
             throw new Error(`preprocessVBoxesForDiff: object not found: ${parent}`);
