@@ -132,11 +132,21 @@ export class ReactFlowLayouter {
             // prepare the subgraph for subflow layout
             memberNodes.push(memberNode);
             for (const [label, link] of Object.entries(member.links)) {
-                if (link.target !== null && member.key !== null) {
+                if (member.key == null) {
+                    continue;
+                }
+                if (link.target !== null) {
                     memberEdges.push({
                         id: `${member.key}.${label}`,
                         source: member.key,
                         target: link.target,
+                    });
+                }
+                if (link.diffOldTarget !== undefined && link.diffOldTarget !== null) {
+                    memberEdges.push({
+                        id: `${member.key}.${label}.diff`,
+                        source: member.key,
+                        target: link.diffOldTarget,
                     });
                 }
             }
@@ -179,6 +189,7 @@ export class ReactFlowLayouter {
         }
         // perform the subflow layout
         let hdrOffsetY = 32 - layoutOptions.marginy;
+        console.log('layout', memberNodes, memberEdges);
         layoutGraphByDagre(memberNodes, memberEdges, layoutOptions);
         // left spaces for the node header
         memberNodes.forEach(memberNode => memberNode.position.y += hdrOffsetY);

@@ -142,7 +142,6 @@ function preprocessVBoxesForDiff(snapshot: Snapshot) {
                 for (let suffix = 1; newKey in view.pool.boxes || newKey in view.pool.containers; suffix ++) {
                     newKey = `${newKey.split('_')[0]}_${suffix}`;
                 }
-                console.log('reset vbox key', key, newKey);
                 box.key = newKey;
                 view.pool.boxes[newKey] = box;
                 delete view.pool.boxes[key];
@@ -177,11 +176,9 @@ function genVBoxKeyFor(view: StateView, box: Box) {
     }
     chain.reverse();
     if (box.label) chain.push(box.label);
-    console.log('genVBoxKeyFor', box.label, chain.join('.'));
     return chain.join('.');
 }
 function resetVBoxKey(view: StateView, key: ShapeKey, newKey: ShapeKey) {
-    console.log('resetVBoxKey', key, newKey);
     for (const box of Object.values(view.pool.boxes)) {
         for (const abst of Object.values(box.absts)) {
             for (const member of Object.values(abst.members)) {

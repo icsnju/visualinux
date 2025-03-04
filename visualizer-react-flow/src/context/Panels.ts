@@ -97,7 +97,7 @@ export default class Panels {
             throw new Error(`panels.remove(): empty children.`);
         }
         let p: PrimaryArea | PrimaryPanel = parent;
-        while (p.parent != null) {
+        while (p.parent !== null) {
             if (p.children.length == 1) {
                 p.parent.replaceChild(p, p.children[0]);
             }

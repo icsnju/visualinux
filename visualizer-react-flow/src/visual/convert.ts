@@ -105,12 +105,11 @@ export class ReactFlowConverter {
         }
     }
     private convertBox(box: Box, attrs: NodeAttrs) {
-        // console.log('convertBox', box.key, 'p?', box.parent);
+        console.log('convertBox', box.key, 'p?', box.parent);
         // only convert the outmost shapes
         if (!this.isShapeOutmost(box.key)) {
             return;
         }
-        console.log('convertBox', box.key, box, attrs);
         // avoid redundant conversion
         if (this.nodeMap[box.key] !== undefined) {
             return;
@@ -210,7 +209,6 @@ export class ReactFlowConverter {
                     this.graph.edges.push(edge);
                     this.convertShape(edge.target);
                 }
-                console.log('convert', label, member.target, edgeHandle);
                 if (member.diffOldTarget !== undefined && member.diffOldTarget !== null) {
                     convertLinkTarget(member.diffOldTarget, false);
                 }
@@ -317,18 +315,35 @@ export class ReactFlowConverter {
                 if (!(label in memberNode.data.members)) {
                     memberNode.data.members[label] = link;
                 }
-                if (link.target !== null) {
-                    const edgeId = `${member.key}.${label}`;
+                const edgeHandle = `${member.key}.${label}`;
+                const convertLinkTarget = (target: string, isDiffAdd: boolean | undefined) => {
+                    if (member.key === null) {
+                        return;
+                    }
                     const edge: Edge = {
-                        id: edgeId,
+                        id: edgeHandle + (isDiffAdd === undefined ? '' : (isDiffAdd ? '.add' : '.del')),
                         source: member.key,
-                        sourceHandle: edgeId,
-                        target: link.target,
-                        targetHandle: link.target,
-                        ...getEdgeProp(container.isDiffAdd)
+                        sourceHandle: edgeHandle,
+                        target: target,
+                        targetHandle: target,
+                        ...getEdgeProp(isDiffAdd)
                     };
                     this.graph.edges.push(edge);
-                    this.convertShape(link.target);
+                    this.convertShape(edge.target);
+                }
+                if (link.diffOldTarget !== undefined && link.diffOldTarget !== null) {
+                    convertLinkTarget(link.diffOldTarget, false);
+                }
+                if (link.target !== null) {
+                    let isEdgeDiffAdd = undefined;
+                    if (link.diffOldTarget !== undefined) {
+                        isEdgeDiffAdd = true;
+                    }
+                    const box = this.getShape(member.key);
+                    if (box.isDiffAdd !== undefined) {
+                        isEdgeDiffAdd = box.isDiffAdd;
+                    }
+                    convertLinkTarget(link.target, isEdgeDiffAdd);
                 }
             }
         }
