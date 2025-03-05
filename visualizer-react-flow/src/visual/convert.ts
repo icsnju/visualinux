@@ -282,9 +282,7 @@ export class ReactFlowConverter {
             type: 'container',
             data: {
                 key: container.key,
-                type: container.type,
-                addr: container.addr,
-                label: container.label,
+                type: container.type, addr: container.addr, label: container.label,
                 members: Object.values(container.members).filter(member => member.key !== null),
                 parent: container.parent,
                 isDiffAdd: container.isDiffAdd,
@@ -310,25 +308,31 @@ export class ReactFlowConverter {
             if (memberNode.type != 'box') {
                 continue;
             }
+            // TODO: merge to a ContainerMemberLinks for vertical direction
             for (const [label, link] of Object.entries(member.links)) {
-                if (!(label in memberNode.data.members)) {
-                    memberNode.data.members[label] = link;
+                if (label in memberNode.data.members) {
+                    throw new Error(`container ${container.key} member ${member.key} link ${label} already exists`);
                 }
-                const edgeHandle = `${member.key}.${label}`;
+                memberNode.data.members[label] = link;
                 const convertLinkTarget = (target: string, isDiffAdd: boolean | undefined) => {
                     if (member.key === null) {
                         return;
                     }
+                    console.log('dir',container.key, node.data.direction);
+                    const edgeHandle = `${member.key}.${label}`;
+                    const sourceHandle = node.data.direction == 'vertical' ? `${member.key}#B` : edgeHandle;
+                    const targetHandle = target + (node.data.direction == 'vertical' ? '#T' : '');
                     const edge: Edge = {
                         id: edgeHandle + (isDiffAdd === undefined ? '' : (isDiffAdd ? '.add' : '.del')),
                         source: member.key,
-                        sourceHandle: edgeHandle,
+                        sourceHandle: sourceHandle,
                         target: target,
-                        targetHandle: target,
+                        targetHandle: targetHandle,
                         ...getEdgeProp(isDiffAdd)
                     };
                     this.graph.edges.push(edge);
                     this.convertShape(edge.target);
+                    this.nodeMap[edge.target].data.isContainerMember = true;
                 }
                 if (link.diffOldTarget !== undefined && link.diffOldTarget !== null) {
                     convertLinkTarget(link.diffOldTarget, false);

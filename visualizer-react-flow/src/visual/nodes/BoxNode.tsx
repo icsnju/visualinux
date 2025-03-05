@@ -1,5 +1,5 @@
 import { BoxNodeData, type BoxNode } from "@app/visual/types";
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Handle, HandleType, Position, type NodeProps } from "@xyflow/react";
 
 import * as sc from "@app/visual/nodes/styleconf";
 
@@ -53,22 +53,18 @@ function BoxField({
                 return null;
         }
     });
-    // reactflow edge handle
-    const handle = (
-        <Handle 
-            key={`handle#${id}`} id={id} type="target" position={Position.Left}
-            style={{
-                width: '5px', height: '5px',
-                left: '0'
-            }}
-        />
-    );
+    // reactflow edge handles
+    const handles = (<>
+        <GenHandle id={id} type="target" position={Position.Left} />
+        <GenHandle id={id + "#T"} type="target" position={Position.Top} />
+        <GenHandle id={id + "#B"} type="source" position={Position.Bottom} offset={20} />
+    </>);
     // hide the component when the parent is collapsed
     if (parentCollapsed) {
         return (
             <div className="absolute top-0 left-0 w-full h-6">
                 {members}
-                <div className="opacity-0">{handle}</div>
+                <div className="opacity-0">{handles}</div>
             </div>
         )
     }
@@ -101,7 +97,7 @@ function BoxField({
                     </div>
                 </div>
             )}
-            {handle}
+            {handles}
         </div>
     );
 }
@@ -114,7 +110,7 @@ function PrimitiveField({
     parentCollapsed?: boolean, diffOldValue?: string
 }) {
     const color = diffOldValue === undefined ? "black" : sc.TextColorMod();
-    const labelHandle = edgeSource ? <LinkFieldHandle edgeSource={edgeSource} /> : <></>;
+    const labelHandle = edgeSource ? <GenHandle id={edgeSource} type="source" position={Position.Right} /> : <></>;
     if (parentCollapsed) {
         return (
             <>{labelHandle}</>
@@ -163,16 +159,17 @@ function TextLine({ lines, textClassName }: {lines: string[], textClassName?: st
     );
 }
 
-function LinkFieldHandle({ edgeSource }: { edgeSource?: string }) {
+function GenHandle({ id, type, position, offset = 0 }: { id: string, type: HandleType, position: Position, offset?: number }) {
+    const stylePosition = {
+        [Position.Left]:   { left: `${offset}px` },
+        [Position.Right]:  { right: `${offset}px` },
+        [Position.Top]:    { top: `${offset}px` },
+        [Position.Bottom]: { bottom: `${offset}px` },
+    }[position];
     return (
         <Handle 
-            id={edgeSource}
-            type="source" 
-            position={Position.Right} 
-            style={{
-                width: '5px', height: '5px',
-                right: '0'
-            }}
+            id={id} type={type} position={position} 
+            style={{ width: '5px', height: '5px', ...stylePosition }}
         />
     )
 }
