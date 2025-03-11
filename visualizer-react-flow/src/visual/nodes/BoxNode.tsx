@@ -57,7 +57,7 @@ function BoxField({
     const handles = (<>
         <GenHandle id={id} type="target" position={Position.Left} />
         <GenHandle id={id + "#T"} type="target" position={Position.Top} />
-        <GenHandle id={id + "#B"} type="source" position={Position.Bottom} offset={20} />
+        <GenHandle id={id + "#B"} type="source" position={Position.Bottom} offset={parentCollapsed || data.collapsed ? 0 : 20} />
     </>);
     // hide the component when the parent is collapsed
     if (parentCollapsed) {

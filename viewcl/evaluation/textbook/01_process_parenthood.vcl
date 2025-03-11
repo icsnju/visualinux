@@ -31,7 +31,7 @@ diag textbook_01_task_children {
     kthreads = SELECT task_struct
         FROM all_tasks
         WHERE pid == 2 OR ppid == 2
-    UPDATE kthreads WITH shrinked: true
+    UPDATE kthreads WITH trimmed: true
 
     task_children_list = SELECT task_struct->children
         FROM all_tasks

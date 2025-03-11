@@ -66,5 +66,5 @@ diag textbook_03_idt {
     irq_no_action = SELECT irq_desc
         FROM *
         WHERE action == NULL
-    UPDATE irq_no_action WITH shrinked: true
+    UPDATE irq_no_action WITH trimmed: true
 }

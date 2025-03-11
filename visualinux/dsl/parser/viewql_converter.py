@@ -113,7 +113,14 @@ class ViewQLConverter:
             assert node.type == 'ANY_EXPR'
             return Expression(node.value, [])
 
-        head = serialize(node.children[0])
+        node_head = node.children[0]
+        if isinstance(node_head, Token):
+            if node_head.type == 'NULL_CONST':
+                return Expression(serialize(node_head), [], is_null=True)
+            if node_head.type == 'BOOL_CONST':
+                return Expression(serialize(node_head), [], is_bool=(node_head.value == 'true'))
+
+        head = serialize(node_head)
         suffix: list[ExprSuffix] = []
         for i in range(1, len(node.children), 2):
             suffix.append(ExprSuffix(serialize(node.children[i + 1]), serialize(node.children[i])))

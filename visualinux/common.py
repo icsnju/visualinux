@@ -30,7 +30,7 @@ PROMPT_DIR         = VL_DIR / os.getenv('VISUALINUX_PROMPT_DIR', 'scripts/prompt
 GDB_FLAGCONFIG_DIR = VL_DIR / os.getenv('VISUALINUX_GDB_FLAGCONFIG_DIR', 'scripts/gdb/macros/flags')
 
 TMP_DIR    = VL_DIR / os.getenv('VISUALINUX_TMP_DIR', 'tmp')
-EXPORT_DIR = VL_DIR / os.getenv('VISUALINUX_EXPORT_DIR', 'tmp/export')
+EXPORT_DIR = VL_DIR / os.getenv('VISUALINUX_EXPORT_DIR', 'out')
 
 VISUALIZER_PORT = int(os.getenv('VISUALINUX_VISUALIZER_PORT', 3000))
 

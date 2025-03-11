@@ -53,5 +53,5 @@ diag textbook_02_pid_namespace {
     pids = SELECT pid
         FROM *
         WHERE nr != 2
-    UPDATE pids WITH shrinked: true
+    UPDATE pids WITH trimmed: true
 }

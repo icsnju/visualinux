@@ -15,8 +15,19 @@ class Expression:
 
     head: str
     suffix: list[ExprSuffix]
+    is_null: bool | None = None
+    is_bool: bool | None = None
+
+    def value(self) -> str | bool | None:
+        if self.is_null:
+            return None
+        if self.is_bool is not None:
+            return self.is_bool
+        return self.head + ''.join(f'{suf.opt}{suf.identifier}' for suf in self.suffix)
 
     def __str__(self) -> str:
+        if self.is_null or self.is_bool is not None:
+            return self.head
         return self.head + ''.join(f'{suf.opt}{suf.identifier}' for suf in self.suffix)
 
 @dataclass

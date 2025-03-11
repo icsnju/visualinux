@@ -96,6 +96,11 @@ class ViewAttrsManager:
         cond_query = self.__eval_cond_expr(scope, stmt.condition, stmt.alias) if stmt.condition else Query().noop()
 
         print(f'~~ {table.name=!s} {scope_query=!s} {cond_query=!s}')
+        # # Print all objects and their conditions for debugging
+        # for obj in table.all():
+        #     print(f'    ~~ obj: {obj}')
+        #     if cond_query != Query().noop():
+        #         print(f'    ~~ matches condition: {cond_query(obj)}')
         result = table.search(scope_query & cond_query)
         result_keys = set(obj['$key'] for obj in result)
         scope[stmt.object_set] = result_keys
@@ -113,7 +118,9 @@ class ViewAttrsManager:
         return None
 
     def __eval_set_expr(self, scope: Scope, setopt: str | SetOpt) -> set[str]:
+        # print(f'    eval_set_expr {scope=!s} {setopt=!s}')
         if isinstance(setopt, str):
+            # print(f'    --set_opt_isstr {scope=!s} {setopt=!s} {scope[setopt]=!s}')
             return scope[setopt]
         # calculate children
         lhs = set(self.__eval_set_expr(scope, setopt.lhs))
@@ -140,13 +147,14 @@ class ViewAttrsManager:
                 lhs_query = where(cond.lhs.head)
             for suffix in cond.lhs.suffix:
                 lhs_query = lhs_query[suffix.identifier]
-            if cond.opt == '>':  return lhs_query > str(cond.rhs)
-            if cond.opt == '<':  return lhs_query < str(cond.rhs)
-            if cond.opt == '>=': return lhs_query >= str(cond.rhs)
-            if cond.opt == '<=': return lhs_query <= str(cond.rhs)
-            if cond.opt == '==': return lhs_query == str(cond.rhs)
-            if cond.opt == '!=': return lhs_query != str(cond.rhs)
-            if cond.opt == 'IN': return lhs_query.one_of(list(scope[str(cond.rhs)]))
+            rhs_value = cond.rhs.value()
+            if cond.opt == '>':  return lhs_query >  rhs_value
+            if cond.opt == '<':  return lhs_query <  rhs_value
+            if cond.opt == '>=': return lhs_query >= rhs_value
+            if cond.opt == '<=': return lhs_query <= rhs_value
+            if cond.opt == '==': return lhs_query == rhs_value
+            if cond.opt == '!=': return lhs_query != rhs_value
+            if cond.opt == 'IN': return lhs_query.one_of(list(scope[str(rhs_value)]))
             raise fuck_exc(TypeError, f'illegal cond expr {cond!s}')
         if not isinstance(cond.lhs, CondOpt | Filter) or not isinstance(cond.rhs, CondOpt | Filter):
             raise fuck_exc(TypeError, f'illegal cond expr {cond!s}')

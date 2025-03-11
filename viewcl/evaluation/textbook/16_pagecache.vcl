@@ -69,5 +69,5 @@ diag textbook_16_file_pagecache {
     plot @tcc_current_task
 } with {
     i_pages = SELECT address_space->i_pages FROM *
-    UPDATE i_pages WITH shrinked: true
+    UPDATE i_pages WITH trimmed: true
 }

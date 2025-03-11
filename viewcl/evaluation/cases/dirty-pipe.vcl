@@ -76,5 +76,5 @@ diag dirty_pipe {
 
     pipe_buf = SELECT pipe_inode_info->bufs FROM *
     pipe_pgs = SELECT page FROM REACHABLE(pipe_buf)
-    UPDATE pipe_pgs \ file_pgs WITH shrinked: true
+    UPDATE pipe_pgs \ file_pgs WITH trimmed: true
 }

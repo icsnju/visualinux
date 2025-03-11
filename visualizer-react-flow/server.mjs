@@ -81,7 +81,7 @@ app.post('/writelocal', (request, respond) => {
 
 app.post('/vcmd-debug', (request, respond) => {
     const scriptPath = path.resolve(__rootdir, 'scripts', 'resend-dump.py');
-    const dumpDir = path.resolve(__rootdir, 'tmp', 'export');
+    const dumpDir = path.resolve(__rootdir, process.env.VISUALINUX_EXPORT_DIR || 'out');
     exec(`${scriptPath} ${dumpDir}`, (error, stdout, stderr) => {
         if (error) {
             console.error(`/vcmd-debug: Error executing debug script: ${error.message}`);

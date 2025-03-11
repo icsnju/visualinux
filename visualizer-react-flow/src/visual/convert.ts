@@ -311,6 +311,7 @@ export class ReactFlowConverter {
             // TODO: merge to a ContainerMemberLinks for vertical direction
             for (const [label, link] of Object.entries(member.links)) {
                 if (label in memberNode.data.members) {
+                    continue;
                     throw new Error(`container ${container.key} member ${member.key} link ${label} already exists`);
                 }
                 memberNode.data.members[label] = link;

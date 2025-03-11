@@ -53,5 +53,5 @@ diag textbook_17_file_mapping {
     file_no_mapping = SELECT file
         FROM *
         WHERE file_mapping == "(empty)"
-    UPDATE file_no_mapping WITH shrinked: true
+    UPDATE file_no_mapping WITH trimmed: true
 }

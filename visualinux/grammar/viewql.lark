@@ -36,7 +36,9 @@ attr_value: CNAME
 
 object_set: CNAME
 identifier: CNAME
-literal: CNAME | INT | ESCAPED_STRING
+literal: INT | NULL_CONST | BOOL_CONST | ESCAPED_STRING
+NULL_CONST: "NULL"
+BOOL_CONST: "true" | "false"
 ANY_EXPR: "*"
 
 // set expr
@@ -78,11 +80,12 @@ COND_OP_OR:  "OR"
 
 filter: expression
       | expression comp_op literal
-      | expression "IN" expression
+      | expression IN_SET_OP expression
 
 expression: normal_expression | object_keys
 
 comp_op: EQUALITY | RELATIONAL
+IN_SET_OP: "IN"
 
 // normal expr
 

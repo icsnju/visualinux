@@ -89,5 +89,5 @@ diag textbook_15_bio_example {
     sb_no_bio = SELECT super_block
         FROM *
         WHERE s_bdev == NULL
-    UPDATE sb_no_bio WITH shrinked: true
+    UPDATE sb_no_bio WITH trimmed: true
 }

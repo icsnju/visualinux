@@ -76,5 +76,5 @@ diag textbook_11_task_signal {
     actions = SELECT k_sigaction
         FROM *
         WHERE sa_handler == "<NULL>"
-    UPDATE actions WITH shrinked: true
+    UPDATE actions WITH trimmed: true
 }

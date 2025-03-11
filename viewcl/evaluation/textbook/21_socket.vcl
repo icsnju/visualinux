@@ -105,5 +105,5 @@ diag textbook_21_sockstack {
         FROM *
         WHERE sk_receive_queue IN empty_queues AND
             sk_write_queue IN empty_queues
-    UPDATE sock_not_queuing WITH shrinked: true
+    UPDATE sock_not_queuing WITH trimmed: true
 }

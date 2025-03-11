@@ -154,5 +154,5 @@ diag textbook_10_task_mm_mt {
     writable = SELECT vm_area_struct
         FROM *
         WHERE is_writable == true
-    UPDATE writable WITH shrinked: true
+    UPDATE writable WITH trimmed: true
 }
