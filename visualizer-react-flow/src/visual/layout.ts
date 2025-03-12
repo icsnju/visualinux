@@ -61,6 +61,11 @@ export class ReactFlowLayouter {
         // estimate the height according to the height of its members
         let height = this._estimateBoxNodeHeight(node.data, depth, isParentCollapsed);
         // return
+        if (node.data.trimmed) {
+            node.width  = 0;
+            node.height = 0;
+            return;
+        }
         node.width  = width;
         node.height = height;
     }
@@ -152,7 +157,7 @@ export class ReactFlowLayouter {
             }
         }
         // return if parent collapsed
-        if (isParentCollapsed) {
+        if (isParentCollapsed || node.data.trimmed) {
             node.width  = 0;
             node.height = 0;
             return;
@@ -175,7 +180,6 @@ export class ReactFlowLayouter {
         // }
         // do not need subflow layout if collapsed
         if (node.data.collapsed) {
-            console.log('haha!', node.id, node.position)
             node.width  = sc.boxNodeWidth + layoutOptions.marginx * 2;
             node.height = sc.boxNodeHeightCollapsed;
             for (const memberNode of memberNodes) {
@@ -187,6 +191,12 @@ export class ReactFlowLayouter {
             }
             return;
         }
+        // remove trimmed subgraph
+        memberEdges = memberEdges.filter(edge => 
+            !memberNodes.find(n => n.id == edge.source)?.data.trimmed && 
+            !memberNodes.find(n => n.id == edge.target)?.data.trimmed
+        );
+        memberNodes = memberNodes.filter(node => !node.data.trimmed);
         // perform the subflow layout
         let hdrOffsetY = 32 - layoutOptions.marginy;
         layoutGraphByDagre(memberNodes, memberEdges, layoutOptions);

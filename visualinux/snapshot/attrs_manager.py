@@ -170,6 +170,8 @@ class ViewAttrsManager:
 
     def to_json(self) -> dict:
         objects = self.memdb.all()
-        return {obj['$key']: {
-            attr[1:]: obj[attr] for attr in obj.keys() if attr.startswith('^')
-        } for obj in objects}
+        data = {}
+        for obj in objects:
+            if attrs := { attr[1:]: obj[attr] for attr in obj.keys() if attr.startswith('^') }:
+                data[obj['$key']] = attrs
+        return data

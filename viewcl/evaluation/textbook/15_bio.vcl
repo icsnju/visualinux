@@ -83,7 +83,7 @@ superblocks = List<list_head>(${&super_blocks}).forEach |node| {
 diag textbook_15_bio_example {
     plot @superblocks
 } with {
-    super_blocks = SELECT List FROM *
+    super_blocks = SELECT [List] FROM *
     UPDATE super_blocks WITH direction: vertical
 
     sb_no_bio = SELECT super_block

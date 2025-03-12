@@ -1,5 +1,6 @@
 import { calcSnapshotDiff } from "@app/visual/diff";
-import { preprocess, Snapshot } from "@app/visual/types";
+import { Snapshot } from "@app/visual/types";
+import { preprocess } from "@app/visual/preprocess";
 
 export default class Snapshots {
     data: Snapshot[]

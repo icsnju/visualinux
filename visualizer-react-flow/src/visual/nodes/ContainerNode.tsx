@@ -7,6 +7,12 @@ export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
     const cssHeight = data.collapsed ? 'h-8' : 'h-full';
     const color   = sc.TextColor(data.isDiffAdd);
     const bgColor = sc.BgColorContainer(data.isDiffAdd);
+    if (data.trimmed) {
+        return (
+            <div className="absolute top-0 left-0 w-full h-0 opacity-0">
+            </div>
+        )
+    }
     return (
         <div className={`container-node ${cssHeight} rounded-md border-2 border-dashed border-[${color}] bg-[${bgColor}]`}>
             <div className="w-full h-7 ml-2 flex justify-begin items-center z-10">

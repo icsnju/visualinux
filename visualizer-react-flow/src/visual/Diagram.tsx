@@ -9,7 +9,6 @@ import {
     Background, Controls, MiniMap, Panel,
     type Node, type Edge,
     useNodesState, useEdgesState,
-    useNodesInitialized,
     useReactFlow,
     getNodesBounds, getViewportForBounds,
 } from "@xyflow/react";
@@ -34,7 +33,6 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     const { state, stateDispatch } = useContext(GlobalStateContext);
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-    const nodesInitialized = useNodesInitialized();
     const [shouldUpdate, setShouldUpdate] = useState<[string, string] | undefined>(undefined);
     const { fitView } = useReactFlow();
     // Update nodes and edges when graph changes
@@ -61,6 +59,11 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                     };
                 }));
                 setEdges(graph.edges);
+                setTimeout(() => {
+                    window.requestAnimationFrame(() => {
+                        fitView();
+                    });
+                }, 100);
             }, 100);
         }
     }, [pKey, state]);
@@ -75,13 +78,6 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
             setShouldUpdate(undefined);
         }
     }, [shouldUpdate]);
-    useEffect(() => {
-        if (nodesInitialized) {
-            window.requestAnimationFrame(() => {
-                fitView();
-            });
-        }
-    }, [nodesInitialized]);
     return (
         <ReactFlow
             nodes={nodes} nodeTypes={nodeTypes} onNodesChange={onNodesChange}

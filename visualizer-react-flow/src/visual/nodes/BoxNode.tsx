@@ -19,7 +19,6 @@ function BoxField({
     id: string, data: BoxNodeData, depth: number,
     notifier: (id: string) => void, parentCollapsed?: boolean
 }) {
-    console.log('BoxField', id, data.parent, parentCollapsed);
     // members
     const members = Object.entries(data.members).map(([label, member]) => {
         switch (member.class) {
@@ -60,6 +59,14 @@ function BoxField({
         <GenHandle id={id + "#B"} type="source" position={Position.Bottom} offset={parentCollapsed || data.collapsed ? 0 : 20} />
     </>);
     // hide the component when the parent is collapsed
+    if (data.trimmed) {
+        return (
+            <div className="absolute top-0 left-0 w-full h-0 opacity-0">
+                {members}
+                {handles}
+            </div>
+        )
+    }
     if (parentCollapsed) {
         return (
             <div className="absolute top-0 left-0 w-full h-6">

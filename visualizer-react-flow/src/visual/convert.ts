@@ -3,6 +3,7 @@ import {
     ViewAttrs, NodeAttrs,
     ReactFlowGraph, BoxNode, ContainerNode,
     BoxNodeData,
+    getShapeFromPool,
 } from "@app/visual/types";
 import { type Edge, MarkerType } from "@xyflow/react";
 
@@ -55,18 +56,13 @@ export class ReactFlowConverter {
         for (const key of this.view.plot) {
             this.convertShape(key);
         }
+        // remove edges to trimmed nodes
+        this.graph.edges = this.graph.edges.filter(edge => {
+            return !this.nodeMap[edge.source].data.trimmed && !this.nodeMap[edge.target].data.trimmed;
+        });
         // return
         console.log('converted graph', this.graph);
         return this.graph;
-    }
-    private getShape(key: string): Box | Container {
-        if (key in this.view.pool.boxes) {
-            return this.view.pool.boxes[key];
-        } else if (key in this.view.pool.containers) {
-            return this.view.pool.containers[key];
-        }
-        console.log(this.view.pool);
-        throw new Error(`getShape: shape not found: ${key}`);
     }
     private isShapeOutmost(key: string) {
         return this.rootMap[key] == key;
@@ -76,7 +72,7 @@ export class ReactFlowConverter {
         if (key in this.rootMap) {
             return;
         }
-        let shape = this.getShape(key);
+        let shape = getShapeFromPool(this.view.pool, key);
         // for the outmost shape its root shape is itself
         if (shape.parent === null) {
             this.rootMap[key] = key;
@@ -90,7 +86,7 @@ export class ReactFlowConverter {
             this.rootMap[key] = this.rootMap[shape.parent];
         }
     }
-    private convertShape(key: string) {
+    private convertShape(key: string, shouldTrim: boolean = false) {
         // for several reasons/optimizations, we only convert the outmost shapes to react flow nodes
         key = this.rootMap[key];
         // avoid redundant conversion
@@ -99,12 +95,12 @@ export class ReactFlowConverter {
         }
         // convert according to the node type
         if (key in this.view.pool.boxes) {
-            this.convertBox(this.view.pool.boxes[key], this.attrs[key] || {});
+            this.convertBox(this.view.pool.boxes[key], this.attrs[key] || {}, shouldTrim);
         } else if (key in this.view.pool.containers) {
-            this.convertContainer(this.view.pool.containers[key], this.attrs[key] || {});
+            this.convertContainer(this.view.pool.containers[key], this.attrs[key] || {}, shouldTrim);
         }
     }
-    private convertBox(box: Box, attrs: NodeAttrs) {
+    private convertBox(box: Box, attrs: NodeAttrs, shouldTrim: boolean = false) {
         // console.log('convertBox', box.key, 'p?', box.parent);
         // only convert the outmost shapes
         if (!this.isShapeOutmost(box.key)) {
@@ -114,6 +110,8 @@ export class ReactFlowConverter {
         if (this.nodeMap[box.key] !== undefined) {
             return;
         }
+        // calculate transitive properties
+        shouldTrim = shouldTrim || attrs.trimmed == 'true';
         // generate the node
         let node: BoxNode = {
             id: box.key, type: 'box',
@@ -128,27 +126,29 @@ export class ReactFlowConverter {
         }
         this.nodeMap[node.id] = node;
         // convert data after recorded in nodeMap to avoid circular reference
-        node.data = this.convertBoxData(box, attrs);
+        node.data = this.convertBoxData(box, attrs, shouldTrim);
         // store
         this.graph.nodes.push(node);
     }
-    private convertBoxData(box: Box | Container, attrs: NodeAttrs): BoxNodeData {
+    private convertBoxData(box: Box | Container, attrs: NodeAttrs, shouldTrim: boolean): BoxNodeData {
+        console.log('convertBoxData', box.key, box);
         // handle Container type
         if ('members' in box) {
-            return this._convertArrayDataToBox(box, attrs);
+            return this._convertArrayDataToBox(box, attrs, shouldTrim);
         }
         // handle view inheritance to get all members
         const abst = box.absts[attrs.view || 'default'];
         return {
             key: box.key,
             type: box.type, addr: box.addr, label: box.label,
-            members: this.convertBoxMembers(box, abst),
+            members: this.convertBoxMembers(box, abst, shouldTrim),
             parent: box.parent,
             isDiffAdd: box.isDiffAdd,
             collapsed: attrs.collapsed == 'true',
+            trimmed: shouldTrim,
         };
     }
-    private _convertArrayDataToBox(container: Container, attrs: NodeAttrs): BoxNodeData {
+    private _convertArrayDataToBox(container: Container, attrs: NodeAttrs, shouldTrim: boolean): BoxNodeData {
         // this is a temp solution
         // TODO: semantics of array-like containers HOWTO?
         if (!shouldCompactContainer(container)) {
@@ -161,30 +161,39 @@ export class ReactFlowConverter {
             parent: container.parent,
             isDiffAdd: container.isDiffAdd,
             collapsed: attrs.collapsed == 'true',
+            trimmed: shouldTrim,
         };
         for (const member of container.members) {
             if (member.key !== null) {
+                const memberData = this.convertBoxData(
+                    getShapeFromPool(this.view.pool, member.key),
+                    this.attrs[member.key] || {},
+                    shouldTrim,
+                );
+                // const memberMembers = Object.values(memberData.members);
+                // console.log('compact?', memberData.addr, memberMembers);
+                // if (memberData.addr == "virtual" && memberMembers.length == 1) {
+                //     nodeData.members[member.key] = memberMembers[0];
+                // } else {
                 nodeData.members[member.key] = {
                     class: 'box',
                     object: member.key,
-                    data: this.convertBoxData(
-                        this.getShape(member.key),
-                        this.attrs[member.key] || {}
-                    ),
+                    data: memberData,
                     isDiffAdd: member.isDiffAdd,
                 };
+                // }
             }
         }
         return nodeData;
     }
-    private convertBoxMembers(box: Box, abst: Abst): BoxNodeData['members'] {
+    private convertBoxMembers(box: Box, abst: Abst, shouldTrim: boolean): BoxNodeData['members'] {
         if (abst.parent === null) {
-            return this.convertAbstMembers(box, abst)
+            return this.convertAbstMembers(box, abst, shouldTrim)
         }
-        const parentMembers = this.convertBoxMembers(box, box.absts[abst.parent]);
-        return { ...parentMembers, ...this.convertAbstMembers(box, abst) };
+        const parentMembers = this.convertBoxMembers(box, box.absts[abst.parent], shouldTrim);
+        return { ...parentMembers, ...this.convertAbstMembers(box, abst, shouldTrim) };
     }
-    private convertAbstMembers(box: Box, abst: Abst) {
+    private convertAbstMembers(box: Box, abst: Abst, shouldTrim: boolean): BoxNodeData['members'] {
         let members = JSON.parse(JSON.stringify(abst.members)) as BoxNodeData['members'];
         for (let [label, member] of Object.entries(members)) {
             // for links generate the edge and the target node
@@ -206,7 +215,7 @@ export class ReactFlowConverter {
                         ...getEdgeProp(isDiffAdd),
                     };
                     this.graph.edges.push(edge);
-                    this.convertShape(edge.target);
+                    this.convertShape(edge.target, shouldTrim);
                 }
                 if (member.diffOldTarget !== undefined && member.diffOldTarget !== null) {
                     convertLinkTarget(member.diffOldTarget, false);
@@ -225,8 +234,9 @@ export class ReactFlowConverter {
             } else if (member.class == 'box') {
                 if (member.object !== null) {
                     member.data = this.convertBoxData(
-                        this.getShape(member.object),
-                        this.attrs[member.object] || {}
+                        getShapeFromPool(this.view.pool, member.object),
+                        this.attrs[member.object] || {},
+                        shouldTrim,
                     );
                 }
                 // @ts-ignore
@@ -237,7 +247,7 @@ export class ReactFlowConverter {
         }
         return members;
     }
-    private convertContainer(container: Container, attrs: NodeAttrs) {
+    private convertContainer(container: Container, attrs: NodeAttrs, shouldTrim: boolean = false) {
         // console.log('convertContainer', container.key, 'p?', container.parent);
         // only convert the outmost shapes
         if (!this.isShapeOutmost(container.key)) {
@@ -248,8 +258,34 @@ export class ReactFlowConverter {
         if (this.nodeMap[container.key] !== undefined) {
             return;
         }
+        // calculate transitive properties
+        shouldTrim = shouldTrim || attrs.trimmed == 'true';
         // compact array-like containers
         if (shouldCompactContainer(container)) {
+            // const compactedMembers = Object.fromEntries(
+            //     container.members.filter(member => member.key !== null)
+            //     .map(member => {
+            //         const shape = this.getShape(member.key as string);
+            //         const tryCompactMember = () => {
+            //             if (isShapeBox(shape) && shape.addr == 'virtual' && Object.keys(shape.absts).length == 1) {
+            //                 const memberMembers = Object.entries(shape.absts['default'].members);
+            //                 if (memberMembers.length == 1) {
+            //                     return memberMembers[0];
+            //                 }
+            //             }
+            //             return null;
+            //         }
+            //         const compactedMember = tryCompactMember();
+            //         if (compactedMember !== null) {
+            //             return compactedMember;
+            //         } else {
+            //             return [member.key, {
+            //                 class: 'box',
+            //                 object: member.key,
+            //             }];
+            //         }
+            //     })
+            // );
             const compacted: Box = {
                 key: container.key,
                 type: container.type, addr: container.addr, label: container.label, 
@@ -270,7 +306,7 @@ export class ReactFlowConverter {
                 },
                 isDiffAdd: container.isDiffAdd,
             }
-            this.convertBox(compacted, attrs);
+            this.convertBox(compacted, attrs, shouldTrim);
             return;
         }
         // generate the node
@@ -287,6 +323,7 @@ export class ReactFlowConverter {
                 parent: container.parent,
                 isDiffAdd: container.isDiffAdd,
                 collapsed: attrs.collapsed == 'true',
+                trimmed: shouldTrim,
                 direction: attrs.direction || 'horizontal',
             },
             position: { x: 0, y: 0 },
@@ -299,7 +336,7 @@ export class ReactFlowConverter {
             if (member.key === null) {
                 continue;
             }
-            this.convertShape(member.key);
+            this.convertShape(member.key, shouldTrim);
             const memberNode = this.nodeMap[member.key];
             if (memberNode === undefined) {
                 console.error(`container ${container.key} memberNode undefined: ${member.key}`);
@@ -319,7 +356,6 @@ export class ReactFlowConverter {
                     if (member.key === null) {
                         return;
                     }
-                    console.log('dir',container.key, node.data.direction);
                     const edgeHandle = `${member.key}.${label}`;
                     const sourceHandle = node.data.direction == 'vertical' ? `${member.key}#B` : edgeHandle;
                     const targetHandle = target + (node.data.direction == 'vertical' ? '#T' : '');
@@ -332,7 +368,7 @@ export class ReactFlowConverter {
                         ...getEdgeProp(isDiffAdd)
                     };
                     this.graph.edges.push(edge);
-                    this.convertShape(edge.target);
+                    this.convertShape(edge.target, shouldTrim);
                     this.nodeMap[edge.target].data.isContainerMember = true;
                 }
                 if (link.diffOldTarget !== undefined && link.diffOldTarget !== null) {
@@ -343,7 +379,7 @@ export class ReactFlowConverter {
                     if (link.diffOldTarget !== undefined) {
                         isEdgeDiffAdd = true;
                     }
-                    const box = this.getShape(member.key);
+                    const box = getShapeFromPool(this.view.pool, member.key);
                     if (box.isDiffAdd !== undefined) {
                         isEdgeDiffAdd = box.isDiffAdd;
                     }

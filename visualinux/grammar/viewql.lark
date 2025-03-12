@@ -11,7 +11,7 @@
 %ignore WS
 
 // %import .visualinux.grammar.cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
-%import .cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW)
+%import .cexpr (EQUALITY, RELATIONAL, POSTFIX_DOT, POSTFIX_ARROW, LBRACK_SQR, RBRACK_SQR)
 
 // entry
 
@@ -22,8 +22,11 @@ instruction: select | update
 
 select: object_set "=" "SELECT" selector "FROM" scope ["AS" identifier] ["WHERE" condition]
 
-selector: normal_expression | ANY_EXPR
+selector: normal_expression | CONTAINER_TYPE | ANY_EXPR
 scope: set_expression | ANY_EXPR
+
+CONTAINER_TYPE: LBRACK_SQR CNAME RBRACK_SQR
+ANY_EXPR: "*"
 
 // update stmt
 
@@ -39,7 +42,6 @@ identifier: CNAME
 literal: INT | NULL_CONST | BOOL_CONST | ESCAPED_STRING
 NULL_CONST: "NULL"
 BOOL_CONST: "true" | "false"
-ANY_EXPR: "*"
 
 // set expr
 

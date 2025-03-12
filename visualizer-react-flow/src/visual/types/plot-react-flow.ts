@@ -22,9 +22,11 @@ type NodeMetadata = {
 }
 type BoxNodeMetadata = {
     collapsed: boolean,
+    trimmed:   boolean,
 } & NodeMetadata
 type ContainerNodeMetadata = {
     collapsed: boolean,
+    trimmed:   boolean,
     direction: string,
 } & NodeMetadata
 
