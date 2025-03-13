@@ -30,11 +30,16 @@ type ContainerNodeMetadata = {
     direction: string,
 } & NodeMetadata
 
-type BoxNodeMember = TextMember | LinkMember | ({
-    class:  'box'
-    object: string
-    data:   BoxNodeData
-} & ShapeDiffInfo)
+type BoxNodeMember =
+    | TextMember
+    | (LinkMember & {
+        isTargetTrimmed?: boolean
+    })
+    | ({
+        class:  'box'
+        object: string
+        data:   BoxNodeData
+    } & ShapeDiffInfo)
 
 export type BoxNodeData = {
     key:      string

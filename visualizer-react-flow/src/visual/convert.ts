@@ -56,10 +56,8 @@ export class ReactFlowConverter {
         for (const key of this.view.plot) {
             this.convertShape(key);
         }
-        // remove edges to trimmed nodes
-        this.graph.edges = this.graph.edges.filter(edge => {
-            return !this.nodeMap[edge.source].data.trimmed && !this.nodeMap[edge.target].data.trimmed;
-        });
+        // remove trimmed nodes and related edges
+        this.removeTrimmed();
         // return
         console.log('converted graph', this.graph);
         return this.graph;
@@ -261,7 +259,7 @@ export class ReactFlowConverter {
         // calculate transitive properties
         shouldTrim = shouldTrim || attrs.trimmed == 'true';
         // compact array-like containers
-        if (shouldCompactContainer(container)) {
+        if (false && shouldCompactContainer(container)) {
             // const compactedMembers = Object.fromEntries(
             //     container.members.filter(member => member.key !== null)
             //     .map(member => {
@@ -345,7 +343,6 @@ export class ReactFlowConverter {
             if (memberNode.type != 'box') {
                 continue;
             }
-            // TODO: merge to a ContainerMemberLinks for vertical direction
             for (const [label, link] of Object.entries(member.links)) {
                 if (label in memberNode.data.members) {
                     continue;
@@ -384,6 +381,45 @@ export class ReactFlowConverter {
                         isEdgeDiffAdd = box.isDiffAdd;
                     }
                     convertLinkTarget(link.target, isEdgeDiffAdd);
+                }
+            }
+        }
+    }
+    private removeTrimmed() {
+        let trimmedNodes = new Set<string>();
+        for (const node of this.graph.nodes) {
+            if (node.data.trimmed) {
+                trimmedNodes.add(node.id);
+            }
+        }
+        for (let node of this.graph.nodes) {
+            if (node.type == 'box') {
+                for (let member of Object.values(node.data.members)) {
+                    if (member.class == 'link' && member.target !== null && trimmedNodes.has(member.target)) {
+                        member.isTargetTrimmed = true;
+                    }
+                }
+            } else if (node.type == 'container') {
+                node.data.members = node.data.members.filter(member => member.key !== null && !trimmedNodes.has(member.key));
+                this.removeTrimmedContainerMembers(node, trimmedNodes);
+            }
+        }
+        this.graph.nodes = this.graph.nodes.filter(node => {
+            return !node.data.trimmed;
+        });
+        this.graph.edges = this.graph.edges.filter(edge => {
+            return !this.nodeMap[edge.source].data.trimmed && !this.nodeMap[edge.target].data.trimmed;
+        });
+    }
+    private removeTrimmedContainerMembers(node: ContainerNode, trimmedNodes: Set<string>) {
+        if (node.data.trimmed) {
+            for (let member of node.data.members) {
+                if (member.key !== null && !trimmedNodes.has(member.key)) {
+                    let memberNode = this.nodeMap[member.key];
+                    memberNode.data.trimmed = true;
+                    if (memberNode.type == 'container') {
+                        this.removeTrimmedContainerMembers(memberNode, trimmedNodes);
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-import { BoxNodeData, type BoxNode } from "@app/visual/types";
+import { BoxNodeData, LinkMember, TextMember, type BoxNode } from "@app/visual/types";
 import { Handle, HandleType, Position, type NodeProps } from "@xyflow/react";
 
 import * as sc from "@app/visual/nodes/styleconf";
@@ -33,19 +33,16 @@ function BoxField({
                 );
             case 'text':
                 return (
-                    <PrimitiveField
-                        key={label} depth={depth} label={label} value={member.value}
-                        parentCollapsed={parentCollapsed || data.collapsed} diffOldValue={member.diffOldValue}
+                    <TextField
+                        key={label} label={label} member={member} depth={depth}
+                        parentCollapsed={parentCollapsed || data.collapsed}
                     />
                 );
             case 'link':
-                const targetToValue = (target: string | null) => target ? target.split(':', 1)[0] : "null";
-                const value = targetToValue(member.target);
-                const diffOldValue =  member.diffOldTarget === undefined ? undefined : targetToValue(member.diffOldTarget);
                 return (
-                    <PrimitiveField
-                        key={label} depth={depth} label={label} value={value} edgeSource={`${id}.${label}`}
-                        parentCollapsed={parentCollapsed || data.collapsed} diffOldValue={diffOldValue}
+                    <LinkField
+                        key={label} label={label} member={member} depth={depth}
+                        parentCollapsed={parentCollapsed || data.collapsed} edgeSource={`${id}.${label}`}
                     />
                 );
             default:
@@ -81,12 +78,7 @@ function BoxField({
     return (
         <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-[${color}] bg-[${bgColor}]`}>
             <div className="w-full ml-2 flex justify-begin items-center z-10">
-                <button 
-                    className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-[${color}] text-[${color}]`}
-                    onClick={() => notifier(id)}
-                >
-                    {data.collapsed ? '+' : '-'}
-                </button>
+                <FlipButton onClick={() => notifier(id)} condition={data.collapsed} extraClassName={`border-[${color}] text-[${color}]`}/>
                 <p className={`h-6 text-base text-[${color}]`}>{data.label}</p>
             </div>
             {/* even if collapsed, members are required for reactflow edge rendering */}
@@ -106,6 +98,38 @@ function BoxField({
             )}
             {handles}
         </div>
+    );
+}
+
+function TextField({
+    label, member, depth,
+    parentCollapsed
+}: {
+    label: string, member: TextMember, depth: number, parentCollapsed?: boolean
+}) {
+    return (
+        <PrimitiveField
+            key={label} depth={depth} label={label} value={member.value}
+            parentCollapsed={parentCollapsed} diffOldValue={member.diffOldValue}
+        />
+    )
+}
+
+function LinkField({
+    label, member, depth,
+    parentCollapsed, edgeSource
+}: {
+    label: string, member: LinkMember, depth: number, parentCollapsed?: boolean,
+    edgeSource: string
+}) {
+    const targetToValue = (target: string | null) => target ? target.split(':', 1)[0] : "null";
+    const value = targetToValue(member.target);
+    const diffOldValue =  member.diffOldTarget === undefined ? undefined : targetToValue(member.diffOldTarget);
+    return (
+        <PrimitiveField
+            key={label} depth={depth} label={label} value={value} edgeSource={edgeSource}
+            parentCollapsed={parentCollapsed} diffOldValue={diffOldValue}
+        />
     );
 }
 
@@ -164,6 +188,17 @@ function TextLine({ lines, textClassName }: {lines: string[], textClassName?: st
             ))}
         </div>
     );
+}
+
+function FlipButton({ onClick, condition, extraClassName = "" }: { onClick: () => void, condition: boolean, extraClassName?: string }) {
+    return (
+        <button 
+            className={`w-4 h-4 mr-1 flex items-center justify-center rounded border ${extraClassName}`}
+            onClick={onClick}
+        >
+            {condition ? '+' : '-'}
+        </button>
+    )
 }
 
 function GenHandle({ id, type, position, offset = 0 }: { id: string, type: HandleType, position: Position, offset?: number }) {

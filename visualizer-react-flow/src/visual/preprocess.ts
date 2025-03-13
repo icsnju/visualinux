@@ -147,15 +147,6 @@ class ViewPreprocessor {
             absts: {
                 default: {
                     members: compactedMembers,
-                    // members: Object.fromEntries(container.members
-                    //     .filter(member => member.key !== null)
-                    //     .map(member => [
-                    //         member.key, {
-                    //             class: 'box',
-                    //             object: member.key,
-                    //         }
-                    //     ])
-                    // ),
                     parent: null
                 }
             },
