@@ -256,6 +256,10 @@ export class ReactFlowLayouter {
 }
 
 function layoutGraphByDagre(nodes: Node[], edges: Edge[], options: Dagre.GraphLabel) {
+    // Add Object.hasOwn polyfill for browser compatibility of @dagrejs/graphlib
+    // @ts-ignore
+    if (!Object.hasOwn) Object.hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+
     // layout the graph by dagre
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
     g.setGraph(options);

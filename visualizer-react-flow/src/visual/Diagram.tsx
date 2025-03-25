@@ -33,7 +33,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     const { state, stateDispatch } = useContext(GlobalStateContext);
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-    const [shouldUpdate, setShouldUpdate] = useState<[string, string] | undefined>(undefined);
+    const [shouldUpdate, setShouldUpdate] = useState<[string, string, string] | undefined>(undefined);
     const { fitView } = useReactFlow();
     // Update nodes and edges when graph changes
     useEffect(() => {
@@ -54,7 +54,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                         ...nd,
                         data: {
                             ...nd.data,
-                            notifier: (id: string, rootId: string) => setShouldUpdate([id, rootId])
+                            notifier: (id: string, rootId: string, type: string) => setShouldUpdate([id, rootId, type])
                         }
                     };
                 }));
@@ -69,9 +69,9 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     }, [pKey, state]);
     useEffect(() => {
         if (shouldUpdate) {
-            const [id, rootId] = shouldUpdate;
+            const [id, rootId, type] = shouldUpdate;
             let graph = ReactFlowRefresher.refresh(
-                {nodes, edges} as ReactFlowGraph, id, rootId
+                {nodes, edges} as ReactFlowGraph, id, rootId, type
             );
             setNodes(graph.nodes);
             setEdges(graph.edges);

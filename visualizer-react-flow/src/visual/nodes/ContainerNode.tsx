@@ -20,7 +20,7 @@ export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
                     className={`w-4 h-4 mr-1 flex items-center justify-center rounded border border-[${color}] text-[${color}]`}
                     onClick={() => {
                         console.log('container node notifier', data.notifier);
-                        if (data.notifier) data.notifier(id, id);
+                        if (data.notifier) data.notifier(id, id, 'collapsed');
                     }}
                 >
                     {data.collapsed ? '+' : '-'}

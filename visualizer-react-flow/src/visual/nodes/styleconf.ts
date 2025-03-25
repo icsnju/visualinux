@@ -48,7 +48,7 @@ export const BgColorContainer = (isDiffAdd: boolean | undefined) => {
 //// field size (used for auto newline and height estimation)
 
 const labelBaseCPL = 11;
-const valueBaseCPL = 20;
+const valueBaseCPL = 24;
 
 const TextSplit = (text: string, charPerLine: number) => {
     const lines = text.match(new RegExp(`.{1,${charPerLine}}`, 'g')) || [text];
@@ -91,7 +91,7 @@ export const TextFieldAdaption = (label: string, value: string, oldvl: string | 
 
 //// node size
 
-export const boxNodeWidth = 272;
+export const boxNodeWidth = 296;
 export const boxNodeHeightCollapsed = 32;
 
 export const textPadding = 3;

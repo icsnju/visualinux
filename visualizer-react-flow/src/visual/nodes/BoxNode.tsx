@@ -6,18 +6,18 @@ import * as sc from "@app/visual/nodes/styleconf";
 export default function BoxNode({ id, data }: NodeProps<BoxNode>) {
     return (
         <BoxField
-            id={id} data={data} depth={0}
-            notifier={(innerId: string) => data.notifier?.(innerId, id)} parentCollapsed={data.parentCollapsed}
+            id={id} data={data} depth={0} parentCollapsed={data.parentCollapsed}
+            notifier={(innerId: string, updType: string) => data.notifier?.(innerId, id, updType)}
         />
     )
 }
 
 function BoxField({
-    id, data, depth,
-    notifier, parentCollapsed
+    id, data, depth, parentCollapsed,
+    notifier
 }: {
-    id: string, data: BoxNodeData, depth: number,
-    notifier: (id: string) => void, parentCollapsed?: boolean
+    id: string, data: BoxNodeData, depth: number, parentCollapsed?: boolean
+    notifier: (id: string, type: string) => void
 }) {
     // members
     const members = Object.entries(data.members).map(([label, member]) => {
@@ -42,7 +42,8 @@ function BoxField({
                 return (
                     <LinkField
                         key={label} label={label} member={member} depth={depth}
-                        parentCollapsed={parentCollapsed || data.collapsed} edgeSource={`${id}.${label}`}
+                        parentCollapsed={parentCollapsed || data.collapsed}
+                        edgeSource={`${id}.${label}`} notifier={notifier}
                     />
                 );
             default:
@@ -78,7 +79,7 @@ function BoxField({
     return (
         <div className={`box-node relative flex flex-col items-center rounded-md border-2 border-[${color}] bg-[${bgColor}]`}>
             <div className="w-full ml-2 flex justify-begin items-center z-10">
-                <FlipButton onClick={() => notifier(id)} condition={data.collapsed} extraClassName={`border-[${color}] text-[${color}]`}/>
+                <FlipButton onClick={() => notifier(id, 'collapsed')} condition={data.collapsed} extraClassName={`mr-1 border-[${color}] text-[${color}]`}/>
                 <p className={`h-6 text-base text-[${color}]`}>{data.label}</p>
             </div>
             {/* even if collapsed, members are required for reactflow edge rendering */}
@@ -102,80 +103,119 @@ function BoxField({
 }
 
 function TextField({
-    label, member, depth,
-    parentCollapsed
+    label, member, depth, parentCollapsed
 }: {
     label: string, member: TextMember, depth: number, parentCollapsed?: boolean
 }) {
-    return (
-        <PrimitiveField
-            key={label} depth={depth} label={label} value={member.value}
-            parentCollapsed={parentCollapsed} diffOldValue={member.diffOldValue}
-        />
-    )
-}
-
-function LinkField({
-    label, member, depth,
-    parentCollapsed, edgeSource
-}: {
-    label: string, member: LinkMember, depth: number, parentCollapsed?: boolean,
-    edgeSource: string
-}) {
-    const targetToValue = (target: string | null) => target ? target.split(':', 1)[0] : "null";
-    const value = targetToValue(member.target);
-    const diffOldValue =  member.diffOldTarget === undefined ? undefined : targetToValue(member.diffOldTarget);
-    return (
-        <PrimitiveField
-            key={label} depth={depth} label={label} value={value} edgeSource={edgeSource}
-            parentCollapsed={parentCollapsed} diffOldValue={diffOldValue}
-        />
-    );
-}
-
-function PrimitiveField({
-    depth, label, value, edgeSource,
-    parentCollapsed, diffOldValue
-}: {
-    depth: number, label: string, value: string, edgeSource?: string,
-    parentCollapsed?: boolean, diffOldValue?: string
-}) {
-    const color = diffOldValue === undefined ? "black" : sc.TextColorMod();
-    const labelHandle = edgeSource ? <GenHandle id={edgeSource} type="source" position={Position.Right} /> : <></>;
-    if (parentCollapsed) {
-        return (
-            <>{labelHandle}</>
-        );
-    }
+    if (parentCollapsed) return <></>;
+    // data conversion and style config
+    const value = member.value;
+    const diffOldValue = member.diffOldValue;
     const {
         labelDelta, labelLines, valueLines, oldvlLines
     } = sc.TextFieldAdaption(label, value, diffOldValue, depth);
     const labelWidth = 100 - 4 * depth + 16 * Math.ceil(labelDelta / 2);
+    const color = diffOldValue === undefined ? "black" : sc.TextColorMod();
     const isValueEmoji = (value: string) => value.startsWith('&#') && value.endsWith(';');
+    // label node
+    const labelNode = (
+        <div style={{width: `${labelWidth}px`}} className="px-1 flex items-center border-r-2 border-black">
+            <TextLine lines={labelLines} textClassName={`text-[${color}]`} />
+        </div>
+    );
+    // value node
+    const valueNode = (
+        <div className="flex-1 flex items-center px-1 py-0.5 truncate">
+            <div className="flex flex-col w-full">
+                {/* handle diff */}
+                {diffOldValue !== undefined &&
+                    <TextLine lines={oldvlLines} textClassName={`text-center text-[${color}] line-through`} />
+                }
+                {/* handle emoji text */}
+                {isValueEmoji(value) ?
+                    <p className={`text-center truncate text-[${color}]`} dangerouslySetInnerHTML={{__html: value}} />
+                :
+                    <TextLine lines={valueLines} textClassName={`text-center text-[${color}]`} />
+                }
+            </div>
+        </div>
+    );
+    // return
     return (
-        <div className={`relative w-full flex flex-col border-y border-black`}>
-            <div className="w-full flex items-stretch leading-none">
-                {/* label */}
-                <div style={{width: `${labelWidth}px`}} className="px-1 flex items-center border-r-2 border-black">
-                    <TextLine lines={labelLines} textClassName={`text-[${color}]`} />
-                </div>
-                {/* value */}
-                <div className="flex-1 flex items-center px-1 py-0.5 truncate">
-                    <div className="flex flex-col w-full">
-                        {/* handle diff */}
-                        {diffOldValue !== undefined &&
-                            <TextLine lines={oldvlLines} textClassName={`text-center text-[${color}] line-through`} />
-                        }
-                        {/* handle emoji text */}
-                        {isValueEmoji(value) ?
-                            <p className={`text-center truncate text-[${color}]`} dangerouslySetInnerHTML={{__html: value}} />
-                        :
-                            <TextLine lines={valueLines} textClassName={`text-center text-[${color}]`} />
+        <PrimitiveField label={labelNode} value={valueNode}/>
+    );
+}
+
+function LinkField({
+    label, member, depth, parentCollapsed,
+    edgeSource, notifier
+}: {
+    label: string, member: LinkMember, depth: number, parentCollapsed?: boolean,
+    edgeSource: string, notifier: (id: string, type: string) => void
+}) {
+    // edge handle
+    const edgeHandle = <GenHandle id={edgeSource} type="source" position={Position.Right} />;
+    if (parentCollapsed) return <>{edgeHandle}</>;
+    // data conversion and style config
+    const targetToValue = (target: string | null) => target ? target.split(':', 1)[0] : "null";
+    const value = targetToValue(member.target);
+    const diffOldValue = member.diffOldTarget === undefined ? undefined : targetToValue(member.diffOldTarget);
+    const color = diffOldValue === undefined ? "#000000" : sc.TextColorMod();
+    const {
+        labelDelta, labelLines, valueLines, oldvlLines
+    } = sc.TextFieldAdaption(label, value, diffOldValue, depth);
+    const labelWidth = 100 - 4 * depth + 16 * Math.ceil(labelDelta / 2);
+    // label node
+    const labelNode = (
+        <div style={{width: `${labelWidth}px`}} className="px-1 flex items-center border-r-2 border-black">
+            <TextLine lines={labelLines} textClassName={`text-[${color}]`} />
+        </div>
+    );
+    // value node
+    const valueNode = (
+        <div className="flex-1 flex items-center px-1 py-0.5 truncate">
+            <div className="flex flex-col w-full">
+                {diffOldValue !== undefined && 
+                    <div className="flex flex-row w-full">
+                        <TextLine lines={oldvlLines} textClassName={`text-center text-[${color}] line-through`} />
+                        {diffOldValue != "null" && 
+                            <FlipButton onClick={() => {console.log("diffclicked")}} condition={false} extraClassName={`border-[${color}] text-[${color}] opacity-0`} />
                         }
                     </div>
+                }
+                <div className="flex flex-row w-full">
+                    <TextLine lines={valueLines} textClassName={`text-center text-[${color}]`} />
+                    {value != "null" &&
+                        <FlipButton onClick={() => {
+                            if (member.target) {
+                                // member.isTargetTrimmed = !member.isTargetTrimmed;
+                                // console.log('LINKFIELD', member.target, member.isTargetTrimmed);
+                                notifier(member.target, 'trimmed');
+                            }
+                        }} condition={member.isTargetTrimmed} extraClassName={`border-[${color}] text-[${color}]`} />
+                    }
                 </div>
             </div>
-            {labelHandle}
+        </div>
+    );
+    // return
+    return (
+        <PrimitiveField label={labelNode} value={valueNode} edgeHandle={edgeHandle}/>
+    );
+}
+
+function PrimitiveField({
+    label, value, edgeHandle
+}: {
+    label: React.JSX.Element, value: React.JSX.Element, edgeHandle?: React.JSX.Element
+}) {
+    return (
+        <div className={`relative w-full border-y border-black`}>
+            <div className="w-full flex items-stretch leading-none">
+                {label}
+                {value}
+            </div>
+            {edgeHandle}
         </div>
     );
 }
@@ -193,7 +233,7 @@ function TextLine({ lines, textClassName }: {lines: string[], textClassName?: st
 function FlipButton({ onClick, condition, extraClassName = "" }: { onClick: () => void, condition: boolean, extraClassName?: string }) {
     return (
         <button 
-            className={`w-4 h-4 mr-1 flex items-center justify-center rounded border ${extraClassName}`}
+            className={`w-4 h-4 text-sm flex items-center justify-center rounded border ${extraClassName}`}
             onClick={onClick}
         >
             {condition ? '+' : '-'}
