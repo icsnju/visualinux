@@ -20,6 +20,7 @@ export class ReactFlowRefresher {
     private intraNodes: Set<string>;
     private intraNodeCollapsed: boolean;
     private nodeMap: { [key: string]: BoxNode | ContainerNode };
+    private fuckedNodes: Set<string>;
     private trimmedNodes: Set<string>;
     constructor(graph: ReactFlowGraph, id: string, rootId: string, type: string) {
         this.graph = graph;
@@ -44,6 +45,7 @@ export class ReactFlowRefresher {
         for (const node of this.graph.nodes) {
             this.nodeMap[node.id] = node;
         }
+        this.fuckedNodes = new Set<string>();
         this.trimmedNodes = new Set<string>();
     }
     private refresh(): ReactFlowGraph {
@@ -58,12 +60,12 @@ export class ReactFlowRefresher {
             if (nodeToTrim !== undefined) {
                 this.setTrimFrom(nodeToTrim, !nodeToTrim.data.trimmed);
                 let updatedNodes = this.graph.nodes.map(nd => {
-                    if (this.trimmedNodes.has(nd.id)) {
+                    if (this.fuckedNodes.has(nd.id)) {
                         let nnode = {
                             ...nd,
                             data: {
                                 ...nd.data,
-                                trimmed: !nd.data.trimmed
+                                trimmed: this.trimmedNodes.has(nd.id)
                             }
                         } as ReactFlowNode;
                         this.nodeMap[nd.id] = nnode;
@@ -102,10 +104,11 @@ export class ReactFlowRefresher {
         }
     }
     private setTrimForBoxData(data: BoxNodeData, trimmed: boolean) {
-        if (this.trimmedNodes.has(data.key)) {
+        if (this.fuckedNodes.has(data.key)) {
             return;
         }
-        this.trimmedNodes.add(data.key);
+        this.fuckedNodes.add(data.key);
+        if (trimmed) this.trimmedNodes.add(data.key);
         for (let member of Object.values(data.members)) {
             let nodeToTrim: BoxNode | ContainerNode | undefined;  
             // bug: link to inner box is bad
@@ -160,10 +163,11 @@ export class ReactFlowRefresher {
         return undefined;
     }
     private setTrimForContainerData(data: ContainerNodeData, trimmed: boolean) {
-        if (this.trimmedNodes.has(data.key)) {
+        if (this.fuckedNodes.has(data.key)) {
             return;
         }
-        this.trimmedNodes.add(data.key);
+        this.fuckedNodes.add(data.key);
+        if (trimmed) this.trimmedNodes.add(data.key);
         for (let member of data.members) {
             if (member.key !== null) {
                 this.setTrimFrom(this.nodeMap[member.key], trimmed);

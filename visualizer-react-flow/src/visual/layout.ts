@@ -34,6 +34,15 @@ export class ReactFlowLayouter {
         //         // node.height = undefined;
         //     }
         // }
+        //
+        for (const node of this.graph.nodes) {
+            if ((node.type == 'box' || node.type == 'container') && node.data.trimmed) {
+                node.width = 1;
+                node.height = 1;
+                node.position.x = 0;
+                node.position.y = 0;
+            }
+        }
         // return
         console.log('final graph', this.graph);
         return this.graph;

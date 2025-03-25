@@ -188,8 +188,6 @@ function LinkField({
                     {value != "null" &&
                         <FlipButton onClick={() => {
                             if (member.target) {
-                                // member.isTargetTrimmed = !member.isTargetTrimmed;
-                                // console.log('LINKFIELD', member.target, member.isTargetTrimmed);
                                 notifier(member.target, 'trimmed');
                             }
                         }} condition={member.isTargetTrimmed} extraClassName={`border-[${color}] text-[${color}]`} />

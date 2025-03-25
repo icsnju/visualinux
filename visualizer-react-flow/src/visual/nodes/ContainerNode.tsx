@@ -7,9 +7,19 @@ export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
     const cssHeight = data.collapsed ? 'h-8' : 'h-full';
     const color   = sc.TextColor(data.isDiffAdd);
     const bgColor = sc.BgColorContainer(data.isDiffAdd);
+    const handle = (
+        <Handle key={`handle#${id}`} id={id} type="target" 
+            position={Position.Left} 
+            style={{
+                width: '5px', height: '5px',
+                left: '0'
+            }}
+        />
+    );
     if (data.trimmed) {
         return (
             <div className="absolute top-0 left-0 w-full h-0 opacity-0">
+                {handle}
             </div>
         )
     }
@@ -27,16 +37,7 @@ export default function ContainerNode({ id, data }: NodeProps<ContainerNode>) {
                 </button>
                 <p className={`h-6 text-base text-[${color}]`}>{data.label}</p>
             </div>
-            <Handle 
-                key={`handle#${id}`}
-                id={id}
-                type="target" 
-                position={Position.Left} 
-                style={{
-                    width: '5px', height: '5px',
-                    left: '0'
-                }}
-            />
+            {handle}
         </div>
     );
 }
