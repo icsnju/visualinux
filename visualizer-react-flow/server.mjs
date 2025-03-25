@@ -23,10 +23,8 @@ const vite = await createServer({
     configFile: 'vite.config.ts',
     server: {
         middlewareMode: true,
-        // does not work; failed to fix.
-        hmr: {
-            host: 'localhost',
-        },
+        host: '0.0.0.0',
+        port: +process.env.VISUALINUX_VISUALIZER_PORT || 3000,
     }
 });
 app.use(vite.middlewares);

@@ -17,7 +17,7 @@ export default function MainPane() {
             <SplitPane split="vertical" sizes={sizes} onChange={(sizes) => setSizes(sizes)}>
                 <div className="h-full">
                     <PrimaryPanes node={state.panels.root}/>
-                    {/* <SecondaryPanes nodes={state.followers}/> */}
+                    <SecondaryPanes nodes={[]}/>
                 </div>
                 <Pane minSize={100} maxSize={192} className="border-2 border-l border-[#5755d9]">
                     <SnapshotList/>
