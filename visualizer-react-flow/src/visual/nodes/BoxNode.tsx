@@ -178,14 +178,14 @@ function LinkField({
                 {diffOldValue !== undefined && 
                     <div className="flex flex-row w-full">
                         <TextLine lines={oldvlLines} textClassName={`text-center text-[${color}] line-through`} />
-                        {diffOldValue != "null" && 
-                            <FlipButton onClick={() => {console.log("diffclicked")}} condition={false} extraClassName={`border-[${color}] text-[${color}] opacity-0`} />
+                        {diffOldValue != "null" && diffOldValue != "(empty)" &&
+                            <FlipButton onClick={() => {console.log("diffOldValue clicked")}} condition={false} extraClassName={`border-[${color}] text-[${color}] opacity-0`} />
                         }
                     </div>
                 }
                 <div className="flex flex-row w-full">
                     <TextLine lines={valueLines} textClassName={`text-center text-[${color}]`} />
-                    {value != "null" &&
+                    {value != "null" && value != "(empty)" &&
                         <FlipButton onClick={() => {
                             if (member.target) {
                                 notifier(member.target, 'trimmed');

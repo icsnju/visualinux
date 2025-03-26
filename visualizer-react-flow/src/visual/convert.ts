@@ -200,8 +200,7 @@ export class ReactFlowConverter {
                 const convertLinkTarget = (target: string, isDiffAdd: boolean | undefined) => {
                     // for empty containers eliminate the visualization
                     if (target in this.view.pool.containers && this.view.pool.containers[target].members.length == 0) {
-                        // target = '(empty)';
-                        return;
+                        return '(empty)';
                     }
                     // normal handling
                     const edge: Edge = {
@@ -214,9 +213,10 @@ export class ReactFlowConverter {
                     };
                     this.graph.edges.push(edge);
                     this.convertShape(edge.target, shouldTrim);
+                    return target;
                 }
                 if (member.diffOldTarget !== undefined && member.diffOldTarget !== null) {
-                    convertLinkTarget(member.diffOldTarget, false);
+                    member.diffOldTarget = convertLinkTarget(member.diffOldTarget, false);
                 }
                 if (member.target !== null) {
                     let isEdgeDiffAdd = undefined;
@@ -226,7 +226,7 @@ export class ReactFlowConverter {
                     if (box.isDiffAdd !== undefined) {
                         isEdgeDiffAdd = box.isDiffAdd;
                     }
-                    convertLinkTarget(member.target, isEdgeDiffAdd);
+                    member.target = convertLinkTarget(member.target, isEdgeDiffAdd);
                 }
             // put data of nested box into the box data
             } else if (member.class == 'box') {
