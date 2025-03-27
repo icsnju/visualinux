@@ -1,4 +1,4 @@
-# ViewCL
+# ViewCL Documentation
 
 **ViewCL** (the View Construction Language) is a domain-specific language (DSL) that helps developers simplify and create *views* of the kernel state.
 This documentation has a tutorial with easy-to-learn examples, and the full language specification, including design principles, grammar rules and other special features.
@@ -28,7 +28,9 @@ You can copy the above **ViewCL** code to a new file (e.g., `viewcl/hello.vcl`),
 
 - `vplot -f hello.vcl`
 
-#### a
+#### Examples arround the Process
+
+Now we will introduce how to plot more about a process, including the per-process metadata (files, signals, etc.), the parent tree, and the scheduling info. We will also browse the basic syntax of **ViewCL** while going through the examples.
 
 In line X, we use `plot` to *create an object graph with a given root object*. That is, XXX.
 
