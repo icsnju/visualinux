@@ -11,7 +11,7 @@ In this tutorial, we will browse the basic syntax of **ViewCL** while going thro
 ### Hello, Visualinux
 
 In **ViewCL**, we declare *what we need* for each type of object, and instantiate the objects to create plots.
-As the hellow-world example, to plot the basic information of the current thread:
+As the hello-world example, to plot the basic information of the current thread:
 
 ```viewcl
 define Task as Box<task_struct> [
@@ -77,7 +77,7 @@ We can also create nested **Box**es for nested struct types. The syntax is simil
 define Task as Box<task_struct> [
     Text pid, comm
     Box se [
-        Text<bool> on_rq
+        Text on_rq
         Text vruntime
     ]
 ]
@@ -87,7 +87,7 @@ You can also define another **Box** to achieve better code modularity for non-tr
 
 ```viewcl
 define Sched as Box<sched_entity> [
-    Text<bool> on_rq
+    Text on_rq
     Text vruntime   
 ]
 define Task as Box<task_struct> [
@@ -194,11 +194,11 @@ define Task as Box<task_struct> {
 
 #### Labels and Typos
 
-;
+In **Visualinux**, a **Text** is displayed as a name-value pair, and we can customize the display style of both the name and the value, with labels and typos, respectively.
 
 #### Flatten
 
-;
+;;;
 
 #### Distill
 
@@ -223,7 +223,7 @@ task_addr_space = Array.convFrom(@task_with_mm, vm_area_struct)
 
 #### Using Initial ViewQL
 
-Sometimes we already know exactly *what we need* and want to customize the **Diagrams** initially.
+Sometimes we want to initially customize the **Diagrams**, e.g., let all threads show their sched information while plotting the process scheduler run queue.
 We can add a `with` clause to the `diag` declaration, in which we can add **ViewQL** code snippets. For example:
 
 ```viewcl

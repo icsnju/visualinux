@@ -1,24 +1,28 @@
 # Visualinux
 
+**Note: this doc is an archive of `README.md` during the artifact evaluation of our paper. You don't need to read it now.**
+
 [![](https://img.shields.io/badge/2025-EuroSys-deepgreen.svg)]() [![](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://doi.org/10.5281/zenodo.13710732) [![](https://img.shields.io/badge/DOI-10.5281/zenodo.13710732-blue.svg)](https://doi.org/10.5281/zenodo.13710732)
 
-Visualinux is the first debugging framework that can simplify the program state of Linux kernel to the extent that one can visually understand with low programming complexity and efforts. Our work has been accepted by EuroSys 2025 [[paper]](https://doi.org/10.1145/3689031.3696095).
-
-<div>
-    <a href="docs/assets/01-process_tree.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/01-process_tree.png"/></a>
-    <a href="docs/assets/02-workqueue.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/02-workqueue.png"/></a>
-    <a href="docs/assets/03-runqueue.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/03-runqueue.png"/></a>
-    <a href="docs/assets/04-addrspace.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/04-addrspace.png"/></a>
-    <a href="docs/assets/05-proc_vfs.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/05-proc_vfs.png"/></a>
-    <a href="docs/assets/06-socket.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/06-socket.png"/></a>
-    <a href="docs/assets/07-signals.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/07-signals.png"/></a>
-    <a href="docs/assets/08-buddy_system.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/08-buddy_system.png"/></a>
-    <a href="docs/assets/09-kmem_cache.png"><img style="width: 32%; border: 1px black solid" src="docs/assets/09-kmem_cache.png"/></a>
-</div>
+Visualinux is the first debugging framework that can simplify the program state of Linux kernel to the extent that one can visually understand with low programming complexity and efforts.
 
 To make it easy to get started, this repo provides an out-of-the-box kernel debugging environment with Visualinux enabled. You can also easily integrate Visualinux into your own debugging workflow (see [Standalone Deployment](#standalone-deployment)).
 
+For artifact evaluation, we also provide an online environment to reproduce the textbook evaluation results of our paper submission (see [Online Artifact Evaluation](#online-artifact-evaluation)).
+
 This README only describes how to deploy and use Visualinux. Please refer to `docs/` for technical details.
+
+## Online Artifact Evaluation
+
+We have prepared an online site for quick experience of Visualinux. You can painlessly enter a Visualinux-enabled debugging environment through an html page (the link is placed in Artifact Appendix of our AE submission to avoid numerous access conflicts from the outside).
+
+After startup, the online instance will print introductory messages and then automatically evaluate a simple example (a process parent tree) at a predefined breakpoint. You can follow the section [Reproduce the Evaluation](#reproduce-the-evaluation) to reproduce the evaluation results, or feel free to debug the Linux kernel with the help of Visualinux.
+
+Please note that due to resource limitations of our server, the online site only allows one connection at a time. It will temporarily stop working if multiple connections are simultaneously present.
+
+*Single-blind review: We guarantee that there is no login activity in the online site and we do not track any visitor's IP address. You can also use a proxy to further hide your identity.*
+
+Of course, artifact evaluators can also deploy Visualinux on their native machines. Please check the following sections for details.
 
 ## Requirements
 
@@ -28,7 +32,7 @@ Visualinux is fully compatible to gdb and it is available as long as one can deb
 
 - Node.js 18+ (more recommanded 20+)
 
-- Linux kernel 6.1.X (otherwise Visualinux is still available, but some of our example code in `viewcl/` might need to be rewritten due to the kernel version difference)
+- Linux kernel 6.1.X (otherwise Visualinux is still available, but some of our default ViewCL code might need to be rewritten due to the kernel version difference)
 
 The tool has been well-tested on a Ubuntu 22.04 host with Python 3.10.12 and Node.js v18.20/v20.17, with both gdb (QEMU) and kgdb (rpi-400) targeting on Linux kernel 5.15 and 6.1.25.
 
@@ -234,4 +238,4 @@ You can use the `--perf` option of `vplot` for performance evaluation (For examp
 
 ## Development
 
-Please check `docs/` for more details about ViewCL/ViewQL programming and ViewQL prompting.
+Please check `docs/` for more details about ViewCL programming and ViewQL prompting.
