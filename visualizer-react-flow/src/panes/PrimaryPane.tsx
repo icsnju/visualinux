@@ -3,9 +3,7 @@ import { GlobalStateContext } from "@app/context/Context";
 import { SplitDirection } from "@app/context/Panels";
 import Diagram from "@app/visual/Diagram";
 import { ButtonDef, ButtonsWrapper, ButtonWrapper } from "@app/panes/buttons";
-import { PopViewSelector } from "@app/panes/view-selector";
 import * as icons from "@app/panes/libs/Icons";
-// import { DropdownAbstSelector, PopViewSelector } from './view-selector';
 
 type useStateSelected = typeof useState<string | undefined>;
 
@@ -111,11 +109,7 @@ function PrimaryWindowHeader({ pKey, onMount }: {
                 <div className="w-[30px] h-[30px] flex items-center justify-center border-2 border-[#5755d9] rounded cursor-pointer">
                     #{pKey}
                 </div>
-                <PopViewSelector pKey={pKey} trigger={
-                    <button className="h-[30px] px-2 flex items-center justify-center border-2 border-[#5755d9] rounded cursor-pointer">
-                        {viewname ? viewname.slice(viewname.lastIndexOf('.') + 1) : 'select a plot...'}
-                    </button>
-                }/>
+                <ViewSelector pKey={pKey} />
             </ButtonsWrapper>
             <ButtonsWrapper direction="right">
                 {/* <DropdownAbstSelector wKey={wKey} enabled={selected !== undefined}/> */}
@@ -123,6 +117,48 @@ function PrimaryWindowHeader({ pKey, onMount }: {
                     <ButtonWrapper buttonDef={btn} key={i}/>
                 )}
             </ButtonsWrapper>
+        </div>
+    );
+}
+
+function ViewSelector({ pKey }: { pKey: number }) {
+    const { state, stateDispatch } = useContext(GlobalStateContext);
+    const [isOpen, setIsOpen] = useState(false);
+    const viewnameList = state.snapshots.getViewnameList();
+    const viewname = state.panels.getViewname(pKey);
+
+    const toggleDropdown = () => setIsOpen(!isOpen);
+    const closeDropdown = () => setIsOpen(false);
+
+    const handleSelect = (viewname: string) => {
+        stateDispatch({ command: 'SWITCH', pKey, viewname });
+        closeDropdown();
+    };
+
+    return (
+        <div className="relative">
+            <button 
+                className="h-[30px] px-2 flex items-center justify-center border-2 border-[#5755d9] rounded cursor-pointer"
+                onClick={toggleDropdown}
+            >
+                {viewname ? viewname.slice(viewname.lastIndexOf('.') + 1) : 'select a plot...'}
+            </button>
+            
+            {isOpen && (
+                <div className="absolute z-10 mt-0.5 left-0">
+                    <ul className="min-w-48 bg-white border-2 border-[#5755d9] rounded shadow-lg">
+                        {viewnameList.map((viewname, index, array) => (
+                            <li 
+                                className={`px-2 py-0.5 cursor-pointer ${index < array.length - 1 ? 'border-b-2 border-[#5755d9]' : ''}`}
+                                key={index} 
+                                onClick={() => handleSelect(viewname)}
+                            >
+                                <a className="block text-gray-800">{viewname}</a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 }
