@@ -1,8 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { GlobalStateContext } from "@app/context/Context";
 import { ReactFlowGraph, ReactFlowNode, ContainerNode } from "@app/visual/types";
-import { ReactFlowConverter } from "@app/visual/convert";
-import { ReactFlowLayouter } from "@app/visual/layout";
+import { Renderer } from "@app/visual/renderers";
 import {
     ReactFlowProvider,
     ReactFlow,
@@ -19,7 +18,9 @@ import "../index.css";
 
 import { nodeTypes } from "@app/visual/nodes";
 import { edgeTypes } from "@app/visual/edges";
+
 import { ReactFlowRefresher } from "@app/visual/refresh";
+import { Finalizer } from "@app/visual/renderers/finalizer";
 
 export default function Diagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     return (
@@ -31,6 +32,7 @@ export default function Diagram({ pKey, updateSelected }: { pKey: number, update
 
 function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelected: (s: string | undefined) => void }) {
     const { state, stateDispatch } = useContext(GlobalStateContext);
+    const [graph, setGraph] = useState<ReactFlowGraph>({ nodes: [], edges: [] });
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const [shouldUpdate, setShouldUpdate] = useState<[string, string, string] | undefined>(undefined);
@@ -44,9 +46,10 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
         setEdges([]);
         if (view !== null) {
             setTimeout(() => {
-                let graph = ReactFlowConverter.convert(view, attrs);
-                graph = ReactFlowLayouter.layout(graph);
-                setNodes(graph.nodes.map(nd => {
+                let graph = Renderer.render(view, attrs);
+                let { nodes, edges } = Finalizer.render(graph);
+                setGraph(graph);
+                setNodes(nodes.map(nd => {
                     if (nd.type != 'box' && nd.type != 'container') {
                         return nd;
                     }
@@ -58,7 +61,7 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                         }
                     };
                 }));
-                setEdges(graph.edges);
+                setEdges(edges);
                 setTimeout(() => {
                     window.requestAnimationFrame(() => {
                         fitView();
@@ -70,11 +73,11 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
     useEffect(() => {
         if (shouldUpdate) {
             const [id, rootId, type] = shouldUpdate;
-            let graph = ReactFlowRefresher.refresh(
-                {nodes, edges} as ReactFlowGraph, id, rootId, type
-            );
-            setNodes(graph.nodes);
-            setEdges(graph.edges);
+            let newGraph = ReactFlowRefresher.refresh(graph, id, rootId, type);
+            let { nodes, edges } = Finalizer.render(newGraph);
+            setGraph(newGraph);
+            setNodes(nodes);
+            setEdges(edges);
             setShouldUpdate(undefined);
         }
     }, [shouldUpdate]);

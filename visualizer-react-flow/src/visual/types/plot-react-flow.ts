@@ -21,13 +21,13 @@ type NodeMetadata = {
     parentCollapsed?: boolean,
 }
 type BoxNodeMetadata = {
-    collapsed: boolean,
-    trimmed:   boolean,
+    collapsed?: boolean,
+    trimmed?:   boolean,
 } & NodeMetadata
 type ContainerNodeMetadata = {
-    collapsed: boolean,
-    trimmed:   boolean,
-    direction: string,
+    collapsed?: boolean,
+    trimmed?:   boolean,
+    direction?: string,
 } & NodeMetadata
 
 type BoxNodeMember =

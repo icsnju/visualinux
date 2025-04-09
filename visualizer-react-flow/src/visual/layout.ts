@@ -110,7 +110,7 @@ export class ReactFlowLayouter {
                 continue;
             }
             // estimate the member node size first
-            let memberHeight = this._estimateBoxNodeHeight(member.data, depth + 1, isParentCollapsed || nodeData.collapsed);
+            let memberHeight = this._estimateBoxNodeHeight(member.data, depth + 1, isParentCollapsed || nodeData.collapsed === true);
             // add necessary spaces to estimate the node size
             let space = memberHeight + 8;
             if (index > 0 && members[index - 1][1].class === 'box') {

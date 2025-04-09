@@ -1,7 +1,11 @@
-import { Snapshot, StateView, ShapeKey, Box, Abst, Container, getShapeFromPool, isShapeBox } from "@app/visual/types";
+import { Snapshot, StateView, ShapeKey, Box, Abst, Container, isShapeBox } from "@app/visual/types";
 
 export function preprocess(snapshot: Snapshot) {
     console.log('preprocess', snapshot);
+    for (const [name, view] of Object.entries(snapshot.views)) {
+        // convert raw json to class object
+        snapshot.views[name] = new StateView(name, view.pool, view.plot, view.init_attrs, view.stat);
+    }
     for (const view of Object.values(snapshot.views)) {
         try {
             ViewPreprocessor.preprocess(view);
@@ -109,7 +113,7 @@ class ViewPreprocessor {
             if (member.key === null) {
                 continue;
             }
-            const shape = getShapeFromPool(this.view.pool, member.key);
+            const shape = this.view.getShape(member.key);
             if (isShapeBox(shape) && shape.addr == 'virtual' && Object.keys(shape.absts).length == 1) {
                 const memberMembers = Object.entries(shape.absts['default'].members);
                 if (memberMembers.length == 1 && shape.label == memberMembers[0][0]) {
