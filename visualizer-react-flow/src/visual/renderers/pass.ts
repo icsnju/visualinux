@@ -8,9 +8,9 @@ import {
 
 // renderer pass
 export abstract class RendererPass {
-    public static render(istat: RendererInternalState, graph: ReactFlowGraph): ReactFlowGraph {
+    public static render(_istat: RendererInternalState, _graph: ReactFlowGraph): ReactFlowGraph {
         throw new Error('RendererPass.render() must be implemented by a Pass subclass');
-        const pass = new (this as any)(istat);
+        const pass = new (this as any)(_istat);
         return pass.render();
     }
     protected istat: RendererInternalState;
@@ -20,42 +20,6 @@ export abstract class RendererPass {
         this.graph = graph;
     }
     public abstract render(): ReactFlowGraph;
-    public refreshEachNodeData(
-        fnBoxNodeData: (data: BoxNodeData) => BoxNodeData,
-        fnContainerNodeData: (data: ContainerNodeData) => ContainerNodeData
-    ) {
-        return this.graph.nodes.map(node => {
-            if (node.type == 'box') {
-                return {
-                    ...node,
-                    data: this.refreshBoxNodeData(node.data, fnBoxNodeData)
-                }
-            } else if (node.type == 'container') {
-                return {
-                    ...node,
-                    data: fnContainerNodeData(node.data)
-                }
-            }
-            return { ...node };
-        });
-    }
-    public refreshBoxNodeData(data: BoxNodeData, fn: (data: BoxNodeData) => BoxNodeData) {
-        let updatedData = fn(data);
-        for (let [label, member] of Object.entries(data.members)) {
-            if (member.class == 'box') {
-                updatedData.members[label] = {
-                    ...member,
-                    data: this.refreshBoxNodeData(member.data, fn)
-                };
-            }
-        }
-        return updatedData;
-    }
-}
-
-type ReactFlowNodeData = BoxNodeData | ContainerNodeData;
-function isBoxNodeData(data: ReactFlowNodeData): data is BoxNodeData {
-    return !Array.isArray(data.members);
 }
 
 // internal state across multiple passes during rendering
@@ -76,7 +40,7 @@ export class RendererInternalState {
     }
     public getShapeView(key: string) {
         if (this.view.hasShape(key)) {
-            return this.attrs[key].view || 'default';
+            return this.getAttrs(key).view || 'default';
         }
         throw new Error(`getShapeView: shape ${key} not found`);
     }

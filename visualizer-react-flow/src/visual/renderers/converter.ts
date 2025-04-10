@@ -296,8 +296,8 @@ export class Converter {
                         return;
                     }
                     const edgeHandle = `${member.key}.${label}`;
-                    const sourceHandle = node.data.direction == 'vertical' ? `${member.key}#B` : edgeHandle;
-                    const targetHandle = target + (node.data.direction == 'vertical' ? '#T' : '');
+                    const sourceHandle = edgeHandle;
+                    const targetHandle = target;
                     const edge: Edge = {
                         id: edgeHandle + (isDiffAdd === undefined ? '' : (isDiffAdd ? '.add' : '.del')),
                         source: member.key,
