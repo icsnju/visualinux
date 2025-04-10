@@ -1,8 +1,6 @@
 import {
-    StateView, Box, Abst, Container,
-    ViewAttrs, NodeAttrs,
-    BoxNode, ContainerNode,
-    BoxNodeData, ContainerNodeData,
+    StateView, ViewAttrs,
+    BoxNode, ContainerNode, BoxNodeData,
     ReactFlowGraph,
 } from "@app/visual/types";
 
@@ -29,6 +27,7 @@ export class RendererInternalState {
     public attrs: ViewAttrs;
     public rootMap: { [key: string]: string } = {};
     public nodeMap: { [key: string]: BoxNode | ContainerNode } = {};
+    public boxNodeDataMap: { [key: string]: BoxNodeData } = {};
     public containerMembers: Set<string> = new Set<string>();
     public loggers: { [name: string]: RendererLogger } = {};
     constructor(view: StateView, attrs: ViewAttrs) {
@@ -43,6 +42,12 @@ export class RendererInternalState {
             return this.getAttrs(key).view || 'default';
         }
         throw new Error(`getShapeView: shape ${key} not found`);
+    }
+    public getNode(key: string) {
+        return this.nodeMap[key];
+    }
+    public getBoxNodeData(key: string) {
+        return this.boxNodeDataMap[key];
     }
     public isShapeOutmost(key: string) {
         return this.rootMap[key] == key;

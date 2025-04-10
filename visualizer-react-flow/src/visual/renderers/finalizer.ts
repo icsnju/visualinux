@@ -1,6 +1,7 @@
 import {
     ReactFlowGraph, BoxNode, ContainerNode,
 } from "@app/visual/types";
+import { ReactFlowLayouter } from "../layout";
 
 // a special pass that performs some breaking changes for final optimization
 // export class Finalizer extends RendererPass {
@@ -12,7 +13,10 @@ export class Finalizer {
     private graph: ReactFlowGraph;
     private nodeMap: { [key: string]: BoxNode | ContainerNode } = {};
     constructor(graph: ReactFlowGraph) {
-        this.graph = { ...graph };
+        this.graph = {
+            nodes: graph.nodes.map(node => ({ ...node })),
+            edges: graph.edges.map(edge => ({ ...edge })),
+        };
         this.nodeMap = {};
         for (const node of graph.nodes) {
             this.nodeMap[node.id] = node;
@@ -20,6 +24,7 @@ export class Finalizer {
     }
     private render() {
         this.removeTrimmed();
+        this.graph = ReactFlowLayouter.layout(this.graph);
         return this.graph;
     }
     private removeTrimmed() {
@@ -37,6 +42,7 @@ export class Finalizer {
                     }
                 }
             } else if (node.type == 'container') {
+                node.data = { ...node.data };
                 node.data.members = node.data.members.filter(member => member.key !== null && !trimmedNodes.has(member.key));
                 this.removeTrimmedContainerMembers(node, trimmedNodes);
             }

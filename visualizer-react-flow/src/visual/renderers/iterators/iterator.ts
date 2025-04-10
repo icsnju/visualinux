@@ -5,27 +5,31 @@ export abstract class StateViewIterator {
     public static traverse(
         _istat: RendererInternalState,
         _graph: ReactFlowGraph,
-        _fnBox: (id: string, data: BoxNodeData) => BoxNodeData,
-        _fnContainer: (id: string, data: ContainerNodeData) => ContainerNodeData
+        _fnBox: (data: BoxNodeData) => BoxNodeData,
+        _fnContainer: (data: ContainerNodeData) => ContainerNodeData,
+        _roots?: string[]
     ): void {
         throw new Error('ReactFlowIterator.traverse() must be implemented by a Iterator subclass');
     }
     protected istat: RendererInternalState;
     protected graph: ReactFlowGraph;
-    protected fnBox: (id: string, data: BoxNodeData) => BoxNodeData
-    protected fnContainer: (id: string, data: ContainerNodeData) => ContainerNodeData
+    protected roots: string[];
+    protected fnBox: (data: BoxNodeData) => BoxNodeData
+    protected fnContainer: (data: ContainerNodeData) => ContainerNodeData
     protected visited: Set<string>;
     constructor(
         istat: RendererInternalState,
         graph: ReactFlowGraph,
-        fnBox: (id: string, data: BoxNodeData) => BoxNodeData,
-        fnContainer: (id: string, data: ContainerNodeData) => ContainerNodeData
+        fnBox: (data: BoxNodeData) => BoxNodeData,
+        fnContainer: (data: ContainerNodeData) => ContainerNodeData,
+        roots?: string[]
     ) {
         this.istat       = istat;
         this.graph       = graph;
         this.fnBox       = fnBox;
         this.fnContainer = fnContainer;
         this.visited     = new Set<string>();
+        this.roots       = roots || [];
     }
     public abstract traverse(): void;
 }

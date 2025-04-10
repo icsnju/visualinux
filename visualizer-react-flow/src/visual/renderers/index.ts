@@ -1,13 +1,9 @@
 import {
-    StateView, Box, Abst, Container,
-    ViewAttrs, NodeAttrs,
-    ReactFlowGraph, BoxNode, ContainerNode,
-    BoxNodeData,
+    StateView, ViewAttrs,
+    ReactFlowGraph,
 } from "@app/visual/types";
-import { Edge } from "@xyflow/react";
 import { Converter } from "@app/visual/renderers/converter";
 import { RendererInternalState, RendererPass } from "@app/visual/renderers/pass";
-import { ReactFlowLayouter } from "../layout";
 import { AttrSetter } from "@app/visual/renderers/setattr";
 
 const Passes: (typeof RendererPass)[] = [
@@ -29,7 +25,6 @@ export class Renderer {
         for (const Pass of Passes) {
             this.graph = Pass.render(this.state, this.graph);
         }
-        this.graph = ReactFlowLayouter.layout(this.graph);
         return this.graph;
     }
 }

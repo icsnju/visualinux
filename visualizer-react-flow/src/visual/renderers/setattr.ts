@@ -1,6 +1,7 @@
-import { ReactFlowGraph, BoxNode, ContainerNode } from "@app/visual/types";
+import { ReactFlowGraph } from "@app/visual/types";
 import { RendererInternalState, RendererPass } from "@app/visual/renderers/pass";
 import { EachIterator } from "@app/visual/renderers/iterators/each";
+import { SubtreeIterator } from "./iterators/subtree";
 
 export class AttrSetter extends RendererPass {
     public static render(istat: RendererInternalState, graph: ReactFlowGraph): ReactFlowGraph {
@@ -15,13 +16,13 @@ export class AttrSetter extends RendererPass {
     }
     private setPrimitiveAttrs() {
         EachIterator.traverse(this.istat, this.graph,
-            (id, data) => {
-                const attrs = this.istat.getAttrs(id);
+            (data) => {
+                const attrs = this.istat.getAttrs(data.key);
                 data.collapsed = attrs.collapsed == 'true';
                 return data;
             },
-            (id, data) => {
-                const attrs = this.istat.getAttrs(id);
+            (data) => {
+                const attrs = this.istat.getAttrs(data.key);
                 data.direction = attrs.direction || 'horizontal';
                 for (const member of data.members) {
                     let edgeCandidates = this.graph.edges.filter(e => e.source == member.key);
@@ -48,25 +49,21 @@ export class AttrSetter extends RendererPass {
         )
     }
     private setTrimmed() {
-        // for (let node of this.graph.nodes) {
-        //     if (this.istat.getAttrs(node.id).trimmed == 'true') {
-        //         this.setTrimmedFor(node);
-        //     }
-        // }
-    }
-    private setTrimmedFor(nd: BoxNode | ContainerNode) {
-        if (nd.data.trimmed) {
-            return;
-        }
-        nd.data.trimmed = true;
-        // if (nd.type == 'box') {
-        //     for (let member of Object.values(nd.data.members)) {
-        //         if (member.class == 'box') {
-        //             this.setTrimmedFor(this.istat.nodeMap[member.object]);
-        //         } else if (member.class == 'link' && member.target !== null) {
-        //             this.setTrimmedFor(this.istat.nodeMap[member.target]);
-        //         }
-        //     }
-        // }
+        const trimmedNodes = this.graph.nodes.filter(
+            n => this.istat.getAttrs(n.id).trimmed == 'true'
+        ).map(
+            n => n.id
+        );
+        SubtreeIterator.traverse(this.istat, this.graph,
+            (data) => {
+                data.trimmed = true;
+                return data;
+            },
+            (data) => {
+                data.trimmed = true;
+                return data;
+            },
+            trimmedNodes
+        );
     }
 }

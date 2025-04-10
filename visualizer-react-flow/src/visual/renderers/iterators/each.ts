@@ -6,10 +6,11 @@ export class EachIterator extends StateViewIterator {
     public static traverse(
         istat: RendererInternalState,
         graph: ReactFlowGraph,
-        fnBox: (id: string, data: BoxNodeData) => BoxNodeData,
-        fnContainer: (id: string, data: ContainerNodeData) => ContainerNodeData
+        fnBox: (data: BoxNodeData) => BoxNodeData,
+        fnContainer: (data: ContainerNodeData) => ContainerNodeData,
+        roots?: string[]
     ): void {
-        const iterator = new EachIterator(istat, graph, fnBox, fnContainer);
+        const iterator = new EachIterator(istat, graph, fnBox, fnContainer, roots);
         iterator.traverse();
     }
     public traverse() {
@@ -17,30 +18,30 @@ export class EachIterator extends StateViewIterator {
             if (node.type == 'box') {
                 return {
                     ...node,
-                    data: this.traverseBox(node.id, node.data)
+                    data: this.traverseBox(node.data)
                 }
             } else if (node.type == 'container') {
                 return {
                     ...node,
-                    data: this.traverseContainer(node.id, node.data)
+                    data: this.traverseContainer(node.data)
                 }
             }
             return { ...node };
         });
     }
-    private traverseBox(id: string, data: BoxNodeData) {
-        let updatedData = { ...this.fnBox(id, data) };
+    private traverseBox(data: BoxNodeData) {
+        let updatedData = { ...this.fnBox(data) };
         for (let [label, member] of Object.entries(data.members)) {
             if (member.class == 'box') {
                 updatedData.members[label] = {
                     ...member,
-                    data: this.traverseBox(member.object, member.data)
+                    data: this.traverseBox(member.data)
                 };
             }
         }
         return updatedData;
     }
-    private traverseContainer(id: string, data: ContainerNodeData) {
-        return { ...this.fnContainer(id, data) }
+    private traverseContainer(data: ContainerNodeData) {
+        return { ...this.fnContainer(data) }
     }
 }

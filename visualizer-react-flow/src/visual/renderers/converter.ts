@@ -100,17 +100,21 @@ export class Converter {
         console.log('convertBoxData', box.key, box);
         // handle Container type
         if ('members' in box) {
-            return this._convertArrayDataToBox(box);
+            const data = this._convertArrayDataToBox(box);
+            this.istat.boxNodeDataMap[box.key] = data;
+            return data;
         }
         // handle view inheritance to get all members
         const abst = box.absts[this.istat.getShapeView(box.key)];
-        return {
+        const data = {
             key: box.key,
             type: box.type, addr: box.addr, label: box.label,
             members: this.convertBoxMembers(box, abst),
             parent: box.parent,
             isDiffAdd: box.isDiffAdd,
         };
+        this.istat.boxNodeDataMap[box.key] = data;
+        return data;
     }
     private _convertArrayDataToBox(container: Container): BoxNodeData {
         console.log('treat_cont_as_box', container.key);

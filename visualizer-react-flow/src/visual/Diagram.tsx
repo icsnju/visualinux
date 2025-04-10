@@ -47,9 +47,8 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
         if (view !== null) {
             setTimeout(() => {
                 let graph = Renderer.render(view, attrs);
-                let { nodes, edges } = Finalizer.render(graph);
-                setGraph(graph);
-                setNodes(nodes.map(nd => {
+                // @ts-ignore
+                graph.nodes = graph.nodes.map(nd => {
                     if (nd.type != 'box' && nd.type != 'container') {
                         return nd;
                     }
@@ -60,7 +59,10 @@ function ReactFlowDiagram({ pKey, updateSelected }: { pKey: number, updateSelect
                             notifier: (id: string, rootId: string, type: string) => setShouldUpdate([id, rootId, type])
                         }
                     };
-                }));
+                });
+                let { nodes, edges } = Finalizer.render(graph);
+                setGraph(graph);
+                setNodes(nodes);
                 setEdges(edges);
                 setTimeout(() => {
                     window.requestAnimationFrame(() => {
