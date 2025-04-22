@@ -53,7 +53,7 @@ class VCtrlHandler:
         chat_parser.add_argument('message', type=str, nargs='+', help='Message sent to LLM')
         chat_parser.set_defaults(handle=cls.__invoke_chat)
 
-        args = parser.parse_args(re.split(r'\s+', arg))
+        args = parser.parse_args(re.split(r'[^\S\r\n]+', arg))
 
         if hasattr(args, 'handle'):
             args.handle(args)
@@ -128,11 +128,12 @@ class VCtrlHandler:
 
     @classmethod
     def __invoke_apply(cls, args):
-        print(f'+ vctrl apply id={args.id} vql={args.vql}')
+        print(f'+ vctrl apply id={args.id} vql={args.viewql}')
+        vqlCode = " ".join(args.viewql)
         data = {
             'command': 'APPLY',
-            'id': args.id,
-            'vql': args.vql
+            'wKey': args.id,
+            'vqlCode': vqlCode
         }
         core.send(data)
 
