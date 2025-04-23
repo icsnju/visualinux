@@ -122,7 +122,7 @@ class VCtrlHandler:
         print(f'+ vctrl remove id={args.id}')
         data = {
             'command': 'REMOVE',
-            'id': args.id
+            'wKey': args.id
         }
         core.send(data)
 
