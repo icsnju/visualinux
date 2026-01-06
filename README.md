@@ -92,7 +92,7 @@ docker build --build-arg USE_MIRROR=true -t visualinux:1.0 . # Use mirrors
 # Launch the environment
 cd ../.. # Go back to the project root
 # fish style
-docker run --network host --rm -it -v (pwd):/app -w /app visualinux:1.0 /bin/bash
+docker run --network host --rm -it -v $(pwd):/app -w /app visualinux:1.0 /bin/fish
 # bash style
 docker run --network host --rm -it -v $(pwd):/app -w /app visualinux:1.0 /bin/bash
 ```

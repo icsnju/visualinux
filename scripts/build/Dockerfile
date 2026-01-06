@@ -19,6 +19,7 @@ RUN apt-get update && \
     wget \
     git \
     tmux \
+    fish \
     ttyd \
     curl \
     gcc \
