@@ -122,8 +122,8 @@ This repo provides three different ways to startup Visualinux. You can choose yo
 Visualinux is designed to be an auxiliary tool and does not interfere with the typical gdb workflow. Thus, you can start the gdb host and stub in separate terminals as usual:
 
 ```sh
-make start    # in terminal 1
-make attach   # in terminal 2
+make gdb-start    # in terminal 1
+make gdb-attach   # in terminal 2
 ```
 
 And start the visualizer app in another terminal:
