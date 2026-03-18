@@ -1,0 +1,10 @@
+/runs/*
+!/runs/.gitkeep
+
+/tasks/script.gdb
+/tasks/viewcl.vcl
+/tasks/task.env
+
+!/tasks/script.gdb.example
+!/tasks/viewcl.vcl.example
+!/tasks/task.env.example

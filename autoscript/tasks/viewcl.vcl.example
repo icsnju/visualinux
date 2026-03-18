@@ -1,0 +1,5 @@
+import stdlib
+
+diag example {
+    plot Box<task_struct>(${init_task})
+}

@@ -1,0 +1,2 @@
+echo [autoscript] sourced script.gdb.example\n
+info breakpoints
