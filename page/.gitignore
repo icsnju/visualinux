@@ -1,5 +1,18 @@
 !*
 
+# Keep Python cache/bytecode ignored inside page/.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.venv/
+venv/
+
 # Logs
 logs
 *.log
