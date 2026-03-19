@@ -1,4 +1,18 @@
 !*
+
+# Keep Python cache/bytecode ignored inside this subproject.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.venv/
+venv/
+
 node_modules/
 out/
 .vscode-test
