@@ -11,12 +11,13 @@ diag io_uring_plot {
         FROM *
         WHERE is_io_uring == true
 
-    UPDATE all_vmas WITH view: show_iou
+    UPDATE all_vmas WITH view: show_pages
     UPDATE all_vmas \ io_uring_vmas WITH trimmed: true
 
     all_bls = SELECT io_buffer_list FROM *
     configured_bls = SELECT io_buffer_list
         FROM *
         WHERE nr_entries != 0
+    UPDATE all_bls WITH view: show_buf_ring
     UPDATE all_bls \ configured_bls WITH trimmed: true
 }

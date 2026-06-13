@@ -12,9 +12,10 @@ set breakpoint pending on
 set $__inited = 0
 define init
     if $__inited == 0
+        source user-study/work/io_uring_userstudy.gdb
         source scripts/gdb/macros.gdb
         source visualinux-gdb.py
-        # echo + Visualinux gdb extension loaded\n
+        echo + Visualinux gdb extension loaded\n
         # echo ++++++ Visualinux Online Artifact Evaluation\n
         # echo ++++++ Please wait for the kernel boot, which will take a few seconds...\n
         # echo ++++++ Use vplot -f evaluation.vcl to reproduce textbook results\n

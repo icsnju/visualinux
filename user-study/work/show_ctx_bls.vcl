@@ -7,6 +7,7 @@ diag io_uring_plot {
     UPDATE task WITH view: show_iou
 
     all_bls = SELECT io_buffer_list FROM *
+    UPDATE all_bls WITH view: show_buf_ring
 
     configured_bls = SELECT io_buffer_list
         FROM *

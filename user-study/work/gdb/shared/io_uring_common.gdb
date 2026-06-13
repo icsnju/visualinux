@@ -1,4 +1,4 @@
-source macros/flags/vm.gdb
+source /home/jm233333/visualinux/scripts/gdb/macros/flags/vm.gdb
 
 set pagination off
 set $vl_ctx = 0

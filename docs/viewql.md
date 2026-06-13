@@ -41,7 +41,7 @@ Example 3: shrink all file except the one whose address is equal to 0xaabbccdd. 
 files_except = SELECT file
     FROM b AS f
     WHERE f != 0xaabbccdd
-UPDATE files_except WITH shrinked: true
+UPDATE files_except WITH trimmed: true
 ```
 
 Example 4: for each slab, show the view full if its field inuse > 1; otherwise, collapse it.
@@ -53,7 +53,7 @@ shared = SELECT slab
     FROM *
     WHERE inuse > 1
 UPDATE shared WITH view: full
-UPDATE all \ shared WITH shrinked: true
+UPDATE all \ shared WITH trimmed: true
 ```
 
 Example 5: only show the read-only vm_area_structs.
@@ -62,7 +62,7 @@ Example 5: only show the read-only vm_area_structs.
 non_writable_vmas = SELECT vm_area_struct
     FROM *
     WHERE is_writable != true
-UPDATE non_writable_vmas WITH shrinked: true
+UPDATE non_writable_vmas WITH trimmed: true
 ```
 
 ### Supported Attributes
@@ -71,7 +71,7 @@ UPDATE non_writable_vmas WITH shrinked: true
 | :-- | :-- | :-- | :-- |
 | view      | string  | default    | the current displayed view of this box |
 | collapsed | boolean | false      | whether this shape itself is collapsed |
-| shrinked  | boolean | false      | whether the entire subgraph rooted at this shape is trimmed |
+| trimmed   | boolean | false      | whether the entire subgraph rooted at this shape is trimmed |
 | direction | string  | horizontal | should be `horizontal` or `vertical`, specifiying this container's growing direction on the screen |
 
-Note that `view`, `collapsed` and `shrinked` are applicable for both **Box** and **Container** (a.k.a. **Shape**), while `direction` is only applicable for **Container**.
+Note that `view`, `collapsed` and `trimmed` are applicable for both **Box** and **Container** (a.k.a. **Shape**), while `direction` is only applicable for **Container**.
